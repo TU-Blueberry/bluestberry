@@ -60,7 +60,7 @@ export class AppComponent {
     // in other words, this is the maximum width the code area may have in order to fit all the other elements
     const maxCodeWidth = document.body.clientWidth - actionbarWidth - sidebarWidth - this.minSimulationWidth;
     const codearea = document.getElementById("code-area");
-    
+
     // minCodeWidth specifies minimum width of code area
     if (codearea) {
       codearea.style.width = Math.min((Math.max(relativeXpos, this.minCodeWidth)), maxCodeWidth) + 'px';
