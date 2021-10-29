@@ -36,7 +36,7 @@ export class PyodideService {
 
       this.initialising = true;
 
-      loadPyodide({indexURL: '/assets/pyodide'}).then(pyodide => {
+      loadPyodide({indexURL: '/pyodide'}).then(pyodide => {
         // Pyodide is now ready to use...
         this.pyodide = pyodide;
         this.initialised = true

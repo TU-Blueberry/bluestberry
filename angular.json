@@ -32,7 +32,8 @@
             "inlineStyleLanguage": "scss",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              "pyodide"
             ],
             "styles": [
               "src/styles.scss"
