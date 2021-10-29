@@ -9,6 +9,7 @@ variables:
   VERSION: latest
 
 test:
+  image: node:latest
   stage: test
   tags:
     - blueberry
