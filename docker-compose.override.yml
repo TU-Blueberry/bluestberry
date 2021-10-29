@@ -1,0 +1,6 @@
+version: '3.7'
+services:
+  bluestberry-frontend:
+    build: .
+    ports:
+      - 4200:8080

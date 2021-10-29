@@ -1,0 +1,32 @@
+stages:
+  - publish
+  - deploy
+
+variables:
+  TAG_LATEST: $REGISTRY_ADDRESS/pg643/frontend/frontend:latest
+  TAG_COMMIT: $REGISTRY_ADDRESS/pg643/frontend/frontend:latest
+  VERSION: latest
+
+publish:
+  image: docker:latest
+  stage: publish
+  services:
+    - docker:dind
+  tags:
+    - blueberry
+  script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $REGISTRY_ADDRESS
+    - docker build -t $REGISTRY_ADDRESS/pg643/frontend:latest --build-arg PREFIX=$VERSION .
+    - docker push $REGISTRY_ADDRESS/pg643/frontend:latest
+
+deploy:
+  image: tmaier/docker-compose:latest
+  stage: deploy
+  services:
+    - docker:dind
+  tags:
+    - blueberry
+  script:
+    - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $REGISTRY_ADDRESS
+    - docker-compose -f docker-compose.yml -f docker-compose.production.yml pull
+    - docker-compose -f docker-compose.yml -f docker-compose.production.yml up -d --force-recreate

@@ -1,0 +1,16 @@
+version: '3.7'
+services:
+  bluestberry-frontend:
+    build: ''
+    networks:
+      - reverse-proxy
+    labels:
+      - traefik.http.routers.frontend.rule=PathPrefix(`/bluest/$VERSION`)
+      - traefik.http.routers.frontend.middlewares=strip-prefix@file
+      - traefik.http.services.frontend.loadbalancer.server.port=8080
+      - traefik.docker.network=reverse-proxy
+
+
+networks:
+  reverse-proxy:
+    external: true
