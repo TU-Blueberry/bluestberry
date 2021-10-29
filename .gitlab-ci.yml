@@ -1,4 +1,5 @@
 stages:
+  - test
   - publish
   - deploy
 
@@ -6,6 +7,13 @@ variables:
   TAG_LATEST: $REGISTRY_ADDRESS/pg643/frontend/frontend:latest
   TAG_COMMIT: $REGISTRY_ADDRESS/pg643/frontend/frontend:latest
   VERSION: latest
+
+test:
+  stage: test
+  tags:
+    - blueberry
+  script:
+    - npm run test:ci
 
 publish:
   image: docker:latest
