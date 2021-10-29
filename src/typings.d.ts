@@ -3,4 +3,4 @@ declare module '!raw-loader!*' {
   export default contents;
 }
 
-declare function loadPyodide(config: { indexUrl: string }): Promise<any>;
+declare function loadPyodide(config: { indexURL: string }): Promise<any>;
