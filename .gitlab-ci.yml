@@ -14,8 +14,8 @@ test:
   tags:
     - blueberry
   script:
-    - npm install
-    - npm run test:ci
+    - yarn
+    - yarn test:ci
 
 publish:
   image: docker:latest
