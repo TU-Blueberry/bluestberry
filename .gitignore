@@ -9,7 +9,7 @@
 
 # dependencies
 /node_modules
-/pyodide
+/src/pyodide
 
 # profiling files
 chrome-profiler-events*.json

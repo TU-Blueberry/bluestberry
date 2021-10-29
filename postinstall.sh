@@ -6,7 +6,7 @@ VERSION="0.18.1"
 ARCHIVE_PATH="dist"
 ARCHIVE_FILENAME="pyodide.tar.bz2"
 ARCHIVE_FULL_PATH="$ARCHIVE_PATH/$ARCHIVE_FILENAME"
-OUT="pyodide"
+OUT="src/pyodide"
 
 echo "Installing Pyodide in Version $VERSION"
 
@@ -18,7 +18,7 @@ fi
 
 if ! [ -d $OUT ]; then
   echo "Extracting Pyodide files into $OUT"
-  tar -xf $ARCHIVE_FULL_PATH
+  tar -xf $ARCHIVE_FULL_PATH -C src
 fi
 
 echo "Pyodide install complete!"

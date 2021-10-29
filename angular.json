@@ -33,7 +33,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              "pyodide"
+              "src/pyodide"
             ],
             "styles": [
               "src/styles.scss"
