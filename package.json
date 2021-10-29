@@ -2,7 +2,7 @@
   "name": "bluestberry",
   "version": "0.0.0",
   "scripts": {
-    "postinstall": "bash ./postinstall.sh",
+    "postinstall": "./postinstall.sh",
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build --base-href",
