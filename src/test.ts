@@ -1,6 +1,4 @@
-import 'jest-preset-angular';
-import 'zone.js/dist/zone';
-import 'zone.js/testing';
+import 'jest-preset-angular/setup-jest';
 
 Object.defineProperty(window, 'CSS', { value: null });
 Object.defineProperty(window, 'getComputedStyle', {
