@@ -35,8 +35,8 @@ $icon-padding: 5px;
     height: 32px;
     width: 100%;
     background-color: inherit;
-    color: rgb(240, 240, 240);  
-    
+    color: rgb(240, 240, 240);
+
     &:focus-visible {
         outline: none
     }
@@ -44,7 +44,7 @@ $icon-padding: 5px;
 
 .search-wrapper {
     width: 30%;
-    background-color: rgb(66, 70, 80);     
+    background-color: rgb(66, 70, 80);
     border-radius: 5px;
     display: flex;
     align-items: center;
@@ -58,7 +58,7 @@ $icon-padding: 5px;
     width: $icon-size;
     height: $icon-size;
     padding: calc(#{$icon-size} / 2);
-    
+
     &:hover {
         cursor: pointer;
     }
@@ -120,7 +120,7 @@ $icon-padding: 5px;
     max-width: 100vw;
 }
 
-#monaco {
+#monaco-editor {
     overflow: hidden;
     height: 100%;
 }
@@ -146,7 +146,7 @@ $icon-padding: 5px;
 
 .invisible {
     display: none !important;
-} 
+}
 
 .main-test {
     display: flex;
@@ -203,7 +203,7 @@ $icon-padding: 5px;
     color: #ffffff66;
 }
 
-.simulation { 
+.simulation {
     position: relative;
     height: 100%;
     background-color: white;
@@ -213,7 +213,6 @@ $icon-padding: 5px;
 
 /* über variablen berechnen? speichere in var wie breit die trenner + seitenleiste links ist */
 .code {
-    background-color: green;
     flex: 1 1 auto;
     box-sizing: border-box;
     display: flex;
@@ -230,6 +229,7 @@ $icon-padding: 5px;
     right: 0px;
     padding-top: 5px;
     padding-bottom: 5px;
+    z-index: 1;
 }
 
 .action-bar-icon {
@@ -275,7 +275,7 @@ $icon-padding: 5px;
 
 .overlay-wrapper {
     padding: 20px;
-  
+
 }
 
 .overlay-heading {
@@ -296,7 +296,7 @@ $icon-padding: 5px;
 .test-overview {
     display: flex;
     justify-content: space-between;
-    
+
     &:hover {
         cursor:pointer;
     }
@@ -329,7 +329,7 @@ $icon-padding: 5px;
 }
 
 .divider {
-    
+
 }
 
 

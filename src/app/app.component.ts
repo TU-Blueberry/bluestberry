@@ -20,7 +20,6 @@ export class AppComponent {
   minSimulationWidth = 100;
 
   constructor(private red: Renderer2) {
-
   }
 
   test(ev: any): void {
@@ -43,6 +42,7 @@ export class AppComponent {
 
   // alternative: alle elemente (action bar, code, slider, simulation) absolut positionieren
   // "left" berechnen (bei stackblitz z.B. via inset)
+  code = "test test 123123 1 2 1 4j rlkajsdfölksjdfölkasjdf asd flkasjdflkajsdflkjasdf";
   fn(ev: any): void {
     // https://stackoverflow.com/questions/46931103/making-a-dragbar-to-resize-divs-inside-css-grids
     const maincontent = document.getElementById("main-content");

@@ -15,7 +15,7 @@ export class PyodideService {
   // https://github.com/pyodide/pyodide/issues/8
 
   private initPyodide(): Observable<Pyodide> {
-    return defer(() => loadPyodide({indexURL: '/pyodide'})).pipe(
+    return defer(() => loadPyodide({indexURL: '/assets/pyodide'})).pipe(
       switchMap(pyodide => forkJoin(
         PyodideService.DEFAULT_LIBS.map(lib => from(pyodide.loadPackage(lib)))
       ).pipe(map(() => pyodide))),
