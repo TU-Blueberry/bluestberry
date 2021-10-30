@@ -1,12 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
+import {ViewerModule} from 'src/app/viewer/viewer.module';
+import {MonacoEditorModule} from 'ngx-monaco-editor';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [
-        RouterTestingModule
+        RouterTestingModule,
+        ViewerModule,
+        MonacoEditorModule.forRoot(),
       ],
       declarations: [
         AppComponent

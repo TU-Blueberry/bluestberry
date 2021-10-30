@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { CodeViewerComponent } from './code-viewer.component';
+import {MonacoEditorModule} from 'ngx-monaco-editor';
+import {FormsModule} from '@angular/forms';
 
 describe('CodeViewerComponent', () => {
   let component: CodeViewerComponent;
@@ -8,6 +10,7 @@ describe('CodeViewerComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
+      imports: [ MonacoEditorModule.forRoot(), FormsModule ],
       declarations: [ CodeViewerComponent ]
     })
     .compileComponents();

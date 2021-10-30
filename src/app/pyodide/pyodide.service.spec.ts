@@ -21,7 +21,7 @@ describe('Pyodide Service', () => {
   it('lazyly initializes Pyodide', fakeAsync(() => {
     pyodideService.runCode('1+1').subscribe();
     tick();
-    expect(loadPyodide).toHaveBeenCalledWith({ indexURL: '/pyodide' });
+    expect(loadPyodide).toHaveBeenCalledWith({ indexURL: '/assets/pyodide' });
   }));
 
   it('calls loadPyodide only Once', fakeAsync(() => {
