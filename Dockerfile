@@ -5,6 +5,7 @@ WORKDIR /app
 
 COPY package.json .
 COPY yarn.lock .
+COPY postinstall.sh .
 RUN yarn
 
 COPY . .
