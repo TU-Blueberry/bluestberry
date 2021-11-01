@@ -1,0 +1,49 @@
+.filetree-header {
+    color: hsl(0 0% 80%);
+    background-color: hsl(220 12% 20%);
+    cursor: pointer;
+    display: flex;
+    font-size: 0.9rem;
+    padding-top: 5px;
+    padding-bottom: 5px;
+ }
+ 
+.filetree-headline {
+     color: white;
+     padding: 10px;
+ }
+
+.filetree-header-icon, .file-type {
+    width: 16px;
+    height: 16px;
+}
+
+.filetree-header-icon-svg {
+    color: #ffffff66;
+}
+
+.file {
+    display: flex;
+    color: white;
+    padding-left: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+    &:hover {
+        background-color: grey;
+        cursor: pointer;
+    }
+}
+
+.file-type-image {
+    color: green;
+    width: 16px;
+    height: 16px;
+}
+
+.file-name {
+    margin-left: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

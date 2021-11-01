@@ -1,1 +1,31 @@
-<ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="code"></ngx-monaco-editor>
+<div class="code-action-bar">
+    <div class="action-bar-icon">
+        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+        aria-labelledby="backLeftIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
+        stroke-linejoin="miter" fill="none">
+        <title id="backLeftIconTitle">Rückgängig</title>
+        <path d="M5,17 L5,15 C5,10.0294373 8.80557963,6 13.5,6 C18.1944204,6 22,10.0294373 22,15" />
+        <polyline points="8 15 5 18 2 15" />
+        </svg>
+    </div>
+    <div class="action-bar-icon">
+        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+        aria-labelledby="backRightIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
+        stroke-linejoin="miter" fill="none">
+        <title id="backRightIconTitle">Vorwärts</title>
+        <path d="M19,17 L19,15 C19,10.0294373 15.1944204,6 10.5,6 C5.80557963,6 2,10.0294373 2,15" />
+        <polyline points="16 15 19 18 22 15" />
+        </svg>
+    </div>
+    <div class="action-bar-icon">
+        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="playIconTitle"
+        stroke="currentColor" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+        <title id="playIconTitle">Ausführen</title>
+        <path d="M20 12L5 21V3z" />
+        </svg>
+    </div>
+</div>
+<div id="monaco-editor">
+    <ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="code"></ngx-monaco-editor>
+</div>        
+
