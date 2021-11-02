@@ -18,6 +18,9 @@ export class AppComponent {
   expandedTests = false;
   showTestOverlay = false;
   minSimulationWidth = 100;
+  // I used to use a little message binding like this to tell Unity to update.
+  // But there probably is a better way than this.
+  updateMessage: number = 1
 
   constructor(private red: Renderer2) {
   }

@@ -47,7 +47,7 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": ["src/assets/unity/berrysort/Build/UnityLoader.js"]
           },
           "configurations": {
             "production": {

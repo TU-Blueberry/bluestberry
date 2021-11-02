@@ -7,17 +7,21 @@ import {setupPythonCalls} from 'src/app/python-callable/python-callable.decorato
 import {ViewerModule} from 'src/app/viewer/viewer.module';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
+import { UnityModule } from './unity/unity.module';
+import { UnityComponent } from './unity/unity.component';
 
 @NgModule({
   declarations: [
-    AppComponent
+    AppComponent,
+    UnityComponent
   ],
   imports: [
     BrowserModule,
     AppRoutingModule,
     MonacoEditorModule.forRoot(),
     ViewerModule,
-    FormsModule
+    FormsModule,
+    UnityModule
   ],
   providers: [],
   bootstrap: [AppComponent]

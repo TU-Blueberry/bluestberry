@@ -1,0 +1,14 @@
+<ng-container *ngIf="!isReady">
+  <div class="progress">
+    <div class="progress-bar" 
+         role="progressbar" 
+         [style.width.%]="progress*100" 
+         [attr.aria-valuenow]="progress*100" 
+         aria-valuemin="0" 
+         aria-valuemax="100"></div>
+  </div>
+  <hr />
+</ng-container>
+
+<div #unityEl id="gameContainer" 
+     style="display: block; width: 100%; min-height: 0px; margin: auto"></div>
