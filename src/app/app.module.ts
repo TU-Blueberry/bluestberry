@@ -15,7 +15,7 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
   declarations: [
     AppComponent,
     NavbarComponent,
-    ActionbarComponent
+    ActionbarComponent,
   ],
   imports: [
     BrowserModule,

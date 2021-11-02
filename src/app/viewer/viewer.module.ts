@@ -4,6 +4,7 @@ import { CodeViewerComponent } from './code-viewer/code-viewer.component';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
 import { UnityViewerComponent } from './unity-viewer/unity-viewer.component';
+import { ImageViewerComponent } from './image-viewer/image-viewer.component';
 
 /**
  * Module used for all the Viewer-Components.
@@ -20,7 +21,8 @@ import { UnityViewerComponent } from './unity-viewer/unity-viewer.component';
 @NgModule({
   declarations: [
     CodeViewerComponent,
-    UnityViewerComponent
+    UnityViewerComponent,
+    ImageViewerComponent
   ],
     imports: [
         CommonModule,
@@ -29,7 +31,8 @@ import { UnityViewerComponent } from './unity-viewer/unity-viewer.component';
     ],
   exports: [
     CodeViewerComponent,
-    UnityViewerComponent
+    UnityViewerComponent,
+    ImageViewerComponent
   ]
 })
 export class ViewerModule {
