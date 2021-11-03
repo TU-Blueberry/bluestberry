@@ -2018,6 +2018,13 @@ alphanum-sort@^1.0.2:
   resolved "https://registry.yarnpkg.com/alphanum-sort/-/alphanum-sort-1.0.2.tgz#97a1119649b211ad33691d9f9f486a8ec9fbe0a3"
   integrity sha1-l6ERlkmyEa0zaR2fn0hqjsn74KM=
 
+angular-split@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/angular-split/-/angular-split-5.0.0.tgz#75181d8ad27209041e398be360681e1eed2810db"
+  integrity sha512-V7m/mdp31189EGeVRw5j6MOfb8EiYoDqr8XTay4D7GcCpEm2+7oHD1n6eWbCvQMuRb8X3ZfP2pZNDmJs8bLaAg==
+  dependencies:
+    tslib "^2.0.0"
+
 ansi-colors@4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-4.1.1.tgz#cbb9ae256bf750af1eab344f229aa27fe94ba348"

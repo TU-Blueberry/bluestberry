@@ -3,6 +3,9 @@ import {CommonModule} from '@angular/common';
 import { CodeViewerComponent } from './code-viewer/code-viewer.component';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
+import { MainViewerComponent } from './main-viewer/main-viewer.component';
+import { TabViewComponent } from './tab-view/tab-view.component';
+import { TabGroupComponent } from './tab-group/tab-group.component';
 
 /**
  * Module used for all the Viewer-Components.
@@ -18,7 +21,10 @@ import {FormsModule} from '@angular/forms';
 
 @NgModule({
   declarations: [
-    CodeViewerComponent
+    CodeViewerComponent,
+    MainViewerComponent,
+    TabViewComponent,
+    TabGroupComponent
   ],
     imports: [
         CommonModule,
@@ -26,7 +32,8 @@ import {FormsModule} from '@angular/forms';
         FormsModule
     ],
   exports: [
-    CodeViewerComponent
+    CodeViewerComponent,
+    MainViewerComponent
   ]
 })
 export class ViewerModule {
