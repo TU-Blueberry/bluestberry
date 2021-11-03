@@ -1,4 +1,7 @@
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
 
 $icon-size: 24px;
 $icon-padding: 5px;
@@ -8,4 +11,5 @@ body {
     padding: 0;
     background-color: #262626;
     font-family: 'Roboto', sans-serif;
+    width: 100%;
 }
