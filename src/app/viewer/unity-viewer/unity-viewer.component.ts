@@ -1,4 +1,5 @@
 import { Component, OnInit, Renderer2 } from '@angular/core';
+import { PyodideService } from 'src/app/pyodide/pyodide.service';
 
 @Component({
   selector: 'app-unity-viewer',
@@ -12,9 +13,9 @@ export class UnityViewerComponent {
   unlistenMouseUp!: () => void;
   minCodeWidth = 100;
   minSimulationWidth = 100;
+  pythonResult = '';
 
-  constructor(private red: Renderer2) {
-  }
+  constructor(private red: Renderer2) {  }
 
   test(ev: any): void {
     this.unlistenMove = this.red.listen('document', 'mousemove', this.fn.bind(this));
