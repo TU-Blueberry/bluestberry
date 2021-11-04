@@ -7,6 +7,7 @@ import {setupPythonCalls} from 'src/app/python-callable/python-callable.decorato
 import {ViewerModule} from 'src/app/viewer/viewer.module';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
+import {AngularSplitModule} from 'angular-split';
 
 @NgModule({
   declarations: [
@@ -15,6 +16,7 @@ import {FormsModule} from '@angular/forms';
   imports: [
     BrowserModule,
     AppRoutingModule,
+    AngularSplitModule,
     MonacoEditorModule.forRoot(),
     ViewerModule,
     FormsModule

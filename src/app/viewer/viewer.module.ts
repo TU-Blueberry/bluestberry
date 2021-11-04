@@ -1,11 +1,12 @@
 import {NgModule} from '@angular/core';
 import {CommonModule} from '@angular/common';
-import { CodeViewerComponent } from './code-viewer/code-viewer.component';
+import {CodeViewerComponent} from './code-viewer/code-viewer.component';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
 import {FormsModule} from '@angular/forms';
-import { MainViewerComponent } from './main-viewer/main-viewer.component';
-import { TabViewComponent } from './tab-view/tab-view.component';
-import { TabGroupComponent } from './tab-group/tab-group.component';
+import {MainViewerComponent} from './main-viewer/main-viewer.component';
+import {TabViewComponent} from './tab-view/tab-view.component';
+import {TabGroupComponent} from './tab-group/tab-group.component';
+import {AngularSplitModule} from 'angular-split';
 
 /**
  * Module used for all the Viewer-Components.
@@ -26,11 +27,12 @@ import { TabGroupComponent } from './tab-group/tab-group.component';
     TabViewComponent,
     TabGroupComponent
   ],
-    imports: [
-        CommonModule,
-        MonacoEditorModule,
-        FormsModule
-    ],
+  imports: [
+    CommonModule,
+    MonacoEditorModule,
+    AngularSplitModule,
+    FormsModule
+  ],
   exports: [
     CodeViewerComponent,
     MainViewerComponent
