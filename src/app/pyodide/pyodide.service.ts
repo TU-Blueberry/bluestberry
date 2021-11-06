@@ -9,6 +9,8 @@ import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 export class PyodideService {
   static readonly DEFAULT_LIBS = ['matplotlib', 'numpy', 'plotly', 'pandas'];
   private results$: BehaviorSubject<any> = new BehaviorSubject([]);
+  private stdOut$: BehaviorSubject<string> = new BehaviorSubject('');
+  private stdErr$: BehaviorSubject<string> = new BehaviorSubject('');
   pyodide = this.initPyodide();
 
   // Overwrite stderr and stdout. Sources:
@@ -16,7 +18,11 @@ export class PyodideService {
   // https://github.com/pyodide/pyodide/issues/8
 
   private initPyodide(): Observable<Pyodide> {
-    return defer(() => loadPyodide({indexURL: '/assets/pyodide'})).pipe(
+    return defer(() => loadPyodide({
+      indexURL: '/assets/pyodide',
+      stdout: (text) => {this.stdOut$.next(this.stdOut$.value + text)},
+      stderr: (text) => {this.stdErr$.next(this.stdErr$.value + text)}
+    })).pipe(
       switchMap(pyodide => forkJoin(
         PyodideService.DEFAULT_LIBS.map(lib => from(pyodide.loadPackage(lib)))
       ).pipe(map(() => pyodide))),
@@ -59,5 +65,13 @@ export class PyodideService {
 
   getResults(): Observable<any> {
     return this.results$.asObservable();
+  }
+
+  getStdOut(): Observable<string> {
+    return this.stdOut$.asObservable();
+  }
+
+  getStdErr(): Observable<string> {
+    return this.stdErr$.asObservable();
   }
 }

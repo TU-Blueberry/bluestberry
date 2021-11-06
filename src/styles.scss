@@ -36,6 +36,19 @@ body {
     }
 }
 
+.code-action-bar {
+  display: flex;
+  justify-content: end;
+  justify-items: center;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  z-index: 1;
+  margin-right: 12px;
+}
+
 .action-bar-icon {
     height: 24px;
     color: #ffffff66;
