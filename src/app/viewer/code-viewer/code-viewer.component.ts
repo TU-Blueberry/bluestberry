@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { tap } from 'rxjs/operators';
+import { PyodideService } from 'src/app/pyodide/pyodide.service';
 
 @Component({
   selector: 'app-code-viewer',
@@ -20,10 +22,16 @@ export class CodeViewerComponent implements OnInit {
 1+1
 `;
 
-  constructor() { }
+  constructor(private pyodideService: PyodideService) { }
 
   ngOnInit(): void {
 
+  }
+
+  executeCode(): any | void {
+    console.log(this);
+    this.pyodideService.runCode(this.code)
+      .subscribe( (res) => {console.log(res)})
   }
 
 }

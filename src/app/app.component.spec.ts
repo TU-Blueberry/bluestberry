@@ -3,6 +3,9 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { AppComponent } from './app.component';
 import {ViewerModule} from 'src/app/viewer/viewer.module';
 import {MonacoEditorModule} from 'ngx-monaco-editor';
+import { NavbarComponent } from './navbar/navbar.component';
+import { FiletreeComponent } from './filesystem/filetree/filetree.component';
+import { ActionbarComponent } from './actionbar/actionbar.component';
 
 describe('AppComponent', () => {
   beforeEach(async () => {
@@ -13,7 +16,10 @@ describe('AppComponent', () => {
         MonacoEditorModule.forRoot(),
       ],
       declarations: [
-        AppComponent
+        AppComponent,
+        NavbarComponent,
+        FiletreeComponent,
+        ActionbarComponent
       ],
     }).compileComponents();
   });

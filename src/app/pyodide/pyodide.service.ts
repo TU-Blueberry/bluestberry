@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core'
 import initCode from '!raw-loader!../../assets/util/init.py'
-import {defer, forkJoin, from, Observable, of} from 'rxjs';
-import {map, shareReplay, switchMap} from 'rxjs/operators';
+import {BehaviorSubject, defer, forkJoin, from, Observable, of} from 'rxjs';
+import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PyodideService {
   static readonly DEFAULT_LIBS = ['matplotlib', 'numpy', 'plotly', 'pandas'];
+  private results$: BehaviorSubject<any> = new BehaviorSubject([]);
   pyodide = this.initPyodide();
 
   // Overwrite stderr and stdout. Sources:
@@ -30,7 +31,8 @@ export class PyodideService {
   runCode(code: string): Observable<any> {
     return this.pyodide.pipe(switchMap(pyodide => {
       pyodide.globals.set('code_to_run', code);
-      return pyodide.runPythonAsync('run_code(code_to_run)');
+      return defer(() => from(pyodide.runPythonAsync('run_code(code_to_run)')))
+        .pipe(tap(res => this.results$.next(res)));
     }));
   }
 
@@ -53,5 +55,9 @@ export class PyodideService {
         pyodide.globals.delete(key);
       }
     }));
+  }
+
+  getResults(): Observable<any> {
+    return this.results$.asObservable();
   }
 }
