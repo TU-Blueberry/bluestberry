@@ -1,13 +1,10 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-
+import { NgModule } from '@angular/core';
+import { PyodideService } from '../pyodide/pyodide.service';
 
 @NgModule({
-  declarations: [
-
-  ],
-  imports: [
-    CommonModule
-  ]
+  declarations: [],
+  providers: [PyodideService],
+  imports: [CommonModule],
 })
-export class UnityModule { }
+export class UnityModule {}

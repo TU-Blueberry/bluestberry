@@ -1,11 +1,11 @@
-import { Component, Renderer2 } from '@angular/core';
+import { AfterViewInit, Component, Renderer2 } from '@angular/core';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
-export class AppComponent {
+export class AppComponent implements AfterViewInit {
   title = 'BluestBerry';
   startX = 0;
   startWidth = 0;
@@ -17,16 +17,23 @@ export class AppComponent {
   showCustomFiles = false;
   expandedTests = false;
   showTestOverlay = false;
-  minSimulationWidth = 100;
-  // I used to use a little message binding like this to tell Unity to update.
-  // But there probably is a better way than this.
-  updateMessage: number = 1
 
-  constructor(private red: Renderer2) {
+  minSimulationWidth = 100;
+  // Example Binding to update the Unity Component, might be useful to swap scenes in the future.
+
+  updateMessage: number = 1;
+
+  constructor(private red: Renderer2, private window: Window) {}
+  ngAfterViewInit(): void {
+    throw new Error('Method not implemented.');
   }
 
   test(ev: any): void {
-    this.unlistenMove = this.red.listen('document', 'mousemove', this.fn.bind(this));
+    this.unlistenMove = this.red.listen(
+      'document',
+      'mousemove',
+      this.fn.bind(this)
+    );
     this.unlistenMouseUp = this.red.listen('document', 'mouseup', (ev) => {
       console.log(ev);
 
@@ -35,7 +42,7 @@ export class AppComponent {
       this.unlistenMove?.();
     });
 
-    const elem = document.getElementById("code-area");
+    const elem = document.getElementById('code-area');
     this.startWidth = elem!.clientWidth;
     this.startX = ev.clientX;
   }
@@ -45,29 +52,44 @@ export class AppComponent {
 
   // alternative: alle elemente (action bar, code, slider, simulation) absolut positionieren
   // "left" berechnen (bei stackblitz z.B. via inset)
-  code = "test test 123123 1 2 1 4j rlkajsdfölksjdfölkasjdf asd flkasjdflkajsdflkjasdf";
+  code =
+    'test test 123123 1 2 1 4j rlkajsdfölksjdfölkasjdf asd flkasjdflkajsdflkjasdf';
   fn(ev: any): void {
     // https://stackoverflow.com/questions/46931103/making-a-dragbar-to-resize-divs-inside-css-grids
-    const maincontent = document.getElementById("main-content");
+    const maincontent = document.getElementById('main-content');
     const offset = maincontent!.offsetLeft;
     const relativeXpos = ev.clientX - offset;
 
-    const actionbarWidth = document.getElementById("action-bar")?.clientWidth || 0;;
-    const sidebarWidth = document.getElementById("sidebar")?.clientWidth || 0;;
-    const simulationWidth = document.getElementById("simulation")?.clientWidth || 0;
+    const actionbarWidth =
+      document.getElementById('action-bar')?.clientWidth || 0;
+    const sidebarWidth = document.getElementById('sidebar')?.clientWidth || 0;
+    const simulationWidth =
+      document.getElementById('simulation')?.clientWidth || 0;
 
-    console.log("ABW: " + actionbarWidth + " - SBW: " + sidebarWidth + " - SW: " + simulationWidth)
-
+    console.log(
+      'ABW: ' +
+        actionbarWidth +
+        ' - SBW: ' +
+        sidebarWidth +
+        ' - SW: ' +
+        simulationWidth
+    );
 
     // code must leave enough space for actionbar, sidebar and the minimum width of the simulation
     // in other words, this is the maximum width the code area may have in order to fit all the other elements
-    const maxCodeWidth = document.body.clientWidth - actionbarWidth - sidebarWidth - this.minSimulationWidth;
-    const codearea = document.getElementById("code-area");
+    const maxCodeWidth =
+      document.body.clientWidth -
+      actionbarWidth -
+      sidebarWidth -
+      this.minSimulationWidth;
+    const codearea = document.getElementById('code-area');
 
     // minCodeWidth specifies minimum width of code area
     if (codearea) {
-      codearea.style.width = Math.min((Math.max(relativeXpos, this.minCodeWidth)), maxCodeWidth) + 'px';
-      codearea.style.flexGrow = "0";
+      codearea.style.width =
+        Math.min(Math.max(relativeXpos, this.minCodeWidth), maxCodeWidth) +
+        'px';
+      codearea.style.flexGrow = '0';
     }
   }
 
@@ -106,5 +128,9 @@ export class AppComponent {
 
   stopEvent(ev: any): void {
     ev.stopPropagation();
+  }
+
+  private delay(ms: number) {
+    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }
