@@ -1,14 +1,5 @@
 .code-action-bar {
-  display: flex;
-  justify-content: end;
-  justify-items: center;
-  position: absolute;
-  bottom: 0px;
-  right: 0px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-  z-index: 1;
-  margin-right: 12px;
+  bottom: 260px;
 }
 
 // ngx-monaco uses width: 98% for its container element, thus being slightly too small by default

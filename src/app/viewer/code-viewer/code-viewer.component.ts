@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { tap } from 'rxjs/operators';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
+import {EditorComponent} from "ngx-monaco-editor";
+import {editor} from "monaco-editor";
+import ICodeEditor = editor.ICodeEditor;
 
 @Component({
   selector: 'app-code-viewer',
@@ -9,6 +11,7 @@ import { PyodideService } from 'src/app/pyodide/pyodide.service';
 })
 export class CodeViewerComponent implements OnInit {
 
+  private editor!: ICodeEditor;
   editorOptions = {
     theme: 'vs-dark',
     language: 'python',
@@ -18,20 +21,36 @@ export class CodeViewerComponent implements OnInit {
       enabled: false
     }
   };
-  code = `
-1+1
-`;
+  code =
+`import numpy as np
+
+#initialize an array
+arr = np.array([[11, 11, 9, 9],
+                  [11, 0, 2, 0]])
+
+# get array shape
+shape = arr.shape
+
+print(shape)`
+;
 
   constructor(private pyodideService: PyodideService) { }
 
-  ngOnInit(): void {
+  ngOnInit(): void { }
 
+  executeCode(): void {
+    this.pyodideService.runCode(this.code).subscribe();
   }
 
-  executeCode(): any | void {
-    console.log(this);
-    this.pyodideService.runCode(this.code)
-      .subscribe( (res) => {console.log(res)})
+  editorInit(editor: any) {
+    this.editor = editor;
   }
 
+  undo(): void {
+    this.editor?.trigger(null, 'undo', '');
+  }
+
+  redo(): void {
+    this.editor?.trigger(null, 'redo', '');
+  }
 }

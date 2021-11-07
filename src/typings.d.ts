@@ -3,7 +3,16 @@ declare module '!raw-loader!*' {
   export default contents;
 }
 
-declare function loadPyodide(config: { indexURL: string }): Promise<Pyodide>;
+declare function loadPyodide(
+  config: {
+      indexURL: string,
+      fullStdLib?: boolean;
+      stdin?: () => string;
+      stdout?: (text: string) => void;
+      stderr?: (text: string) => void;
+    }
+): Promise<Pyodide>;
+
 declare class Pyodide {
   globals: Map<string, any>;
   runPythonAsync(code: string): Promise<any>;

@@ -1,0 +1,14 @@
+#terminal {
+  padding: 10px;
+  height: 240px;
+  width: 100%;
+  resize: none;
+  background: #262626;
+  border: 1px solid #424242;
+  color: #c6c6c6;
+}
+
+#terminal:focus {
+  outline: none !important;
+  border: 1px solid #0080ff;
+}
