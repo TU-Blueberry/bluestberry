@@ -1,5 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
+import {EditorComponent} from "ngx-monaco-editor";
+import {editor} from "monaco-editor";
+import ICodeEditor = editor.ICodeEditor;
 
 @Component({
   selector: 'app-code-viewer',
@@ -8,6 +11,7 @@ import { PyodideService } from 'src/app/pyodide/pyodide.service';
 })
 export class CodeViewerComponent implements OnInit {
 
+  private editor!: ICodeEditor;
   editorOptions = {
     theme: 'vs-dark',
     language: 'python',
@@ -36,5 +40,17 @@ print(shape)`
 
   executeCode(): void {
     this.pyodideService.runCode(this.code).subscribe();
+  }
+
+  editorInit(editor: any) {
+    this.editor = editor;
+  }
+
+  undo(): void {
+    this.editor?.trigger(null, 'undo', '');
+  }
+
+  redo(): void {
+    this.editor?.trigger(null, 'redo', '');
   }
 }
