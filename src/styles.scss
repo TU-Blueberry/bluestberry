@@ -3,50 +3,50 @@
 
 // Global CSS classes
 .svg-icon {
-    width: $icon-size;
-    height: $icon-size;
+  width: $icon-size;
+  height: $icon-size;
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    background-color: #262626;
-    font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #262626;
+  font-family: "Roboto", sans-serif;
 }
 
 .invisible {
-    display: none !important;
+  display: none !important;
 }
 
 .slider {
-    width: 4px;
-    margin-left: -2px;
-    position: absolute;
-    height: 100%;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    transition: box-shadow .1s;
+  width: 4px;
+  margin-left: -2px;
+  position: absolute;
+  height: 100%;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+  transition: box-shadow 0.1s;
 
-    &:hover {
-        cursor: col-resize;
-        box-shadow: 0 0 0 1px #1389fd;
-        background-color: #1389fd;
-    }
+  &:hover {
+    cursor: col-resize;
+    box-shadow: 0 0 0 1px #1389fd;
+    background-color: #1389fd;
+  }
 }
 
 .action-bar-icon {
-    height: 24px;
-    color: #ffffff66;
-    padding: 10px;
-    margin: 10px;
-    background-color:rgb(46, 49, 56);
-    border-radius: 50%;
+  height: 24px;
+  color: #ffffff66;
+  padding: 10px;
+  margin: 10px;
+  background-color: rgb(46, 49, 56);
+  border-radius: 50%;
 
-    &:hover {
-        background-color:rgb(66, 70, 80);
-        cursor: pointer;
-        color: rgb(240, 240, 240);
-    }
+  &:hover {
+    background-color: rgb(66, 70, 80);
+    cursor: pointer;
+    color: rgb(240, 240, 240);
+  }
 }

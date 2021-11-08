@@ -1,27 +1,21 @@
-@import "../styles.scss";
+@import '../styles.scss';
 
+// Sorry I had to Disable the flexing for a bit since a "ResizeObserver Loop" error occured that I couldn't fix for now.
+// https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded Schon dabei es zu fixen.
 .container {
   height: 100vh;
-  display: flex;
+  // display: flex;
   flex-direction: column;
   overflow: hidden;
 }
 
 .main-test {
-    display: flex;
-    flex-grow: 1;
+  display: flex;
+  flex-grow: 1;
 }
 
 .code-wrapper {
-    height: 100%;
-}
-
-.code {
-    flex: 1 1 auto;
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    position: relative;
+  height: 100%;
 }
 
 .slider-parent {
@@ -32,7 +26,9 @@
 
 .content {
   display: flex;
-  flex-grow: 1;
+  //flex-grow: 1;
+  height: 100vh;
+  // height: auto;
   max-width: 100vw;
 }
 
@@ -43,10 +39,20 @@
   flex-grow: 0;
 }
 
+.code {
+  // flex: 1 1 auto;
+  width: 50vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
 .simulation {
-    position: relative;
-    height: 100%;
-    background-color: white;
-    flex: 1 1 auto;
-    box-sizing: border-box;
+  position: relative;
+  width: 50vh;
+  height: 100%;
+  background-color: white;
+  flex: 1 1 auto;
+  box-sizing: border-box;
 }

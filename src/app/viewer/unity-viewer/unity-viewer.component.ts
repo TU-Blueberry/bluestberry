@@ -1,10 +1,11 @@
-import { Component, OnInit, Renderer2 } from '@angular/core';
+import { Component, NgModule, OnInit, Renderer2 } from '@angular/core';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
+import { UnityComponent } from 'src/app/unity/unity.component';
 
 @Component({
   selector: 'app-unity-viewer',
   templateUrl: './unity-viewer.component.html',
-  styleUrls: ['./unity-viewer.component.scss']
+  styleUrls: ['./unity-viewer.component.scss'],
 })
 export class UnityViewerComponent {
   startX = 0;
@@ -15,10 +16,14 @@ export class UnityViewerComponent {
   minSimulationWidth = 100;
   pythonResult = '';
 
-  constructor(private red: Renderer2) {  }
+  constructor(private red: Renderer2) {}
 
   test(ev: any): void {
-    this.unlistenMove = this.red.listen('document', 'mousemove', this.fn.bind(this));
+    this.unlistenMove = this.red.listen(
+      'document',
+      'mousemove',
+      this.fn.bind(this)
+    );
     this.unlistenMouseUp = this.red.listen('document', 'mouseup', (ev) => {
       console.log(ev);
 
@@ -27,7 +32,7 @@ export class UnityViewerComponent {
       this.unlistenMove?.();
     });
 
-    const elem = document.getElementById("code-area");
+    const elem = document.getElementById('code-area');
     this.startWidth = elem!.clientWidth;
     this.startX = ev.clientX;
   }
@@ -39,26 +44,40 @@ export class UnityViewerComponent {
   // "left" berechnen (bei stackblitz z.B. via inset)
   fn(ev: any): void {
     // https://stackoverflow.com/questions/46931103/making-a-dragbar-to-resize-divs-inside-css-grids
-    const maincontent = document.getElementById("main-content");
+    const maincontent = document.getElementById('main-content');
     const offset = maincontent!.offsetLeft;
     const relativeXpos = ev.clientX - offset;
 
-    const actionbarWidth = document.getElementById("action-bar")?.clientWidth || 0;;
-    const sidebarWidth = document.getElementById("sidebar")?.clientWidth || 0;;
-    const simulationWidth = document.getElementById("simulation")?.clientWidth || 0;
+    const actionbarWidth =
+      document.getElementById('action-bar')?.clientWidth || 0;
+    const sidebarWidth = document.getElementById('sidebar')?.clientWidth || 0;
+    const simulationWidth =
+      document.getElementById('simulation')?.clientWidth || 0;
 
-    console.log("ABW: " + actionbarWidth + " - SBW: " + sidebarWidth + " - SW: " + simulationWidth)
-
+    console.log(
+      'ABW: ' +
+        actionbarWidth +
+        ' - SBW: ' +
+        sidebarWidth +
+        ' - SW: ' +
+        simulationWidth
+    );
 
     // code must leave enough space for actionbar, sidebar and the minimum width of the simulation
     // in other words, this is the maximum width the code area may have in order to fit all the other elements
-    const maxCodeWidth = document.body.clientWidth - actionbarWidth - sidebarWidth - this.minSimulationWidth;
-    const codearea = document.getElementById("code-area");
+    const maxCodeWidth =
+      document.body.clientWidth -
+      actionbarWidth -
+      sidebarWidth -
+      this.minSimulationWidth;
+    const codearea = document.getElementById('code-area');
 
     // minCodeWidth specifies minimum width of code area
     if (codearea) {
-      codearea.style.width = Math.min((Math.max(relativeXpos, this.minCodeWidth)), maxCodeWidth) + 'px';
-      codearea.style.flexGrow = "0";
+      codearea.style.width =
+        Math.min(Math.max(relativeXpos, this.minCodeWidth), maxCodeWidth) +
+        'px';
+      codearea.style.flexGrow = '0';
     }
   }
 }
