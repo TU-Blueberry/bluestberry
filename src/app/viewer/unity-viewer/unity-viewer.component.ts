@@ -1,6 +1,7 @@
-import { Component, NgModule, OnInit, Renderer2 } from '@angular/core';
-import { PyodideService } from 'src/app/pyodide/pyodide.service';
-import { UnityComponent } from 'src/app/unity/unity.component';
+import { Component, NgModule, OnInit, Renderer2 } from '@angular/core'
+import { PyodideService } from 'src/app/pyodide/pyodide.service'
+import { UnityComponent } from 'src/app/unity/unity.component'
+import { UnityService } from 'src/app/unity/unity.service'
 
 @Component({
   selector: 'app-unity-viewer',
@@ -8,33 +9,33 @@ import { UnityComponent } from 'src/app/unity/unity.component';
   styleUrls: ['./unity-viewer.component.scss'],
 })
 export class UnityViewerComponent {
-  startX = 0;
-  startWidth = 0;
-  unlistenMove!: () => void;
-  unlistenMouseUp!: () => void;
-  minCodeWidth = 100;
-  minSimulationWidth = 100;
-  pythonResult = '';
+  startX = 0
+  startWidth = 0
+  unlistenMove!: () => void
+  unlistenMouseUp!: () => void
+  minCodeWidth = 100
+  minSimulationWidth = 100
+  pythonResult = ''
 
-  constructor(private red: Renderer2) {}
+  constructor(private red: Renderer2, private unityService: UnityService) {}
 
   test(ev: any): void {
     this.unlistenMove = this.red.listen(
       'document',
       'mousemove',
       this.fn.bind(this)
-    );
+    )
     this.unlistenMouseUp = this.red.listen('document', 'mouseup', (ev) => {
-      console.log(ev);
+      console.log(ev)
 
       // remove event listeners as soon as dragging stopped
-      this.unlistenMouseUp?.();
-      this.unlistenMove?.();
-    });
+      this.unlistenMouseUp?.()
+      this.unlistenMove?.()
+    })
 
-    const elem = document.getElementById('code-area');
-    this.startWidth = elem!.clientWidth;
-    this.startX = ev.clientX;
+    const elem = document.getElementById('code-area')
+    this.startWidth = elem!.clientWidth
+    this.startX = ev.clientX
   }
 
   // setze width von code-area; block rechts daneben nimmt durch flexbox automatisch den übrigen platz ein
@@ -44,15 +45,15 @@ export class UnityViewerComponent {
   // "left" berechnen (bei stackblitz z.B. via inset)
   fn(ev: any): void {
     // https://stackoverflow.com/questions/46931103/making-a-dragbar-to-resize-divs-inside-css-grids
-    const maincontent = document.getElementById('main-content');
-    const offset = maincontent!.offsetLeft;
-    const relativeXpos = ev.clientX - offset;
+    const maincontent = document.getElementById('main-content')
+    const offset = maincontent!.offsetLeft
+    const relativeXpos = ev.clientX - offset
 
     const actionbarWidth =
-      document.getElementById('action-bar')?.clientWidth || 0;
-    const sidebarWidth = document.getElementById('sidebar')?.clientWidth || 0;
+      document.getElementById('action-bar')?.clientWidth || 0
+    const sidebarWidth = document.getElementById('sidebar')?.clientWidth || 0
     const simulationWidth =
-      document.getElementById('simulation')?.clientWidth || 0;
+      document.getElementById('simulation')?.clientWidth || 0
 
     console.log(
       'ABW: ' +
@@ -61,7 +62,7 @@ export class UnityViewerComponent {
         sidebarWidth +
         ' - SW: ' +
         simulationWidth
-    );
+    )
 
     // code must leave enough space for actionbar, sidebar and the minimum width of the simulation
     // in other words, this is the maximum width the code area may have in order to fit all the other elements
@@ -69,15 +70,19 @@ export class UnityViewerComponent {
       document.body.clientWidth -
       actionbarWidth -
       sidebarWidth -
-      this.minSimulationWidth;
-    const codearea = document.getElementById('code-area');
+      this.minSimulationWidth
+    const codearea = document.getElementById('code-area')
 
     // minCodeWidth specifies minimum width of code area
     if (codearea) {
       codearea.style.width =
-        Math.min(Math.max(relativeXpos, this.minCodeWidth), maxCodeWidth) +
-        'px';
-      codearea.style.flexGrow = '0';
+        Math.min(Math.max(relativeXpos, this.minCodeWidth), maxCodeWidth) + 'px'
+      codearea.style.flexGrow = '0'
     }
+  }
+
+  // TODO: Send non Mock data.
+  send() {
+    this.unityService.sendClassification('0,0,0,0,0')
   }
 }
