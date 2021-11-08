@@ -6,6 +6,8 @@ import { FormsModule } from '@angular/forms'
 import { UnityViewerComponent } from './unity-viewer/unity-viewer.component'
 import { UnityModule } from '../unity/unity.module'
 import { UnityComponent } from '../unity/unity.component'
+import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.component';
+
 
 /**
  * Module used for all the Viewer-Components.
@@ -19,10 +21,25 @@ import { UnityComponent } from '../unity/unity.component'
  * - PdfViewer
  */
 
-@NgModule({
-  declarations: [CodeViewerComponent, UnityViewerComponent],
-  imports: [CommonModule, MonacoEditorModule, FormsModule, UnityModule],
-  exports: [CodeViewerComponent, UnityViewerComponent],
+
+
+  declarations: [
+    CodeViewerComponent,
+    UnityViewerComponent,
+    TerminalViewerComponent
+  ],
+    imports: [
+        CommonModule,
+        MonacoEditorModule,
+        FormsModule,
+        UnityModule
+    ],
+    exports: [
+        CodeViewerComponent,
+        UnityViewerComponent,
+        TerminalViewerComponent
+    ]
+
 })
 export class ViewerModule {
   constructor() {}

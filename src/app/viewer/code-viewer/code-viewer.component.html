@@ -1,5 +1,5 @@
 <div class="code-action-bar">
-    <div class="action-bar-icon">
+    <div class="action-bar-icon" (click)="undo()">
         <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
         aria-labelledby="backLeftIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
         stroke-linejoin="miter" fill="none">
@@ -8,7 +8,7 @@
         <polyline points="8 15 5 18 2 15" />
         </svg>
     </div>
-    <div class="action-bar-icon">
+    <div class="action-bar-icon" (click)="redo()">
         <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
         aria-labelledby="backRightIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
         stroke-linejoin="miter" fill="none">
@@ -26,6 +26,6 @@
     </div>
 </div>
 <div id="monaco-editor">
-    <ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="code"></ngx-monaco-editor>
-</div>        
+    <ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="code" (onInit)="editorInit($event)"></ngx-monaco-editor>
+</div>
 
