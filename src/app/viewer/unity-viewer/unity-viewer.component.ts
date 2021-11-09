@@ -80,9 +80,4 @@ export class UnityViewerComponent {
       codearea.style.flexGrow = '0'
     }
   }
-
-  // TODO: Send non Mock data.
-  send() {
-    this.unityService.sendClassification('0,0,0,0,0')
-  }
 }

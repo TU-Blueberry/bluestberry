@@ -33,6 +33,8 @@ export class UnityService {
 
   @PythonCallable
   public sendClassification(berries: string) {
+    console.log('Sending Classification to Unity')
+    console.log(berries)
     this.gameInstance.SendMessage(
       'AngularCommunicator',
       'receiveClassification',
