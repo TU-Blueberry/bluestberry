@@ -7,6 +7,7 @@ import { UnityViewerComponent } from './unity-viewer/unity-viewer.component'
 import { UnityModule } from '../unity/unity.module'
 import { UnityComponent } from '../unity/unity.component'
 import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.component'
+import { ImageViewerComponent } from './image-viewer/image-viewer.component';
 
 /**
  * Module used for all the Viewer-Components.
@@ -25,9 +26,10 @@ import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.compo
     CodeViewerComponent,
     UnityViewerComponent,
     TerminalViewerComponent,
+    ImageViewerComponent,
   ],
   imports: [CommonModule, MonacoEditorModule, FormsModule, UnityModule],
-  exports: [CodeViewerComponent, UnityViewerComponent, TerminalViewerComponent],
+  exports: [CodeViewerComponent, UnityViewerComponent, TerminalViewerComponent, ImageViewerComponent],
 })
 export class ViewerModule {
   constructor() {}
