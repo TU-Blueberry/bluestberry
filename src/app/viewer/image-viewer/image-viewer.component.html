@@ -1,6 +1,3 @@
 <div #imageContainer class="image-container" >
-    <!-- <img class="image-responsive" [src]="imagePath" [style.width.px]="imageWidth" [style.height.px]="imageHeight" #imageLoaded /> -->
-    <img #imageLoaded class="image-responsive" [src]="imagePath" />
-    <!-- <img #imageLoaded class="image-responsive" [src]="imagePath" [style.width.px]="imageWidth" [style.height.px]="imageHeight" /> -->
-    <!-- <img #imageLoaded class="image-responsive" [src]="imagePath" (click)="scaleImage()" /> -->
+    <img #imageLoaded class="image-responsive" [src]="imagePath" (mouseover)="mouseOver($event)" (mouseout)="mouseOut($event)" [style.cursor]="hoverMode" />
 </div>
