@@ -21,8 +21,8 @@ export class PyodideService {
     return defer(() =>  {
       // unset define as pyodide is a little POS
       const anyWindow = (window as any);
-      const define = anyWindow['define'];
-      anyWindow['define'] = undefined;
+      const define = anyWindow.define;
+      anyWindow.define = undefined;
 
       return loadPyodide({
         indexURL: '/assets/pyodide',
@@ -30,7 +30,7 @@ export class PyodideService {
         stderr: (text) => {this.stdErr$.next(this.stdErr$.value + text)}
       }).then(pyodide => {
         // restore define to original value
-        anyWindow['define'] = define;
+        anyWindow.define = define;
         return pyodide;
       });
     }).pipe(
