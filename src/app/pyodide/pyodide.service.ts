@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core'
 import initCode from '!raw-loader!../../assets/util/init.py'
 import {BehaviorSubject, defer, forkJoin, from, Observable} from 'rxjs';
-import {map, shareReplay, switchMap} from 'rxjs/operators';
+import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root',
