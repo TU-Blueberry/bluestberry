@@ -31,7 +31,6 @@ export class UnityComponent implements OnInit, OnChanges {
   }
 
   startUnity() {
-    console.log('A')
     this.isEnabled = true
   }
 
