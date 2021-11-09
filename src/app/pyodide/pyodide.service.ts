@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core'
 import initCode from '!raw-loader!../../assets/util/init.py'
-import {BehaviorSubject, defer, forkJoin, from, Observable, of} from 'rxjs';
+import {BehaviorSubject, defer, forkJoin, from, Observable} from 'rxjs';
 import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 
 @Injectable({
@@ -18,11 +18,22 @@ export class PyodideService {
   // https://github.com/pyodide/pyodide/issues/8
 
   private initPyodide(): Observable<Pyodide> {
-    return defer(() => loadPyodide({
-      indexURL: '/assets/pyodide',
-      stdout: (text) => {this.stdOut$.next(this.stdOut$.value + text)},
-      stderr: (text) => {this.stdErr$.next(this.stdErr$.value + text)}
-    })).pipe(
+    return defer(() =>  {
+      // unset define as pyodide is a little POS
+      const anyWindow = (window as any);
+      const define = anyWindow.define;
+      anyWindow.define = undefined;
+
+      return loadPyodide({
+        indexURL: '/assets/pyodide',
+        stdout: (text) => {this.stdOut$.next(this.stdOut$.value + text)},
+        stderr: (text) => {this.stdErr$.next(this.stdErr$.value + text)}
+      }).then(pyodide => {
+        // restore define to original value
+        anyWindow.define = define;
+        return pyodide;
+      });
+    }).pipe(
       switchMap(pyodide => forkJoin(
         PyodideService.DEFAULT_LIBS.map(lib => from(pyodide.loadPackage(lib)))
       ).pipe(map(() => pyodide))),
