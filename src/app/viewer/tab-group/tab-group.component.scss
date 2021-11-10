@@ -1,4 +1,48 @@
 .tab-header {
-  scrollbar-color: #6969dd #e0e0e0;
+  scrollbar-color: #6969dd rgb(38, 38, 38);
   scrollbar-width: thin;
+
+  display: flex;
+  flex-direction: row;
+  width: 100%;
+  overflow-x: scroll;
+  background-color: rgb(48, 48, 48);
+}
+
+.tab-button {
+  display: flex;
+  flex-direction: row;
+  border: black;
+  padding: 0.5em;
+  color: rgb(240, 240, 240);
+  width: 12em;
+  flex-shrink: 0;
+  border-left-width: 1px;
+  background-color: rgb(58, 58, 58);
+  cursor: pointer;
+
+  &.active {
+    background-color: rgb(38, 38, 38);
+  }
+}
+
+.tab-title {
+  flex-grow: 1;
+  text-align: left;
+}
+
+.tab-action {
+  padding-left: 1em;
+}
+
+.close-button {
+  border: none;
+  background-color: rgba(0,0,0,0);
+  color: white;
+}
+
+.tab-body {
+  width: 100%;
+  height: calc(100% - 45px);
+  overflow: hidden;
 }

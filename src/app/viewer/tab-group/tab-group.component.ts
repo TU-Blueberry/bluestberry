@@ -9,7 +9,7 @@ import {
   QueryList,
   SimpleChanges
 } from '@angular/core';
-import {TabViewComponent} from 'src/app/viewer/tab-view/tab-view.component';
+import {TabComponent} from 'src/app/viewer/tab/tab.component';
 
 @Component({
   selector: 'app-tab-group',
@@ -17,13 +17,13 @@ import {TabViewComponent} from 'src/app/viewer/tab-view/tab-view.component';
   styleUrls: ['./tab-group.component.scss']
 })
 export class TabGroupComponent implements AfterContentInit {
-  @ContentChildren(TabViewComponent, {descendants: true})
-  tabs?: QueryList<TabViewComponent>;
+  @ContentChildren(TabComponent, {descendants: true})
+  tabs?: QueryList<TabComponent>;
 
   @Output()
   close = new EventEmitter<number>();
 
-  activeTab?: TabViewComponent;
+  activeTab?: TabComponent;
   scrollPosition = 0;
 
   constructor() {

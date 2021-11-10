@@ -1,118 +1,26 @@
-<div>
-  <as-split direction="horizontal">
-    <as-split-area [size]="50" class="h-full">
-      <app-tab-group class="h-full block">
-        <app-tab-view title="first" class="h-20">
-            <div class="monaco-editor">
-              <app-code-viewer></app-code-viewer>
-            </div>
-        </app-tab-view>
-        <app-tab-view title="second">
-          <div class="monaco-editor">
-            <app-code-viewer></app-code-viewer>
-          </div>
-        </app-tab-view>
-      </app-tab-group>
-    </as-split-area>
-    <as-split-area [size]="50">
-      <div class="simulation" id="simulation">
-        <div class="min-h-screen bg-gray-100 py-6 flex flex-col justify-center sm:py-12">
-          <div class="relative py-3 sm:max-w-xl sm:mx-auto">
-            <div class="absolute inset-0 bg-gradient-to-r from-cyan-400 to-sky-500 shadow-lg transform -skew-y-6 sm:skew-y-0 sm:-rotate-6 sm:rounded-3xl"></div>
-            <div class="relative px-4 py-10 bg-white shadow-lg sm:rounded-3xl sm:p-20">
-              <div class="max-w-md mx-auto">
-                <div>
-                  <img src="/img/logo.svg" class="h-7 sm:h-8" />
-                </div>
-                <div class="divide-y divide-gray-200">
-                  <div class="py-8 text-base leading-6 space-y-4 text-gray-700 sm:text-lg sm:leading-7">
-                    <p>An advanced online playground for Tailwind CSS, including support for things like:</p>
-                    <ul class="list-disc space-y-2">
-                      <li class="flex items-start">
-                        <span class="h-6 flex items-center sm:h-7">
-                          <svg class="flex-shrink-0 h-5 w-5 text-cyan-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                        </span>
-                        <p class="ml-2">
-                          Customizing your
-                          <code class="text-sm font-bold text-gray-900">tailwind.config.js</code> file
-                        </p>
-                      </li>
-                      <li class="flex items-start">
-                        <span class="h-6 flex items-center sm:h-7">
-                          <svg class="flex-shrink-0 h-5 w-5 text-cyan-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                        </span>
-                        <p class="ml-2">
-                          Extracting classes with
-                          <code class="text-sm font-bold text-gray-900">@apply</code>
-                        </p>
-                      </li>
-                      <li class="flex items-start">
-                        <span class="h-6 flex items-center sm:h-7">
-                          <svg class="flex-shrink-0 h-5 w-5 text-cyan-500" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-                          </svg>
-                        </span>
-                        <p class="ml-2">Code completion with instant preview</p>
-                      </li>
-                    </ul>
-                    <p>Perfect for learning how the framework works, prototyping a new idea, or creating a demo to share online.</p>
-                  </div>
-                  <div class="pt-6 text-base leading-6 font-bold sm:text-lg sm:leading-7">
-                    <p>Want to dig deeper into Tailwind?</p>
-                    <p>
-                      <a href="https://tailwindcss.com/docs" class="text-cyan-600 hover:text-cyan-700"> Read the docs &rarr; </a>
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- item depth als css var definieren, dann via style="" passen
-          scss macht dann calc mit var(--itemDepth) * 10px
-
-          unterscheidung mitgelieferte vs. eigene dateien, d.h. 2 ordner
-          allerdings keine unterordner
-          doppelklick auf datei öffnet preview
-          vielleicht in neuem tab?
-        -->
-
-      </div>
-    </as-split-area>
-  </as-split>
-
-  <div class="code" id="code-area">
-    <div class="code-action-bar">
-      <div class="action-bar-icon">
-        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             aria-labelledby="backLeftIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
-             stroke-linejoin="miter" fill="none">
-          <title id="backLeftIconTitle">Rückgängig</title>
-          <path d="M5,17 L5,15 C5,10.0294373 8.80557963,6 13.5,6 C18.1944204,6 22,10.0294373 22,15" />
-          <polyline points="8 15 5 18 2 15" />
-        </svg>
-      </div>
-      <div class="action-bar-icon">
-        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             aria-labelledby="backRightIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
-             stroke-linejoin="miter" fill="none">
-          <title id="backRightIconTitle">Vorwärts</title>
-          <path d="M19,17 L19,15 C19,10.0294373 15.1944204,6 10.5,6 C5.80557963,6 2,10.0294373 2,15" />
-          <polyline points="16 15 19 18 22 15" />
-        </svg>
-      </div>
-      <div class="action-bar-icon">
-        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="playIconTitle"
-             stroke="currentColor" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter" fill="none">
-          <title id="playIconTitle">Ausführen</title>
-          <path d="M20 12L5 21V3z" />
-        </svg>
-      </div>
-    </div>
-  </div>
-</div>
+<as-split direction="horizontal" class="main-split">
+  <as-split-area>
+    <as-split direction="vertical">
+      <as-split-area>
+        <app-tab-group>
+          <app-tab title="code">
+            <app-code-viewer class="code-wrapper"></app-code-viewer>
+          </app-tab>
+        </app-tab-group>
+      </as-split-area>
+      <as-split-area>
+        <app-terminal-viewer></app-terminal-viewer>
+      </as-split-area>
+    </as-split>
+  </as-split-area>
+  <as-split-area>
+    <app-tab-group>
+      <app-tab title="unity">
+        <app-unity-viewer></app-unity-viewer>
+      </app-tab>
+      <app-tab title="dog">
+        <app-image-viewer imagePath="assets/dog.png"></app-image-viewer>
+      </app-tab>
+    </app-tab-group>
+  </as-split-area>
+</as-split>

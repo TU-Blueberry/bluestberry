@@ -1,22 +1,22 @@
 <div
-  class="flex flex-row divide-x tab-header bg-gray-500 w-full overflow-x-scroll"
+  class="tab-header"
   (wheel)="handleScroll($event)"
   [scrollLeft]="scrollPosition"
   >
   <button
-    class="flex flex-row border-black p-1 tab-button text-gray-50 w-40 flex-shrink-0"
-    [ngClass]="{'bg-gray-700': tab === activeTab, 'bg-gray-600': tab !== activeTab}"
+    class="tab-button"
+    [ngClass]="{'active': tab === activeTab}"
     *ngFor="let tab of tabs; let i = index"
     (click)="activeTab = tab"
   >
     <div class="tab-icon">
     </div>
-    <div class="tab-title flex-grow text-left">
+    <div class="tab-title">
       <span>
         {{ tab.title }}
       </span>
     </div>
-    <div class="pl-1 tab-action">
+    <div class="tab-action">
       <button class="close-button" (click)="close.emit(i)">
         <svg
           width="12"
