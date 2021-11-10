@@ -4,7 +4,7 @@
 // https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded Schon dabei es zu fixen.
 .container {
   height: 100vh;
-  // display: flex;
+  display: flex;
   flex-direction: column;
   overflow: hidden;
 }
@@ -26,9 +26,9 @@
 
 .content {
   display: flex;
-  //flex-grow: 1;
+  flex-grow: 1;
   height: 100vh;
-  // height: auto;
+  height: auto;
   max-width: 100vw;
 }
 
@@ -40,14 +40,13 @@
 }
 
 .code {
-  // flex: 1 1 auto;
+  flex: 1 1 auto;
   width: 50vh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   position: relative;
 }
-
 
 .simulation {
   position: relative;
