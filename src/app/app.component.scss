@@ -1,302 +1,59 @@
-@import 'tailwindcss/base';
-@import 'tailwindcss/components';
-@import 'tailwindcss/utilities';
+@import '../styles.scss';
 
-
+// Sorry I had to Disable the flexing for a bit since a "ResizeObserver Loop" error occured that I couldn't fix for now.
+// https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded Schon dabei es zu fixen.
 .container {
-    height: 100vh;
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-$icon-size: 24px;
-$icon-padding: 5px;
-
-.svg-icon {
-    width: $icon-size;
-    height: $icon-size;
-}
-
-.nav {
-    background-color: rgb(46, 49, 56);
-    display: flex;
-}
-
-.search-bar {
-    flex-grow: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.search-icon {
-    color:rgb(240, 240, 240);
-    margin: 0px 10px 0px 10px;
-}
-
-.search-input {
-    border: 0px;
-    height: 32px;
-    width: 100%;
-    background-color: inherit;
-    color: rgb(240, 240, 240);
-
-    &:focus-visible {
-        outline: none
-    }
-}
-
-.search-wrapper {
-    width: 30%;
-    background-color: rgb(66, 70, 80);
-    border-radius: 5px;
-    display: flex;
-    align-items: center;
-
-    &:focus-within {
-        border: 1px solid #1389fd;
-    }
-}
-
-.blueberry-logo {
-    width: $icon-size;
-    height: $icon-size;
-    padding: calc(#{$icon-size} / 2);
-
-    &:hover {
-        cursor: pointer;
-    }
-}
-
-.logo {
-    width: calc(2* #{$icon-size});
-    height: calc(2* #{$icon-size});
-}
-
-.action-bar-button {
-    display: flex;
-    align-content: center;
-    justify-content: center;
-    margin: 0px;
-    padding: 0px;
-    color: #ffffff66;
-    border-style: none;
-    border-radius: 0px;
-    background: none;
-    height: calc(2* #{$icon-size});
-    width: calc(2* #{$icon-size});
-
-    &:hover {
-        cursor: pointer;
-        color: rgb(240, 240, 240);
-    }
-}
-
-.slider-parent {
-    position: absolute;
-    height: 100%;
-    margin-left: -2px;
-}
-
-.slider {
-    width: 4px;
-    margin-left: -2px;
-    position: absolute;
-    height: 100%;
-    top: 0px;
-    left: 0px;
-    right: 0px;
-    bottom: 0px;
-    transition: box-shadow .1s;
-
-    &:hover {
-        cursor: col-resize;
-        box-shadow: 0 0 0 1px #1389fd;
-        background-color: #1389fd;
-    }
-}
-
-.test {
-    display: flex;
-    flex-grow: 1;
-}
-
-.content {
-    display: flex;
-    flex-grow: 1;
-    max-width: 100vw;
-}
-
-.action-bar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    background-color: rgb(46, 49, 56);
-}
-
-.action-bar-top, .action-bar-bottom {
-    display: flex;
-    flex-direction: column;
-}
-
-.sidebar {
-    flex-basis: 10%;
-    max-width: 10%;
-    flex-shrink: 0;
-    flex-grow: 0;
-}
-
-.invisible {
-    display: none !important;
+  height: 100vh;
+  // display: flex;
+  flex-direction: column;
+  overflow: hidden;
 }
 
 .main-test {
-    display: flex;
-    flex-grow: 1;
+  display: flex;
+  flex-grow: 1;
 }
 
-.sidebar-header {
-   color: hsl(0 0% 80%);
-   background-color: hsl(220 12% 20%);
-   cursor: pointer;
-   display: flex;
-   font-size: 0.9rem;
-   padding-top: 5px;
-   padding-bottom: 5px;
+.code-wrapper {
+  height: 100%;
 }
 
-.sidebar-headline {
-    color: white;
-    padding: 10px;
+.slider-parent {
+  position: absolute;
+  height: 100%;
+  margin-left: -2px;
 }
 
-.file {
-    display: flex;
-    color: white;
-    padding-left: 15px;
-    padding-top: 5px;
-    padding-bottom: 5px;
-
-    &:hover {
-        background-color: grey;
-        cursor: pointer;
-    }
+.content {
+  display: flex;
+  //flex-grow: 1;
+  height: 100vh;
+  // height: auto;
+  max-width: 100vw;
 }
 
-.file-type-image {
-    color: green;
-    width: 16px;
-    height: 16px;
+.sidebar {
+  flex-basis: 10%;
+  max-width: 10%;
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 
-.file-name {
-    margin-left: 5px;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+.code {
+  // flex: 1 1 auto;
+  width: 50vh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  position: relative;
 }
 
-.sidebar-header-icon, .file-type {
-    width: 16px;
-    height: 16px;
-}
-
-.sidebar-header-icon-svg {
-    color: #ffffff66;
-}
 
 .simulation {
-    position: relative;
-    height: 100%;
-    background-color: white;
-   flex: 1 1 auto;
-   box-sizing: border-box;
+  position: relative;
+  width: 50vh;
+  height: 100%;
+  background-color: white;
+  flex: 1 1 auto;
+  box-sizing: border-box;
 }
-
-.overlay-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    background-color: rgba(0, 0, 0, 0.6);
-    width: 100vw;
-    height: 100vh;
-    z-index: 99;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.overlay-background > * {
-   /* z-index: 99; */
-}
-
-.overlay-container {
-    background-color:rgb(46, 49, 56);
-    width: 40%;
-    max-height: 90%;
-    overflow-y: auto;
-    border-radius: 10px;
-    color: white;
-}
-
-.overlay-wrapper {
-    padding: 20px;
-
-}
-
-.overlay-heading {
-    margin-top: 0px;
-}
-
-.tests {
-    margin-top: 10px;
-}
-
-.test {
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    margin-bottom: 10px;
-}
-
-.test-overview {
-    display: flex;
-    justify-content: space-between;
-
-    &:hover {
-        cursor:pointer;
-    }
-}
-
-.console-output {
-    display: flex;
-    flex-direction: column;
-    margin-top: 10px;
-}
-
-.terminal-output {
-    border: 1px solid black;
-    background-color:rgb(46, 49, 56);
-    padding: 10px;
-    margin-top: 5px;
-    margin-bottom: 10px;
-}
-
-.test-success {
-    background-color: rgba(21, 255, 91, 0.486);
-}
-
-.test-fail {
-    background-color: rgba(255, 44, 44, 0.431);
-}
-
-.test-unknown {
-    background-color: rgba(255, 255, 255, 0.2);
-}
-
-.divider {
-
-}
-
-

@@ -1,0 +1,30 @@
+@import "../../styles.scss";
+
+.action-bar-button {
+    margin: 0px;
+    padding: 0px;
+    color: #ffffff66;
+    border-style: none;
+    border-radius: 0px;
+    background: none;
+    height: calc(2* #{$icon-size});
+    width: calc(2* #{$icon-size});
+
+    &:hover {
+        cursor: pointer;
+        color: rgb(240, 240, 240);
+    }
+}
+
+.action-bar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    background-color: rgb(46, 49, 56);
+    height: 100%;
+}
+
+.action-bar-top, .action-bar-bottom {
+    display: flex;
+    flex-direction: column;
+}

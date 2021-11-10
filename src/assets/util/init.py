@@ -6,7 +6,10 @@ def run_code(code):
   olderr = sys.stderr
   sys.stdout = sys.stderr = out
 
-  exec(code, {})
+  try:
+    exec(code, {})
+  except:
+    traceback.print_exc()
 
   sys.stdout = oldout
   sys.stderr = olderr

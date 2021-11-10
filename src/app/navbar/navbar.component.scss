@@ -1,0 +1,57 @@
+@import "../../styles.scss";
+
+.nav {
+    background-color: rgb(46, 49, 56);
+    display: flex;
+}
+
+.logo {
+    width: calc(2* #{$icon-size});
+    height: calc(2* #{$icon-size});
+}
+
+.blueberry-logo {
+    width: $icon-size;
+    height: $icon-size;
+    padding: calc(#{$icon-size} / 2);
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+.search-bar {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.search-icon {
+    color:rgb(240, 240, 240);
+    margin: 0px 10px 0px 10px;
+}
+
+.search-input {
+    border: 0px;
+    height: 32px;
+    width: 100%;
+    background-color: inherit;
+    color: rgb(240, 240, 240);
+
+    &:focus-visible {
+        outline: none
+    }
+}
+
+.search-wrapper {
+    width: 30%;
+    background-color: rgb(66, 70, 80);
+    border-radius: 5px;
+    display: flex;
+    align-items: center;
+
+    &:focus-within {
+        border: 1px solid #1389fd;
+    }
+}

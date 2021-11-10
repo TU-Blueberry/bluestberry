@@ -1,4 +1,13 @@
+.code-action-bar {
+  bottom: 260px;
+}
+
+// ngx-monaco uses width: 98% for its container element, thus being slightly too small by default
+#monaco-editor {
+  overflow: hidden;
+  height: 102%;
+}
+
 .editor {
   height: 100%;
-  width: 100%;
 }
