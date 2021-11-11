@@ -25,7 +25,7 @@ export class PyodideService {
       anyWindow.define = undefined;
 
       return loadPyodide({
-        indexURL: '/assets/pyodide',
+        indexURL: 'assets/pyodide',
         stdout: (text) => {this.stdOut$.next(this.stdOut$.value + text)},
         stderr: (text) => {this.stdErr$.next(this.stdErr$.value + text)}
       }).then(pyodide => {
