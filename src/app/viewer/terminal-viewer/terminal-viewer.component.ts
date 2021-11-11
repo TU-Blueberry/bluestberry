@@ -12,7 +12,7 @@ export class TerminalViewerComponent implements OnInit {
   constructor(private pyodideService: PyodideService) { }
 
   ngOnInit(): void {
-    this.pyodideService.getResults().subscribe(
+    this.pyodideService.getStdOut().subscribe(
       result => this.terminalOutput += (result + "\n")
     );
   }

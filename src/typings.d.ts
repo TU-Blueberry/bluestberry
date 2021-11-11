@@ -17,4 +17,9 @@ declare class Pyodide {
   globals: Map<string, any>;
   runPythonAsync(code: string): Promise<any>;
   loadPackage(pythonPackage: string): Promise<any>;
+  toPy(obj: any, options?: {depth: number}): PyProxy;
+}
+
+declare class PyProxy {
+
 }
