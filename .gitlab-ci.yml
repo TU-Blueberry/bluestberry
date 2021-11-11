@@ -1,5 +1,4 @@
 stages:
-  - test
   - publish
   - deploy
 
@@ -20,6 +19,7 @@ test:
 publish:
   image: docker:latest
   stage: publish
+  only: development
   services:
     - docker:dind
   tags:
@@ -32,6 +32,7 @@ publish:
 deploy:
   image: tmaier/docker-compose:latest
   stage: deploy
+  only: development
   services:
     - docker:dind
   tags:
