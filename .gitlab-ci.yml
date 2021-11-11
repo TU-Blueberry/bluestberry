@@ -7,14 +7,14 @@ variables:
   TAG_COMMIT: $REGISTRY_ADDRESS/pg643/frontend/frontend:latest
   VERSION: latest
 
-test:
-  image: node:latest
-  stage: test
-  tags:
-    - blueberry
-  script:
-    - yarn
-    - yarn test:ci
+  # test:
+  #   image: node:latest
+  #   stage: test
+  #   tags:
+  #     - blueberry
+  #   script:
+  #     - yarn
+  #     - yarn test:ci
 
 publish:
   image: docker:latest
