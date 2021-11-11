@@ -1,4 +1,10 @@
-import { Component, Input, OnChanges, OnInit } from '@angular/core'
+import {
+  AfterViewInit,
+  Component,
+  Input,
+  OnChanges,
+  OnInit,
+} from '@angular/core'
 import { UnityScenes } from '../shared/unity.scenes.enum'
 import { UnityService } from './unity.service'
 // import { PyodideService } from 'src/app/services/pyodide/pyodide.service'
@@ -8,7 +14,7 @@ import { UnityService } from './unity.service'
   templateUrl: './unity.component.html',
   styleUrls: ['./unity.component.scss'],
 })
-export class UnityComponent implements OnInit, OnChanges {
+export class UnityComponent implements OnInit, OnChanges, AfterViewInit {
   gameInstance: any
   progress = 0
   isReady = 0
@@ -24,6 +30,7 @@ export class UnityComponent implements OnInit, OnChanges {
   }
 
   constructor(private unityService: UnityService) {}
+  ngAfterViewInit(): void {}
 
   // Initialize Unity with our standard Scene.
   ngOnInit(): void {

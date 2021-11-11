@@ -14,11 +14,11 @@ export class UnityViewerComponent {
   minCodeWidth = 100
   minSimulationWidth = 100
   pythonResult = ''
-  visible = false;
+  visible = false
 
   constructor() {
     setTimeout(() => {
-      this.visible = true;
+      this.visible = true
     }, 1000)
   }
 }

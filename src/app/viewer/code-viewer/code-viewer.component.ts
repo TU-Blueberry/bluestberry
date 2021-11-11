@@ -32,8 +32,8 @@ shape = arr.shape
 
 # Send both a list of classifications for a list of Testdata as an 
 # example for classificator outputs.
-js.sendClassification('1,1,1,0,0')
-js.sendTraits('1,1,1,1,0')
+#js.sendClassification('1,1,1,0,0')
+#js.sendTraits('1,1,1,1,0')
 
 print(shape)`
 

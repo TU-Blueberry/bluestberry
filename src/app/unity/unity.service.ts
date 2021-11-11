@@ -18,6 +18,7 @@ export class UnityService {
         this.progress = progress
         if (progress === 1) {
           this.isReady = true
+          this.disableWebGLInput()
         }
       },
     })
@@ -49,6 +50,16 @@ export class UnityService {
       'receiveTraits',
       berries
     )
+  }
+
+  @PythonCallable
+  public toggleWebGLInput() {
+    this.gameInstance.SendMessage('AngularCommunicator', 'toggleWebGLInput')
+  }
+
+  @PythonCallable
+  public disableWebGLInput() {
+    this.gameInstance.SendMessage('AngularCommunicator', 'disableWebGLInput')
   }
 
   /*   @PythonCallable
