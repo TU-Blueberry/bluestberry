@@ -1,5 +1,6 @@
-import { Injectable } from '@angular/core'
-import initCode from '!raw-loader!../../assets/util/init.py'
+import { Injectable } from '@angular/core';
+import { Location } from '@angular/common';
+import initCode from '!raw-loader!../../assets/util/init.py';
 import {BehaviorSubject, defer, forkJoin, from, Observable} from 'rxjs';
 import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 
@@ -17,6 +18,9 @@ export class PyodideService {
   // https://pyodide.org/en/stable/usage/faq.html#how-can-i-control-the-behavior-of-stdin-stdout-stderr
   // https://github.com/pyodide/pyodide/issues/8
 
+  constructor(private location: Location) {
+  }
+
   private initPyodide(): Observable<Pyodide> {
     return defer(() =>  {
       // unset define as pyodide is a little POS
@@ -25,7 +29,7 @@ export class PyodideService {
       anyWindow.define = undefined;
 
       return loadPyodide({
-        indexURL: 'assets/pyodide',
+        indexURL: this.location.prepareExternalUrl('/assets/pyodide'),
         stdout: (text) => {this.stdOut$.next(this.stdOut$.value + text)},
         stderr: (text) => {this.stdErr$.next(this.stdErr$.value + text)}
       }).then(pyodide => {
