@@ -136,7 +136,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     for (const file of filesInFolder) {
       const fileCOmp = <FileComponent>this.foldersRef.createComponent(this.fileFactory).instance;
       fileCOmp.depth = this.depth + 1;
-      fileCOmp.path = `${this.path}${file.name}`;
+      fileCOmp.path = `${this.path}/${file.name}`;
       fileCOmp.ref = file;
     }
   }
