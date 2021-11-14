@@ -12,10 +12,8 @@ import {
   templateUrl: './image-viewer.component.html',
   styleUrls: ['./image-viewer.component.scss'],
 })
-export class ImageViewerComponent implements AfterViewInit {
 
-  @ViewChild('imageContainer', { read: ElementRef, static: false })
-  imageContainer: ElementRef;
+export class ImageViewerComponent {
 
   @ViewChild('imageLoaded', { read: ElementRef, static: false })
   imageLoaded: ElementRef;
@@ -27,44 +25,33 @@ export class ImageViewerComponent implements AfterViewInit {
   set imagePath(path: string) {
     this._image_path = path || 'assets/blueberry.png';
   }
-
+  
   constructor() {}
 
-  ngAfterViewInit(): void {
-    this._original_image_width = this.imageLoaded.nativeElement.naturalWidth;
-    this._original_image_height = this.imageLoaded.nativeElement.naturalHeight;
-    this._original_image_ratio =
-      this._original_image_width / this._original_image_height;
+  onImageLoad(evt: Event): void {
+    if(evt && evt.target) {
+      const img = evt.target as HTMLImageElement;
+      
+      this._image_width = img.naturalWidth;
+      this._image_height = img.naturalHeight;
+      this._original_image_ratio = this._image_width / this._image_height;
 
-    this._image_width = this._original_image_width;
-    this._image_height = this._original_image_height;
-
-    if (this._image_height > 0 && this._image_width > 0) {
-      this.onResize();
+      this.changeInitialImageDimensions()
     }
   }
 
-  @HostListener('window:resize', ['$event'])
-  onResize() {
-    this._container_width = this.imageContainer.nativeElement.offsetWidth;
-    this._container_height = this.imageContainer.nativeElement.offsetHeight;
+  changeInitialImageDimensions(): void {
+    const maxInitialWidth = 600;
 
-    this.calculateImageDimensions();
-
-    this.imageLoaded.nativeElement.width = this._image_width;
-    this.imageLoaded.nativeElement.height = this._image_height;
-  }
-
-  calculateImageDimensions(): void {
-    if (this._image_width > this._container_width) {
-      this._image_width = this._container_width;
+    if (this._image_width > maxInitialWidth) {
+      this._image_width = maxInitialWidth;
       this._image_height = this._image_width / this._original_image_ratio;
     }
 
-    if (this._image_height > this._container_height) {
-      this._image_height = this._container_height;
-      this._image_width = this._original_image_ratio * this._image_height;
-    }
+    this._original_image_width = this._image_width;
+    this.imageLoaded.nativeElement.width = this._image_width;
+    this.imageLoaded.nativeElement.height = this._image_height;
+
   }
 
   get hoverMode(): string {
@@ -94,16 +81,30 @@ export class ImageViewerComponent implements AfterViewInit {
     this._hover_img = false;
   }
 
+  mouseClick(event: any): void {
+    console.log("zoom factor " + this._zoom_factor)
+    if(this._zoom_in) {
+      this._zoom_factor += this._zoom_step;
+    } else {
+      this._zoom_factor -= this._zoom_step;
+    }
+
+    this._image_width = this._original_image_width + this._zoom_factor;
+    this._image_height = this._image_width / this._original_image_ratio;
+
+    this.imageLoaded.nativeElement.width = this._image_width;
+    this.imageLoaded.nativeElement.height = this._image_height;
+  }
+
   private _image_path = '';
-  private _image_width = 50;
-  private _image_height = 50;
-
-  private _container_width = 0;
-  private _container_height = 0;
-
+  private _image_width = 0;
+  private _image_height = 0;
+  
   private _original_image_width = 0;
-  private _original_image_height = 0;
   private _original_image_ratio = 0;
+
+  private _zoom_factor = 100;
+  private _zoom_step = 50;
 
   private _zoom_in = true;
   private _hover_img = false;
