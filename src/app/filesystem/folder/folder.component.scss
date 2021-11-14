@@ -1,0 +1,37 @@
+.folder {
+    color: rgb(204, 204, 204);
+    cursor: pointer;
+    display: flex;
+    font-size: 0.9rem;
+    padding-top: 5px;
+    padding-bottom: 5px; 
+
+    &:hover {
+        background-color: hsl(220 12% 20%);
+    }
+}
+
+.root-folder {
+    background-color: hsl(220 12% 20%);
+}
+
+.active {
+    background-color: #0068b3;
+
+    &:hover {
+        background-color: #0068b3;
+    }
+}
+
+.folder-text {
+    color: white;
+}
+
+.folder-icon  {
+    width: 16px;
+    height: 16px;
+
+    & > svg {
+        color: #ffffff66;
+    }
+}

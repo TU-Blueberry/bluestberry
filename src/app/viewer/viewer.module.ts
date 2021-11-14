@@ -7,6 +7,7 @@ import { UnityViewerComponent } from './unity-viewer/unity-viewer.component'
 import { UnityModule } from '../unity/unity.module'
 import { UnityComponent } from '../unity/unity.component'
 import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.component'
+import { LessonSelectionComponent } from './lesson-selection/lesson-selection.component'
 
 /**
  * Module used for all the Viewer-Components.
@@ -18,6 +19,7 @@ import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.compo
  * - ImageViewer
  * - DeckerViewer
  * - PdfViewer
+ * - LessonSelection
  */
 
 @NgModule({
@@ -25,6 +27,7 @@ import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.compo
     CodeViewerComponent,
     UnityViewerComponent,
     TerminalViewerComponent,
+    LessonSelectionComponent
   ],
   imports: [CommonModule, MonacoEditorModule, FormsModule, UnityModule],
   exports: [CodeViewerComponent, UnityViewerComponent, TerminalViewerComponent],

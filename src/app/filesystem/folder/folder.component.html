@@ -1,0 +1,28 @@
+<div class="folder" [style.padding-left.px]="depth * 10" [class.root-folder]="rootname" [class.active]="isActive" (click)="toggleActive()">
+    <div class="folder-icon" (click)="toggleSubfolders()">
+        <svg *ngIf="!showSubfolders" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
+          stroke-linejoin="miter" fill="none">
+          <title id="chevronRightIconTitle">Ausklappen</title>
+          <polyline points="10 6 16 12 10 18 10 18" />
+        </svg>
+        <svg *ngIf="showSubfolders" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+         aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
+         stroke-linejoin="miter" fill="none"> 
+         <title id="chevronDownIconTitle">Einklappen</title>
+          <polyline points="6 10 12 16 18 10"/> 
+        </svg>
+    </div>
+    <div class="folder-text" *ngIf="!rootname">{{ref?.name}}</div>
+    <div class="folder-text" *ngIf="rootname">{{rootname}}</div>
+    <button (click)="deleteFolder($event)">Del</button>
+</div>
+
+<div>
+    <div #files></div>
+</div>
+<div [class.invisible]="!showSubfolders">
+    <div *ngIf="!hasSubfolders">Leerer Ordner</div>
+    <div #subfolders></div>
+</div>
+

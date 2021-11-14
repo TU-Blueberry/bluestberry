@@ -1,0 +1,25 @@
+.file {
+    display: flex;
+    color: white;
+    padding-left: 15px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+
+    &:hover {
+        background-color: grey;
+        cursor: pointer;
+    }
+}
+
+.file-type-image {
+    color: green;
+    width: 16px;
+    height: 16px;
+}
+
+.file-name {
+    margin-left: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
