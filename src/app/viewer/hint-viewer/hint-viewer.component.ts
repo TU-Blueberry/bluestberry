@@ -75,13 +75,11 @@ export class HintViewerComponent {
   }
 
   toggleHints(): void {
-    this.is_open_ = !this.is_open_
+    console.log("toggleHints");
+    this.is_open_ = !this.is_open_;
   }
 
-  initDialogue(): void {
-    const starting_answer = this.answer_storage_.find(
-      (a) => a.getAnswerId() == 0
-    )
+  is_open_ = false;
 
     if (starting_answer == undefined) {
       console.log('no starting answer found')
