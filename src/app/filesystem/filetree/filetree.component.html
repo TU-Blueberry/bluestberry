@@ -2,3 +2,32 @@
   Dateien
 </div>
 <button id="dl" (click)="export('sortierroboter')">Exportieren</button>
+<button (click)="openImportWindow()">Importieren</button>
+
+<div class="import-window" [class.invisible]="!showImportWindow">
+  <label for="file">Datei auswählen</label>
+  <input type="file" id="file" accept=".zip" multiple="false" (change)="fileInputChange($event)">
+
+  ODER per Drag and drop in die zone ziehen
+  <div class="dropzone">
+  </div>
+
+  <div *ngIf="!checkInProgress && tempZip">
+    <div *ngIf="!conflictDetected">
+      Kein Konflikt 
+    </div>
+    <div *ngIf="conflictDetected">
+      ACHTUNG: in Projekt/Lektion mit dem gleichen Namen existiert bereits. Wenn du fortfährst wird dieses
+      überschrieben und unwiederbringlich gelöscht!
+    </div>
+
+  <div *ngIf="checkInProgress">
+      Prüfe Datei....
+  </div>
+  </div>
+    
+
+  <button [disabled]="!tempZip" (click)="finishImport()">Importieren</button>
+
+</div>
+

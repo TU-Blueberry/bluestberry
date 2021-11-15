@@ -47,3 +47,19 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.import-window {
+    background-color: grey;
+    color: white;
+    position: absolute;
+    z-index: 99;
+    width: 50%;
+    height: 20%;
+}
+
+.drop-zone {
+    background-color: red;
+    width: 20%;
+    height: 10%;
+}
+

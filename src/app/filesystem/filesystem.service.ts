@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
-import { iif, from, Observable, concat, forkJoin, EMPTY } from 'rxjs';
+import { iif, from, Observable, concat, forkJoin, EMPTY, defer } from 'rxjs';
 import { map, mergeMap } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
+import { ConfigObject } from './configObject';
 
 @Injectable({
   providedIn: 'root'
@@ -20,25 +21,30 @@ export class FilesystemService {
     this.pyService.pyodide.subscribe(py => {
       this.PyFS = py.FS;
       this.fsSubject.next(this.PyFS);
-      console.log("FSSERVICE HAS RECEVIED FS");
-      console.log(this.PyFS);
     });
-  }
-
-  // TODO: ggf. auslagern und openLesson direkt die ZIP übergeben
-  getLessonAsZip(lessonName: string): Observable<ArrayBuffer> {
-    return this.http.get(`/assets/${lessonName}.zip`, { responseType: 'arraybuffer' });
   }
 
   getFS() {
     return this.fsSubject;
   }
 
-  openLesson3(name: string): Observable<any> {
-    return concat(this.mountAndSync(name).pipe(
-      map(path => this.isEmpty(path)),
-      mergeMap(isEmpty => iif(() => isEmpty, this.openNewLesson(name), this.openExistingLesson(name)))
+  /** Checks whether lesson with the given name already exists in the local filesystem. 
+   * If yes, the content from the local filesystem is used.
+   * If no, the lesson with the given name will be requested from the server and stored afterwards 
+   * Intended for situations where user shall choose between multiple lessons (e.g. application startup)
+   * */
+  openLessonByName(name: string): Observable<any> {
+    return concat(this.checkIfLessonDoesntExistYet(name).pipe(
+      mergeMap(isEmpty => iif(() => isEmpty, this.loadFromServerAndOpen(name), EMPTY))
     ), this.sync(false))
+  }
+
+  /** Lesson exists, if the corresponding dir either already exists OR if we can create the
+   * corresponding dir and it is not empty after synching with IDBFS
+   */
+  checkIfLessonDoesntExistYet(name: string) {
+    return this.mountAndSync(name).pipe(
+      map(path => this.isEmpty(path)));
   }
 
   sync(fromPersistentStorageToVirtualFS: boolean) {
@@ -61,23 +67,51 @@ export class FilesystemService {
     });
   }
 
-  openExistingLesson(name: string) {
-    console.log("OPEN EXISTING LESSON");
-    return EMPTY;
-  }
-
-  openNewLesson(name: string) {
-    console.log("OPEN NEW LESSON!;")
-
-    return this.getLessonAsZip(name).pipe(mergeMap(
+  /** Retrieves lesson from server and stores it */
+  loadFromServerAndOpen(name: string) {
+    return this.http.get(`/assets/${name}.zip`, { responseType: 'arraybuffer' }).pipe(mergeMap(
       buff => {
-        return from(this.zipper.loadAsync(buff))
-          .pipe(mergeMap(zip => this.storeLesson(zip, name)));
+        return this.loadZip(buff).pipe(mergeMap(zip => this.storeLesson(zip, name)));
       }
     ));
   }
 
+  importLesson(existsAlready: boolean, config: ConfigObject, zip?: JSZip): Observable<boolean> {
+    return new Observable(subscriber => {
+      const path = `/${config.name}`;
+
+      if (!zip || !config.name) {
+        subscriber.error("No zip provided or invalid configuration file");
+        return;
+      }
+
+      if (existsAlready) {
+        this.deleteFolder(path);
+      }
+
+      this.unmountAndSync(path);
+      
+      // TODO: Dynamic UI updates for new files/folders and renamed files/folders
+
+
+      subscriber.complete(); // TODO: remove this
+
+      /* this.storeLesson(zip, config.name).subscribe(() => {
+        subscriber.complete();
+        console.log("Successfully stored!");
+      }, err => {
+        subscriber.error(err);
+      }); */
+    });
+
+  }
+
+  loadZip(buff: ArrayBuffer): Observable<JSZip> {
+    return from(this.zipper.loadAsync(buff));
+  }
+
   // TODO: Error handling (catchError)
+  // TODO: Ggf. sycnfs durch sync() ersetzen
   mountAndSync(name: string): Observable<string> {
     return new Observable(subscriber => {
       try {
@@ -100,7 +134,6 @@ export class FilesystemService {
       }
     });
   }
-
 
   // TODO: rewrite using observables
   unmountAndSync(path: string): Promise<void> {
@@ -145,9 +178,9 @@ export class FilesystemService {
     });
   }
 
-
   deleteFile(path: string): void {
     if (this.isFile(path)) {
+      console.log("delete file " + path)
       try {
         this.PyFS?.unlink(path);
       } catch (e) {
@@ -156,8 +189,9 @@ export class FilesystemService {
     }
   }
 
-  deleteFolder(path: string): void {
+  deleteFolder(path: string): void {    
     if (this.isDirectory(path)) {
+      console.log("delete folder " + path);
       try {
         if (this.isEmpty(path)) {
           this.PyFS?.rmdir(path);
@@ -173,7 +207,12 @@ export class FilesystemService {
               this.deleteFile(nextElement);
             }
           }
-          this.PyFS?.rmdir(path);
+
+          // can't delete root path /<lessonName> as it also is a mountpoint
+          // /<lessonName> will be split into ['', '<lessonName>']
+          if (path.split('/').length > 2) {
+            this.PyFS?.rmdir(path);
+          } 
         }
       } catch (e) {
         console.error(e);
@@ -182,8 +221,6 @@ export class FilesystemService {
   }
 
   fillZip(path: string, zip: JSZip, lessonName: string) {
-    console.log(`Fill zip for path ${path}`);
-
     try {
       if (!this.isEmpty(path)) {
         const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
@@ -195,9 +232,9 @@ export class FilesystemService {
             // prevent first level of zip from only containing a folder with the lessonName
             if (file) {
               const noPrefix = path.replace(`/${lessonName}`, '');
-              zip.file(`${noPrefix}${entry}`, file, { createFolders: true });
+              zip.file(`${noPrefix}${entry}`, file, { createFolders: true }); // create folders along the way
             } else {
-              // TODO 
+              // TODO: Error
             }
           } else {
             if (!this.isSystemDirectory(`${path}${entry}`)) {
@@ -205,12 +242,16 @@ export class FilesystemService {
             }
           }
         }
+      } else {
+        if (!this.isSystemDirectory(path)) {
+          const noPrefix = path.replace(`/${lessonName}`, '');
+          zip.folder(noPrefix); // also export empty folders (without prefix)
+        }
       }
     } catch (e) {
       console.error(e);
     }
   }
-
 
   // https://github.com/emscripten-core/emscripten/issues/2602
   printRecursively(path: string, startDepth: number, offsetPerLevel: number): void {
@@ -234,14 +275,12 @@ export class FilesystemService {
     }
   }
 
-  // TODO: Name des zip archivs sollte name der lesson sein
   exportLesson(name: string): Observable<Blob> {
     return new Observable(subscriber => {
       const zip = new JSZip();
       this.fillZip(`/${name}/`, zip, name);
       zip.generateAsync({ type: "blob" }).then(function (blob) {
         subscriber.next(blob);
-        // subscriber.next(URL.createObjectURL(blob));
         subscriber.complete();
       }, function (err) {
         subscriber.error();
@@ -249,10 +288,7 @@ export class FilesystemService {
     });
   }
 
-
   storeLesson(unzippedLesson: JSZip, name: string): Observable<any> {
-    console.log("STORELESSOn" + name);
-
     const folders: string[] = [];
     const files: string[] = [];
 
@@ -270,8 +306,6 @@ export class FilesystemService {
       try {
         folders.forEach(folder => {
           this.PyFS?.mkdir(`${name}/${folder}`);
-          console.log("MAKEDIR " + `${name}/${folder}`);
-
         });
         subscriber.complete();
       } catch (err) {
@@ -335,32 +369,6 @@ export class FilesystemService {
     return false;
   }
 
-  getDirectChildrenAsArray(path: string): string[] {
-    console.log("getDirectCHildren " + path);
-
-    const children: string[] = [];
-
-    try {
-      const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
-      console.log("Entries: ");
-      console.log(entries);
-
-      for (const entry in entries) {
-        if (this.isDirectory(`${path}/${entry}`)) {
-          children.push(`${path}/${entry}/`);
-        } else {
-          children.push(`${path}/${entry}`);
-        }
-      }
-    } catch (e) {
-      console.error(e);
-      // TODO
-    }
-
-    return children;
-  }
-
-
   // -------------------------- TODO
 
 
@@ -373,13 +381,6 @@ export class FilesystemService {
   resetLesson(): void {
 
   }
-
-  importLesson(): void {
-    // UI: file handler --> if exists --> sure?
-    // dann: store lesson
-  }
-
-
 
   // ----- V2: 
   usercreateFile(): void {
