@@ -2,15 +2,25 @@
   <div class="hint-icon" (click)="toggleHints()" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
   </div>
 
+  <!-- overlay -->
   <ng-template
     cdkConnectedOverlay
     [cdkConnectedOverlayOrigin]="trigger"
-    [cdkConnectedOverlayOpen]="isOpen"
+    [cdkConnectedOverlayOpen]="is_open_"
   >
-    <ul class="example-overlay">
-      <li>Item 1</li>
-      <li>Item 2</li>
-      <li>Item 3</li>
-    </ul>
+    <div class="hint-overlay-container">
+        <div>Hinweise</div>
+        <mat-divider></mat-divider>
+
+        <div class="hint-dialogue">
+
+            <div class="hint-answer">Hast du Fragen?</div>
+            <div class="hint-question">Wie geht das?</div>
+            <div class="hint-answer">So geht das!</div>
+
+        </div>
+        
+    </div>
+
   </ng-template>
 </div>
