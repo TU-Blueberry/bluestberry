@@ -16,9 +16,9 @@ export class HintViewerComponent implements OnInit {
 
   toggleHints(): void {
     console.log("toggleHints");
-    this.isOpen = !this.isOpen;
+    this.is_open_ = !this.is_open_;
   }
 
-  isOpen = false;
+  is_open_ = false;
 
 }
