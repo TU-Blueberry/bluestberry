@@ -1,18 +1,17 @@
 import { HttpClient } from '@angular/common/http';
-import { ComponentFactoryResolver, Injectable } from '@angular/core';
+import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
-import { iif, from, Observable, concat, forkJoin, EMPTY, defer } from 'rxjs';
-import { map, mergeMap, switchMap } from 'rxjs/operators';
+import { iif, from, Observable, concat, forkJoin, EMPTY } from 'rxjs';
+import { map, mergeMap } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
-import { ConfigObject } from './configObject';
+import { ConfigObject } from './shared/configObject';
+import { isSystemDirectory } from './shared/system_folder';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FilesystemService {
-  readonly SYSTEM_FOLDERS = ['/dev', '/home', '/lib', '/proc', '/tmp', '/bin'];
-
   PyFS?: typeof FS & MissingInEmscripten;
   zipper: JSZip = new JSZip();;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
@@ -224,13 +223,13 @@ export class FilesystemService {
               // TODO: Error
             }
           } else {
-            if (!this.isSystemDirectory(`${path}${entry}`)) {
+            if (!isSystemDirectory(`${path}${entry}`)) {
               this.fillZip(`${path}${entry}/`, zip, lessonName);
             }
           }
         }
       } else {
-        if (!this.isSystemDirectory(path)) {
+        if (!isSystemDirectory(path)) {
           const noPrefix = path.replace(`/${lessonName}`, '');
           zip.folder(noPrefix); // also export empty folders (without prefix)
         }
@@ -247,7 +246,7 @@ export class FilesystemService {
         const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
 
         for (const entry in entries) {
-          if (!this.isSystemDirectory(`${path}${entry}`)) { // TODO: Test
+          if (!isSystemDirectory(`${path}${entry}`)) { // TODO: Test
             if (this.isDirectory(`${path}${entry}`)) {
               console.log("-".repeat(startDepth + offsetPerLevel) + ` ${entry}`);
               this.printRecursively(`${path}${entry}/`, startDepth + offsetPerLevel, offsetPerLevel);
@@ -286,7 +285,7 @@ export class FilesystemService {
     });
 
     const folderObs = new Observable(subscriber => {
-      if (this.isSystemDirectory(name)) { // TODO: Test!
+      if (isSystemDirectory(name)) { // TODO: Test!
         subscriber.error("Invalid lesson name (system directory)")
       }
 
@@ -344,17 +343,7 @@ export class FilesystemService {
     }
   }
 
-  isSystemDirectory(path: string): boolean {
-    for (const systemPath of this.SYSTEM_FOLDERS) {
-      const reg = new RegExp(`(\/)?${systemPath}(\/)*`);
 
-      if (reg.test(path)) {
-        return true;
-      }
-    }
-
-    return false;
-  }
 
   // -------------------------- TODO
 

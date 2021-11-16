@@ -1,5 +1,5 @@
 <div class="folder" [style.padding-left.px]="depth * 10" [class.root-folder]="rootname" [class.active]="isActive" (click)="toggleActive()">
-    <div class="folder-icon" (click)="toggleSubfolders()">
+    <div class="folder-icon" (click)="toggleSubfolders($event)">
         <svg *ngIf="!showSubfolders" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
           aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
           stroke-linejoin="miter" fill="none">

@@ -1,8 +1,9 @@
 import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { EventService } from '../event.service';
+import { EventService } from '../events/event.service';
 import { FileComponent } from '../file/file.component';
 import { FilesystemService } from '../filesystem.service';
+import { isSystemDirectory } from '../shared/system_folder';
 
 @Component({
   selector: 'app-folder',
@@ -35,6 +36,12 @@ export class FolderComponent implements OnInit, OnDestroy {
 
     this.deleteSubscription = this.ev.onDeletePath.subscribe(this.onDelete.bind(this));
     this.moveSubscription = this.ev.onMovePath.subscribe(this.onPathMove.bind(this));
+
+    this.ev.onActiveElementChange.subscribe(newActiveElementPath => {
+      if (this.path !== newActiveElementPath) {
+        this.isActive = false;
+      }
+    });
   }
 
   // remove the corresponding UI element if the deleted path is a direct child (folder/file component)
@@ -107,7 +114,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     for (const [key, value] of Object.entries(entries)) {
       const currentPath = `${this.path}/${value.name}`;
 
-      if (entries.hasOwnProperty(key) && !this.fsService.isSystemDirectory(currentPath) && this.fsService.isDirectory(currentPath)) {
+      if (entries.hasOwnProperty(key) && !isSystemDirectory(currentPath) && this.fsService.isDirectory(currentPath)) {
         subfolders.push(value);
       }
 
@@ -152,13 +159,20 @@ export class FolderComponent implements OnInit, OnDestroy {
     }
   }
 
-  toggleSubfolders(): void {
+  toggleSubfolders(ev: Event): void {
     this.showSubfolders = !this.showSubfolders;
+
+    if (this.isActive) {
+      ev.stopPropagation();
+    }
   }
 
   toggleActive(): void {
     this.isActive = !this.isActive;
-    this.toggleSubfolders();
+
+    if (this.isActive) {
+      this.ev.changeActiveElement(this.path);
+    }
   }
 
   ngOnDestroy(): void {

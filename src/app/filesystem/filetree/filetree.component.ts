@@ -4,9 +4,9 @@ import { PyodideService } from '../../pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
 import { saveAs } from 'file-saver';
-import { EventService } from '../event.service';
+import { EventService } from '../events/event.service';
 import { switchMap } from 'rxjs/operators';
-import { ConfigObject } from '../configObject';
+import { ConfigObject } from '../shared/configObject';
 import { JSZipObject } from 'jszip';
 import * as JSZip from 'jszip';
 
