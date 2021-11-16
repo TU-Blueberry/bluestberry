@@ -18,11 +18,9 @@
     <button (click)="deleteFolder($event)">Del</button>
 </div>
 
-<div>
-    <div #files></div>
-</div>
 <div [class.invisible]="!showSubfolders">
     <div *ngIf="!hasSubfolders">Leerer Ordner</div>
     <div #subfolders></div>
+    <div #files></div>    
 </div>
 

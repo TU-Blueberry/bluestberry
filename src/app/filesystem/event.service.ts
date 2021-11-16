@@ -17,7 +17,6 @@ export class EventService {
   onCloseFile: EventEmitter<string> = new EventEmitter();
   onMakeDirectory: EventEmitter<{path: string, mode: any}> = new EventEmitter();
   onMakeSymlink: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
-  
 
   // TODO: Kann sein, dass ich alles rund um path noch in file/directory aufschlüsseln muss
   constructor(private fsService: FilesystemService) { 
@@ -26,6 +25,7 @@ export class EventService {
 
       fs.trackingDelegate['willDeletePath'] = (_path: string) => this.willDeletePath.emit(_path);
       fs.trackingDelegate['onDeletePath'] = (_path: string) => this.onDeletePath.emit(_path);
+      fs.trackingDelegate['onMovePath'] = (_oldPath: string, _newPath: string) => this.onMovePath.emit({oldPath: _oldPath, newPath: _newPath});
     });
   }
 }

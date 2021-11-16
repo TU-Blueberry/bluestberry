@@ -1,9 +1,8 @@
-import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, Input, OnChanges, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, Input, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { EventService } from '../event.service';
 import { FileComponent } from '../file/file.component';
 import { FilesystemService } from '../filesystem.service';
-
 
 @Component({
   selector: 'app-folder',
@@ -13,7 +12,7 @@ import { FilesystemService } from '../filesystem.service';
 export class FolderComponent implements OnInit, OnDestroy {
   PyFS?: typeof FS & MissingInEmscripten;
   folderFactory: ComponentFactory<FolderComponent>;
-  fileFactory: ComponentFactory<FileComponent>; 
+  fileFactory: ComponentFactory<FileComponent>;
   showSubfolders = false;
   additionalData?: AnalyzeObject;
   hasSubfolders = false;
@@ -21,43 +20,56 @@ export class FolderComponent implements OnInit, OnDestroy {
   allSubfolders: ComponentRef<FolderComponent>[] = [];
   allFiles: ComponentRef<FileComponent>[] = [];
   deleteSubscription: Subscription;
+  moveSubscription: Subscription;
 
   @Input('depth') depth: number = 0;
   @Input('path') path: string = '';
   @Input('ref') ref?: FSNode;
   @Input('rootname') rootname?: string;
-  @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef; 
+  @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef;
   @ViewChild('files', { read: ViewContainerRef, static: true }) filesRef!: ViewContainerRef;
   constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, private ev: EventService) {
-    
     this.fsService.getFS().subscribe(pyfs => this.PyFS = pyfs);
-
-
-    // TODO: This is variant 2: Every component listens to delete events and checks whether one of its direct childs was affected
-    // Only then the UI will be redrawn. This might _possibly_ save some time for larger folder structures.
-
-    // if the deleted path is a direct child, we remove the corresponding UI element (folder/file component)
-    this.deleteSubscription = this.ev.onDeletePath.subscribe(deletedPath => {
-      /* if (this.isDirectChild(deletedPath)) { 
-        for (const [index, folder] of this.allSubfolders.entries()) {
-          if (folder.instance.path === deletedPath) {
-            this.foldersRef.remove(this.foldersRef.indexOf(folder.hostView));
-            this.allSubfolders.splice(index, 1);
-          }
-        }
-
-        for (const [index, file] of this.allFiles.entries()) {
-          if (file.instance.path === deletedPath) {
-            this.filesRef.remove(this.filesRef.indexOf(file.hostView));
-            this.allFiles.splice(index, 1);
-          }
-        }
-      } */
-    }) ;
-
     this.folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     this.fileFactory = this.componentFactoryResolver.resolveComponentFactory(FileComponent);
+
+    this.deleteSubscription = this.ev.onDeletePath.subscribe(this.onDelete.bind(this));
+    this.moveSubscription = this.ev.onMovePath.subscribe(this.onPathMove.bind(this));
   }
+
+  // remove the corresponding UI element if the deleted path is a direct child (folder/file component)
+  // search effort might hunt us for large lists; if it turns out to be problematic, maps could be an alternative
+  onDelete(path: string): void {
+    console.log("OnDelete" + path);
+
+    if (this.isDirectChild(path)) {
+      this.allSubfolders.forEach((folder, index) => {
+        if (folder.instance.path === path) {
+          this.foldersRef.remove(this.foldersRef.indexOf(folder.hostView));
+          this.allSubfolders.splice(index, 1);
+        }
+      });
+
+      this.allFiles.forEach((file, index) => {
+        if (file.instance.path === path) {
+          this.filesRef.remove(this.filesRef.indexOf(file.hostView));
+          this.allFiles.splice(index, 1);
+        }
+      });
+    }
+  }
+
+  // TODO: What happens if you rename top level dir?
+
+  // covers renaming, moving and creating new files/folders
+  onPathMove(params: { oldPath: string, newPath: string }): void {
+    if (this.isDirectChild(params.newPath)) {
+      this.scan();
+
+      console.log("After path move: path is " + this.path);
+    }
+  }
+
 
   // path of a direct child is identical to our path + /<something> at the end
   isDirectChild(pathToCheck: string): boolean {
@@ -65,15 +77,18 @@ export class FolderComponent implements OnInit, OnDestroy {
 
     if (splitPath.length > 1) {
       splitPath.splice(splitPath.length - 1, 1);
-      return splitPath.join("/") === this.path;      
+      return splitPath.join("/") === this.path;
     } else {
       return pathToCheck === this.path;
     }
   }
 
   ngOnInit(): void {
-    // special cas
+    console.log("onInit rootname: " + this.rootname);
+
+    // special case
     if (this.rootname) {
+      console.log("special clase");
       this.showSubfolders = true;
     }
 
@@ -83,15 +98,12 @@ export class FolderComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy(): void {
-    this.foldersRef.clear();
-    this.filesRef.clear();
-    this.deleteSubscription.unsubscribe();
-  }
-
   deleteFolder(ev: Event): void {
     ev.preventDefault();
     ev.stopPropagation();
+
+    console.log("delete folder: " + this.path)
+
     this.fsService.deleteFolder(this.path);
     this.fsService.sync(false).subscribe();
   }
@@ -99,7 +111,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   // TODO: Catch errors
   /** Creates components for new subfolders/files and updates existing ones */
   scan(): void {
-    const entries = (this.PyFS?.lookupPath(this.path, {}).node as FSNode).contents ;
+    const entries = (this.PyFS?.lookupPath(this.path, {}).node as FSNode).contents;
     const subfolders: any[] = [];
     const filesInFolder: any[] = [];
 
@@ -120,8 +132,8 @@ export class FolderComponent implements OnInit, OnDestroy {
       const indexOfFolder = this.allSubfolders.findIndex(folder => folder.instance.path === subfolderPath);
       let folderComponentRef: ComponentRef<FolderComponent>;
 
-     // check if component already exists; if so, update it
-     if (indexOfFolder >= 0) {
+      // check if component already exists; if yes, update is sufficient. if not, create a new one
+      if (indexOfFolder >= 0) {
         folderComponentRef = this.allSubfolders[indexOfFolder];
       } else {
         folderComponentRef = this.foldersRef.createComponent(this.folderFactory);
@@ -134,11 +146,27 @@ export class FolderComponent implements OnInit, OnDestroy {
     }
 
     for (const file of filesInFolder) {
-      const fileCOmp = <FileComponent>this.foldersRef.createComponent(this.fileFactory).instance;
-      fileCOmp.depth = this.depth + 1;
-      fileCOmp.path = `${this.path}/${file.name}`;
-      fileCOmp.ref = file;
+      const filePath = `${this.path}/${file.name}`
+      const indexOfFile = this.allFiles.findIndex(file => file.instance.path === filePath);
+      let fileComponentRef: ComponentRef<FileComponent>;
+
+
+      if (indexOfFile >= 0) {
+        fileComponentRef = this.allFiles[indexOfFile];
+      } else {
+        fileComponentRef = this.filesRef.createComponent(this.fileFactory);
+        this.allFiles.push(fileComponentRef);
+      }
+      fileComponentRef.instance.depth = this.depth + 1;
+      fileComponentRef.instance.path = filePath;
+      fileComponentRef.instance.ref = file;
     }
+
+    // const fileComponentRef = <FileComponent>this.foldersRef.createComponent(this.fileFactory).instance;
+    // fileComponentRef.depth = this.depth + 1;
+    // fileComponentRef.path = `${this.path}/${file.name}`;
+    // fileComponentRef.ref = file;
+
   }
 
   toggleSubfolders(): void {
@@ -148,5 +176,12 @@ export class FolderComponent implements OnInit, OnDestroy {
   toggleActive(): void {
     this.isActive = !this.isActive;
     this.toggleSubfolders();
+  }
+
+  ngOnDestroy(): void {
+    this.foldersRef.clear();
+    this.filesRef.clear();
+    this.deleteSubscription.unsubscribe();
+    this.moveSubscription.unsubscribe();
   }
 }
