@@ -4,31 +4,66 @@
     (click)="toggleHints()"
     cdkOverlayOrigin
     #trigger="cdkOverlayOrigin"
-  ></div>
+  >
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#000000"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <title>Hinweise anzeigen</title>
+      <path
+        d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"
+      />
+      <polyline points="22,6 12,13 2,6" />
+    </svg>
+  </div>
 
-  <!-- overlay -->
   <ng-template
     cdkConnectedOverlay
     [cdkConnectedOverlayOrigin]="trigger"
     [cdkConnectedOverlayOpen]="is_open_"
   >
     <div class="hint-overlay-container">
-
       <div class="hint-dialogue">
         <ng-container *ngFor="let action of dialogue_history_">
-          <div id="hint-history"
-          [ngClass]="action.getDivClass()">{{ action.content }}</div>
+          <div id="hint-history" [ngClass]="action.getDivClass()">
+            {{ action.getContent() }}
+          </div>
         </ng-container>
 
         <ng-container *ngFor="let option of dialogue_options_">
           <div
             id="hint-option"
             [ngClass]="option.getDivClass()"
-            (click)="optionSelected(option.id)"
+            (click)="optionSelected(option.getQuestionId())"
           >
-            {{ option.content }}
+            {{ option.getContent() }}
           </div>
         </ng-container>
+      </div>
+
+      <div class="hint-overlay-bar">
+        <button mat-icon-button class="undo-button" (click)="undo()">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="#000000"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38" />
+          </svg>
+        </button>
       </div>
     </div>
   </ng-template>
