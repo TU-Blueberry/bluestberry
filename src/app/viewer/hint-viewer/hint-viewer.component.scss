@@ -60,16 +60,31 @@
     padding: 20px; 
     width: 400px;
     height: 600px;
+    overflow-y: auto;
+}
 
+.hint-dialogue > * {
+    margin-top: 10px;
 }
 
 .hint-question {
     background-color: yellow;
-    float: left;
 }
-
 
 .hint-answer {
     background-color: orange;
-    float: right;
+}
+
+#hint-history {
+    cursor: default;
+}
+
+#hint-option {
+    background-color: lightseagreen;
+
+    &:hover {
+        background-color: rgb(66, 70, 80);
+        cursor: pointer;
+        color: rgb(240, 240, 240);
+    }
 }

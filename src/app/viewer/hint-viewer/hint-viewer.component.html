@@ -1,53 +1,10 @@
 <div class="hint-container">
-  <div class="hint-overlay-container">
-    <div class="hint-dialogue">
-      <ng-container *ngFor="let action of dialogue_history_">
-        <div id="hint-history" [ngClass]="action.getDivClass()">
-          {{ action.getTextSlice(0) }}
-          <ng-container
-            *ngFor="let link of action.getHrefDividers(); let i = index"
-          >
-            <a href="{{ link }}" style="display: inline">{{ link }}</a>
-            {{ action.getTextSlice(i + 1) }}
-          </ng-container>
-        </div>
-      </ng-container>
-
-      <ng-container *ngFor="let option of dialogue_options_">
-        <div
-          id="hint-option"
-          [ngClass]="option.getDivClass()"
-          (click)="optionSelected(option.getQuestionId())"
-        >
-          {{ option.getTextSlice(0) }}
-          <ng-container
-            *ngFor="let link of option.getHrefDividers(); let i = index"
-          >
-            <a href="{{ link }}" style="display: inline">{{ link }}</a>
-            {{ option.getTextSlice(i + 1) }}
-          </ng-container>
-        </div>
-      </ng-container>
-    </div>
-
-    <div class="hint-overlay-bar">
-      <button mat-icon-button class="undo-button" (click)="undo()">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="24"
-          height="24"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="#000000"
-          stroke-width="2"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        >
-          <path d="M2.5 2v6h6M2.66 15.57a10 10 0 1 0 .57-8.38" />
-        </svg>
-      </button>
-    </div>
-  </div>
+  <div
+    class="hint-icon"
+    (click)="toggleHints()"
+    cdkOverlayOrigin
+    #trigger="cdkOverlayOrigin"
+  ></div>
 
   <!-- overlay -->
   <ng-template
@@ -56,18 +13,27 @@
     [cdkConnectedOverlayOpen]="is_open_"
   >
     <div class="hint-overlay-container">
-        <div>Hinweise</div>
+      <div>Hinweise</div>
+      <mat-divider></mat-divider>
+
+      <div class="hint-dialogue">
+        <ng-container *ngFor="let action of dialogue_history_">
+          <div id="hint-history"
+          [ngClass]="action.getDivClass()">{{ action.content }}</div>
+        </ng-container>
+
         <mat-divider></mat-divider>
 
-        <div class="hint-dialogue">
-
-            <div class="hint-answer">Hast du Fragen?</div>
-            <div class="hint-question">Wie geht das?</div>
-            <div class="hint-answer">So geht das!</div>
-
-        </div>
-        
+        <ng-container *ngFor="let option of dialogue_options_">
+          <div
+            id="hint-option"
+            [ngClass]="option.getDivClass()"
+            (click)="optionSelected(option.id)"
+          >
+            {{ option.content }}
+          </div>
+        </ng-container>
+      </div>
     </div>
-
   </ng-template>
 </div>
