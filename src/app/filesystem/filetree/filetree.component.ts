@@ -1,11 +1,11 @@
-import { Component, ComponentFactoryResolver, EventEmitter, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
-import { combineLatest, concat, defer, EMPTY, forkJoin, from, merge, Observable, of, ReplaySubject, Subject } from 'rxjs';
+import { Component, ComponentFactoryResolver, ElementRef, ViewChild, ViewContainerRef } from '@angular/core';
+import { concat, from, Observable, Subject } from 'rxjs';
 import { PyodideService } from '../../pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
 import { saveAs } from 'file-saver';
 import { EventService } from '../event.service';
-import { catchError, map, mergeAll, switchMap, withLatestFrom } from 'rxjs/operators';
+import { switchMap } from 'rxjs/operators';
 import { ConfigObject } from '../configObject';
 import { JSZipObject } from 'jszip';
 import * as JSZip from 'jszip';
@@ -18,34 +18,25 @@ import * as JSZip from 'jszip';
 export class FiletreeComponent {
   rootComponent?: FolderComponent;
   showImportWindow = false;
-  askForOverwritePermission = false;
   tempZip?: JSZip;
   checkInProgress = false;
   conflictDetected = false;
   userResult$: Subject<boolean> = new Subject();
+  test: any;
 
+  @ViewChild('fileInput') fileInputRef!: ElementRef;
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
   constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, private ev: EventService) {
 
     // TODO: error handling
     concat(this.pys.pyodide, this.fsService.openLessonByName('/sortierroboter'))
-      .subscribe(() => { },
+      .subscribe(
+        () => { },
         err => { },
         () => this.kickstartTreeGeneration());
-
-    // TODO: This is variant 1: the whole filetree is deleted and recreated every time we receive an event
-    ev.onDeletePath.subscribe(path => {
-      const root = this.fsService.getTopLevelOfLesson("/sortierroboter");
-
-      if (this.rootComponent) {
-        this.rootComponent.ref = root;
-      }
-
-      this.listRef.clear();
-      this.kickstartTreeGeneration();
-    });
   }
 
+  // TODO: Remove hardcoded stuff
   kickstartTreeGeneration(): void {
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     const root = this.fsService.getTopLevelOfLesson("/sortierroboter");
@@ -86,13 +77,19 @@ export class FiletreeComponent {
             switchMap(isEmpty => { 
               this.conflictDetected = !isEmpty;
               this.checkInProgress = false;
-              return this.userResult$.pipe(switchMap(userResult => {
-                this.userResult$.complete();
-                return this.fsService.importLesson(userResult, conf, this.tempZip)
-              })
-              ); 
+              
+              return this.userResult$.pipe(switchMap(userResult => {              
+                return concat(this.fsService.importLesson(userResult, conf, this.tempZip), this.fsService.sync(false), this.completeUserResultHelper())
+              })) 
             })
-      )))
+        )))
+  }
+
+  completeUserResultHelper() {
+    return new Observable(subscriber => {
+      this.userResult$.complete();
+      subscriber.complete();
+    });
   }
 
   getConfigFromStream(config: JSZipObject): Observable<ConfigObject> {
@@ -147,10 +144,17 @@ export class FiletreeComponent {
     }
 
     // TODO: Kriegt man das subscribe weg?
-    this.unpackCheckAndImport(files[0]).subscribe(() => {
-
-    }, err => console.error(err), () => {
-      console.log("Import complete!");
+    this.unpackCheckAndImport(files[0]).subscribe(() => {}, 
+      err => console.error(err), 
+      () => {
+        console.log("Import complete!");
+        this.listRef.clear();
+        this.kickstartTreeGeneration();
+        this.fileInputRef.nativeElement.value = '';
+        this.checkInProgress = false;
+        this.conflictDetected = false;
+        this.showImportWindow = false;
+        this.tempZip = undefined;
     });
   }
 }

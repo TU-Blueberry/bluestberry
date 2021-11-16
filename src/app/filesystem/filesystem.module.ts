@@ -4,7 +4,6 @@ import { FiletreeComponent } from './filetree/filetree.component';
 import { PyodideModule } from '../pyodide/pyodide.module';
 import { FolderComponent } from './folder/folder.component';
 import { FileComponent } from './file/file.component';
-import { HttpClient, HttpHandler } from '@angular/common/http';
 
 /**
  * Module for Filesystem-Management related Classes.

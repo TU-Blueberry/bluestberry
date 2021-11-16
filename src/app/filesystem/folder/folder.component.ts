@@ -40,8 +40,6 @@ export class FolderComponent implements OnInit, OnDestroy {
   // remove the corresponding UI element if the deleted path is a direct child (folder/file component)
   // search effort might hunt us for large lists; if it turns out to be problematic, maps could be an alternative
   onDelete(path: string): void {
-    console.log("OnDelete" + path);
-
     if (this.isDirectChild(path)) {
       this.allSubfolders.forEach((folder, index) => {
         if (folder.instance.path === path) {
@@ -65,11 +63,8 @@ export class FolderComponent implements OnInit, OnDestroy {
   onPathMove(params: { oldPath: string, newPath: string }): void {
     if (this.isDirectChild(params.newPath)) {
       this.scan();
-
-      console.log("After path move: path is " + this.path);
     }
   }
-
 
   // path of a direct child is identical to our path + /<something> at the end
   isDirectChild(pathToCheck: string): boolean {
@@ -84,11 +79,8 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    console.log("onInit rootname: " + this.rootname);
-
     // special case
     if (this.rootname) {
-      console.log("special clase");
       this.showSubfolders = true;
     }
 
@@ -101,9 +93,6 @@ export class FolderComponent implements OnInit, OnDestroy {
   deleteFolder(ev: Event): void {
     ev.preventDefault();
     ev.stopPropagation();
-
-    console.log("delete folder: " + this.path)
-
     this.fsService.deleteFolder(this.path);
     this.fsService.sync(false).subscribe();
   }
@@ -161,12 +150,6 @@ export class FolderComponent implements OnInit, OnDestroy {
       fileComponentRef.instance.path = filePath;
       fileComponentRef.instance.ref = file;
     }
-
-    // const fileComponentRef = <FileComponent>this.foldersRef.createComponent(this.fileFactory).instance;
-    // fileComponentRef.depth = this.depth + 1;
-    // fileComponentRef.path = `${this.path}/${file.name}`;
-    // fileComponentRef.ref = file;
-
   }
 
   toggleSubfolders(): void {

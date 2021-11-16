@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { ComponentFactoryResolver, Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
 import { iif, from, Observable, concat, forkJoin, EMPTY, defer } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { map, mergeMap, switchMap } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { ConfigObject } from './configObject';
@@ -52,15 +52,12 @@ export class FilesystemService {
       try {
         this.PyFS?.syncfs(fromPersistentStorageToVirtualFS, err => {
           if (err) {
-            console.log("SYNC ERROR!");
             subscriber.error();
           } else {
-            console.log("SYNC COMPLETE!!");
-            subscriber.next();
             subscriber.complete();
+            this.printRecursively("/", 0, 2);
           }
         });
-        this.printRecursively("/", 0, 2);
       } catch (e) {
         subscriber.error();
       }
@@ -76,7 +73,7 @@ export class FilesystemService {
     ));
   }
 
-  importLesson(existsAlready: boolean, config: ConfigObject, zip?: JSZip): Observable<boolean> {
+  importLesson(existsAlready: boolean, config: ConfigObject, zip?: JSZip): Observable<any> {
     return new Observable(subscriber => {
       const path = `/${config.name}`;
 
@@ -89,19 +86,11 @@ export class FilesystemService {
         this.deleteFolder(path);
       }
 
-      this.unmountAndSync(path);
-      
-      // TODO: Dynamic UI updates for new files/folders and renamed files/folders
-
-
-      subscriber.complete(); // TODO: remove this
-
-      /* this.storeLesson(zip, config.name).subscribe(() => {
-        subscriber.complete();
-        console.log("Successfully stored!");
-      }, err => {
-        subscriber.error(err);
-      }); */
+      concat(this.unmountAndSync(path), this.mountAndSync(config.name), this.storeLesson(zip, config.name))
+      .subscribe(
+        () => {},
+        err => subscriber.error(err),
+        () =>  subscriber.complete());
     });
 
   }
@@ -135,27 +124,27 @@ export class FilesystemService {
     });
   }
 
-  // TODO: rewrite using observables
-  unmountAndSync(path: string): Promise<void> {
-    return new Promise((resolve, reject) => {
+  unmountAndSync(name: string): Observable<string> {
+    return new Observable(subscriber => {
       try {
-        const fullPath = `/${path}`;
+        const fullPath = `/${name}`;
         const node = this.PyFS?.analyzePath(fullPath, false);
 
         if (node?.exists) {
           this.PyFS?.syncfs(false, err => {
             if (!err) {
               this.PyFS?.unmount(fullPath);
-              resolve();
+              this.PyFS?.rmdir(fullPath);
+              subscriber.complete();
             } else {
-              reject();
+              subscriber.error("Error while unmounting");
             }
           });
         } else {
-          reject(); // path doesn't exist
+          subscriber.error("Erorr: Path to unmount doesn't exist");
         }
       } catch (e) {
-        reject();
+        subscriber.error("Error before unmount");
       }
     });
   }
@@ -180,7 +169,6 @@ export class FilesystemService {
 
   deleteFile(path: string): void {
     if (this.isFile(path)) {
-      console.log("delete file " + path)
       try {
         this.PyFS?.unlink(path);
       } catch (e) {
@@ -189,9 +177,8 @@ export class FilesystemService {
     }
   }
 
-  deleteFolder(path: string): void {    
+  deleteFolder(path: string): void {       
     if (this.isDirectory(path)) {
-      console.log("delete folder " + path);
       try {
         if (this.isEmpty(path)) {
           this.PyFS?.rmdir(path);

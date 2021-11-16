@@ -6,7 +6,7 @@
 
 <div class="import-window" [class.invisible]="!showImportWindow">
   <label for="file">Datei auswählen</label>
-  <input type="file" id="file" accept=".zip" multiple="false" (change)="fileInputChange($event)">
+  <input type="file" id="file" #fileInput accept=".zip" multiple="false" (change)="fileInputChange($event)">
 
   ODER per Drag and drop in die zone ziehen
   <div class="dropzone">
