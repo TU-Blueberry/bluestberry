@@ -1,6 +1,10 @@
 <div class="hint-container">
-  <div class="hint-icon" (click)="toggleHints()" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
-  </div>
+  <div
+    class="hint-icon"
+    (click)="toggleHints()"
+    cdkOverlayOrigin
+    #trigger="cdkOverlayOrigin"
+  ></div>
 
   <!-- overlay -->
   <ng-template
@@ -9,18 +13,27 @@
     [cdkConnectedOverlayOpen]="is_open_"
   >
     <div class="hint-overlay-container">
-        <div>Hinweise</div>
+      <div>Hinweise</div>
+      <mat-divider></mat-divider>
+
+      <div class="hint-dialogue">
+        <ng-container *ngFor="let action of dialogue_history_">
+          <div id="hint-history"
+          [ngClass]="action.getDivClass()">{{ action.content }}</div>
+        </ng-container>
+
         <mat-divider></mat-divider>
 
-        <div class="hint-dialogue">
-
-            <div class="hint-answer">Hast du Fragen?</div>
-            <div class="hint-question">Wie geht das?</div>
-            <div class="hint-answer">So geht das!</div>
-
-        </div>
-        
+        <ng-container *ngFor="let option of dialogue_options_">
+          <div
+            id="hint-option"
+            [ngClass]="option.getDivClass()"
+            (click)="optionSelected(option.id)"
+          >
+            {{ option.content }}
+          </div>
+        </ng-container>
+      </div>
     </div>
-
   </ng-template>
 </div>
