@@ -14,7 +14,7 @@ export class HintViewerComponent {
   dialogue_history_: Array<DialogueContent> = [];
   dialogue_options_: Array<DialogueContent> = [];
 
-  is_open_ = false;
+  is_open_ = true;
 
 
   constructor() { 
@@ -45,7 +45,6 @@ export class HintViewerComponent {
     // add option to history
     selected_option_!.id = this.dialogue_history_.length;
     this.dialogue_history_.push(selected_option_!);
-    
 
     this.generateAnswer();
     this.generateNewOptions();
@@ -65,11 +64,6 @@ export class HintViewerComponent {
     this.dialogue_options_.push(new DialogueContent(2, "Aber wie geht z?", true));
 
   }
-
-
-
-
-
 
 }
 

@@ -55,7 +55,7 @@
 }
 
 .hint-overlay-container {
-    background-color: beige;
+    background-color: #DFDFDF;
     border-radius: 10px;
     padding: 20px; 
     width: 400px;
@@ -64,15 +64,21 @@
 }
 
 .hint-dialogue > * {
-    margin-top: 10px;
+    margin-top: 7px;
+    width: fit-content;
+
+    padding: 7px;
+    border-radius: 5px;
 }
 
 .hint-question {
-    background-color: yellow;
+    background-color: #AAD7EC;
+    margin-right: 0;
+    margin-left: auto;
 }
 
 .hint-answer {
-    background-color: orange;
+    background-color: #46C0DE;
 }
 
 #hint-history {
@@ -80,11 +86,10 @@
 }
 
 #hint-option {
-    background-color: lightseagreen;
+    background-color: #FFDC82;
 
     &:hover {
-        background-color: rgb(66, 70, 80);
+        background-color: #FFCA44;
         cursor: pointer;
-        color: rgb(240, 240, 240);
     }
 }

@@ -13,16 +13,12 @@
     [cdkConnectedOverlayOpen]="is_open_"
   >
     <div class="hint-overlay-container">
-      <div>Hinweise</div>
-      <mat-divider></mat-divider>
 
       <div class="hint-dialogue">
         <ng-container *ngFor="let action of dialogue_history_">
           <div id="hint-history"
           [ngClass]="action.getDivClass()">{{ action.content }}</div>
         </ng-container>
-
-        <mat-divider></mat-divider>
 
         <ng-container *ngFor="let option of dialogue_options_">
           <div
