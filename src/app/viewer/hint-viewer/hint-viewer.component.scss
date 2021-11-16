@@ -33,6 +33,20 @@
     overflow-y: auto;
 }
 
+
+.hint-overlay-bar {
+    position: absolute;
+    bottom: 10px;
+    // margin-top: auto;
+}
+
+.undo-button {
+    width: 24px;
+    height: 24px;
+    margin: 10px;   
+    text-align: center;
+}
+
 .hint-dialogue > * {
     margin-top: 7px;
     width: fit-content;
