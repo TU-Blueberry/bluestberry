@@ -20,6 +20,7 @@ export class EventService {
   onActiveElementChange: EventEmitter<string> = new EventEmitter();
 
   // TODO: Kann sein, dass ich alles rund um path noch in file/directory aufschlüsseln muss
+  // TODO: isSystemDirectory einheitlich regeln (d.h. entweder hier oder in den aufrufenden Methoden abfangen)
   constructor(private fsService: FilesystemService) { 
     fsService.getFS().subscribe(fs => {
       fs.trackingDelegate['willMovePath'] = (_oldPath: string, _newPath: string) => this.willMovePath.emit({oldPath: _oldPath, newPath: _newPath});
@@ -32,6 +33,8 @@ export class EventService {
           this.onOpenFile.emit({path: _path, byUser: false});
         }
       }
+
+      fs.trackingDelegate['onWriteToFile'] = (_path: string, _bytesWritten: number) => this.onWriteToFile.emit({path: _path, bytesWritten: _bytesWritten})
     });
   }
 

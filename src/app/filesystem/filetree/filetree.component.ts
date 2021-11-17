@@ -1,4 +1,4 @@
-import { Component, ComponentFactoryResolver, ElementRef, OnDestroy, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
+import { Component, ComponentFactoryResolver, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
 import { concat, from, Observable, Subject, Subscription } from 'rxjs';
 import { PyodideService } from '../../pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
@@ -36,6 +36,12 @@ export class FiletreeComponent implements OnDestroy{
         () => { },
         err => { },
         () => this.kickstartTreeGeneration());
+
+    // Sync after every rewrite
+    // TODO: Should probably be done automatically after every execution (can't be done by pyodide service currently as that woudl cause circular dependency)
+    ev.onWriteToFile.subscribe(() => {
+      this.fsService.sync(false).subscribe()
+    });
   }
 
   // TODO: Remove hardcoded stuff

@@ -22,6 +22,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   allFiles: ComponentRef<FileComponent>[] = [];
   deleteSubscription: Subscription;
   moveSubscription: Subscription;
+  writeSubscription: Subscription;
   activeElementChangeSubscription: Subscription;
 
   @Input('depth') depth: number = 0;
@@ -37,6 +38,7 @@ export class FolderComponent implements OnInit, OnDestroy {
 
     this.deleteSubscription = this.ev.onDeletePath.subscribe(this.onDelete.bind(this));
     this.moveSubscription = this.ev.onMovePath.subscribe(this.onPathMove.bind(this));
+    this.writeSubscription = this.ev.onWriteToFile.subscribe(this.onWriteToFile.bind(this));
 
     this.activeElementChangeSubscription = this.ev.onActiveElementChange.subscribe(newActiveElementPath => {
       if (this.path !== newActiveElementPath) {
@@ -67,7 +69,13 @@ export class FolderComponent implements OnInit, OnDestroy {
 
   // TODO: What happens if you rename top level dir?
 
-  // covers renaming, moving and creating new files/folders
+  onWriteToFile(params: {path: string, bytesWritten: number}) {
+    if (this.isDirectChild(params.path)) {
+      this.scan();
+    }
+  }
+
+  // covers renaming and moving and creating new files/folders
   onPathMove(params: { oldPath: string, newPath: string }): void {
     if (this.isDirectChild(params.newPath)) {
       this.scan();
