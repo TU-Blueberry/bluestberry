@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FilesystemService } from '../filesystem.service';
 
 @Component({
@@ -6,15 +6,12 @@ import { FilesystemService } from '../filesystem.service';
   templateUrl: './file.component.html',
   styleUrls: ['./file.component.scss']
 })
-export class FileComponent implements OnInit {
+export class FileComponent {
 
   @Input('depth') depth: number = 0;
   @Input('path') path: string = '';
   @Input('ref') ref: any;
   constructor(private fsService: FilesystemService) { }
-
-  ngOnInit(): void {
-  }
 
   deleteFile(ev: Event) {
     ev.stopPropagation();

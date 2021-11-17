@@ -1,5 +1,5 @@
-import { Component, ComponentFactoryResolver, ElementRef, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Observable, Subject } from 'rxjs';
+import { Component, ComponentFactoryResolver, ElementRef, OnDestroy, ViewChild, ViewContainerRef, ViewEncapsulation } from '@angular/core';
+import { concat, from, Observable, Subject, Subscription } from 'rxjs';
 import { PyodideService } from '../../pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
@@ -13,18 +13,20 @@ import * as JSZip from 'jszip';
 @Component({
   selector: 'app-filetree',
   templateUrl: './filetree.component.html',
-  styleUrls: ['./filetree.component.scss']
+  styleUrls: ['./filetree.component.scss'],
 })
-export class FiletreeComponent {
+export class FiletreeComponent implements OnDestroy{
   rootComponent?: FolderComponent;
   showImportWindow = false;
+  dragOver = false;
   tempZip?: JSZip;
   checkInProgress = false;
   conflictDetected = false;
+  selectedFile?: File;
   userResult$: Subject<boolean> = new Subject();
+  lastCheck?: Subscription;
   test: any;
 
-  @ViewChild('fileInput') fileInputRef!: ElementRef;
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
   constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, private ev: EventService) {
 
@@ -66,7 +68,7 @@ export class FiletreeComponent {
   }
 
   // TODO: Additionally check whether it zip is completely empty or only consists of config.json
-  unpackCheckAndImport(file: File) {
+  unpackCheckAndPossiblyImport(file: File) {
     this.checkInProgress = true;
     return from(file.arrayBuffer()).pipe(
       switchMap(buffer => this.fsService.loadZip(buffer)),
@@ -127,34 +129,86 @@ export class FiletreeComponent {
     this.showImportWindow = true;
   }
 
-  fileInputChange(event: Event) {
+  dropFile(ev: DragEvent): void {
+    ev.preventDefault();
+    this.selectedFile = undefined;
+
+    if (ev.dataTransfer) {
+      if (ev.dataTransfer.items) {
+        if (ev.dataTransfer.items.length === 1 && ev.dataTransfer.items[0].kind === "file") {
+          const file = ev.dataTransfer.items[0].getAsFile();
+
+          if (file) {
+            this.check(file);
+          } else {
+            // TODO: Error
+          }
+        } else {
+          // TODO: Error
+        }
+      }
+    }
+  }
+
+  preventDragOver(ev: Event): void {
+    ev.preventDefault();
+    this.dragOver = true;
+  }
+
+  clearSelection(): void {
+    this.dragOver = false;
+    this.selectedFile = undefined;
+    this.tempZip = undefined;
+  }
+
+  closeImportWindow(): void {
+    this.showImportWindow = false;
+  }
+
+  check(candidate: File): void {
     this.userResult$ = new Subject();
-    const files = (event.target as HTMLInputElement).files;
     this.tempZip = undefined;
     this.checkInProgress = false;
+    this.lastCheck?.unsubscribe();
     this.conflictDetected = false;
 
-    if (!files || files.length == 0) {
-      return;
-    }
-
-    if (files[0].type !== 'application/zip') {
+    if (candidate.type !== 'application/zip') {
       // TODO: Display error message
       return;
     }
 
+    this.selectedFile = candidate;
+
     // TODO: Kriegt man das subscribe weg?
-    this.unpackCheckAndImport(files[0]).subscribe(() => {}, 
+    this.lastCheck = this.unpackCheckAndPossiblyImport(this.selectedFile).subscribe(() => {}, 
       err => console.error(err), 
       () => {
         console.log("Import complete!");
         this.listRef.clear();
         this.kickstartTreeGeneration();
-        this.fileInputRef.nativeElement.value = '';
         this.checkInProgress = false;
         this.conflictDetected = false;
         this.showImportWindow = false;
         this.tempZip = undefined;
     });
+  }
+
+  fileInputChange(ev: Event) {
+    this.selectedFile = undefined;
+    const fileList = (ev.target as HTMLInputElement)?.files;
+
+    if (fileList?.[0]) {
+      this.check(fileList[0]);
+    } else {
+      // TODO: Error
+    }
+  }
+
+  preventBubbling(ev: Event): void {
+    ev.stopPropagation();
+  }
+
+  ngOnDestroy(): void {
+    this.lastCheck?.unsubscribe();
   }
 }

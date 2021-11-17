@@ -22,6 +22,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   allFiles: ComponentRef<FileComponent>[] = [];
   deleteSubscription: Subscription;
   moveSubscription: Subscription;
+  activeElementChangeSubscription: Subscription;
 
   @Input('depth') depth: number = 0;
   @Input('path') path: string = '';
@@ -37,7 +38,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.deleteSubscription = this.ev.onDeletePath.subscribe(this.onDelete.bind(this));
     this.moveSubscription = this.ev.onMovePath.subscribe(this.onPathMove.bind(this));
 
-    this.ev.onActiveElementChange.subscribe(newActiveElementPath => {
+    this.activeElementChangeSubscription = this.ev.onActiveElementChange.subscribe(newActiveElementPath => {
       if (this.path !== newActiveElementPath) {
         this.isActive = false;
       }
@@ -162,17 +163,10 @@ export class FolderComponent implements OnInit, OnDestroy {
   toggleSubfolders(ev: Event): void {
     this.showSubfolders = !this.showSubfolders;
 
-    if (this.isActive) {
-      ev.stopPropagation();
-    }
-  }
-
-  toggleActive(): void {
-    this.isActive = !this.isActive;
-
-    if (this.isActive) {
+    if (!this.isActive) {
+      this.isActive = !this.isActive;
       this.ev.changeActiveElement(this.path);
-    }
+    } 
   }
 
   ngOnDestroy(): void {
@@ -180,5 +174,6 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.filesRef.clear();
     this.deleteSubscription.unsubscribe();
     this.moveSubscription.unsubscribe();
+    this.activeElementChangeSubscription.unsubscribe();
   }
 }
