@@ -68,7 +68,6 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   // TODO: What happens if you rename top level dir?
-
   onWriteToFile(params: {path: string, bytesWritten: number}) {
     if (this.isDirectChild(params.path)) {
       this.scan();
@@ -183,5 +182,6 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.deleteSubscription.unsubscribe();
     this.moveSubscription.unsubscribe();
     this.activeElementChangeSubscription.unsubscribe();
+    this.writeSubscription.unsubscribe();
   }
 }

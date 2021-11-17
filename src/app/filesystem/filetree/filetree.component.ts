@@ -35,10 +35,12 @@ export class FiletreeComponent implements OnDestroy{
       .subscribe(
         () => { },
         err => { },
-        () => this.kickstartTreeGeneration());
+        () => { 
+          this.kickstartTreeGeneration();
+        });
 
-    // Sync after every rewrite
-    // TODO: Should probably be done automatically after every execution (can't be done by pyodide service currently as that woudl cause circular dependency)
+    // Sync after every write
+    // TODO: Should probably be done automatically after every code execution by pyodide service
     ev.onWriteToFile.subscribe(() => {
       this.fsService.sync(false).subscribe()
     });

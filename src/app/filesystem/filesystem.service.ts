@@ -344,10 +344,8 @@ export class FilesystemService {
   }
 
 
-
   // -------------------------- TODO
-
-
+  
   // TODO: Fetch from server (browser cache), unzip and replace specified file
   // Sync afterwards
   resetFile(): void {
