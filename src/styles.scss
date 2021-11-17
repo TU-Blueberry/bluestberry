@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/icon?family=Material+Icons");
 @import "./variables.scss";
 
+@import '~@angular/cdk/overlay-prebuilt.css';
+
 // Global CSS classes
 .svg-icon {
   width: $icon-size;
@@ -40,7 +42,7 @@ body {
   display: flex;
   justify-content: end;
   justify-items: center;
-  position: absolute;
+  position: relative;
   bottom: 0;
   right: 0;
   padding-top: 5px;
@@ -51,11 +53,11 @@ body {
 
 .action-bar-icon {
   height: 24px;
-  color: #ffffff66;
   padding: 10px;
   margin: 10px;
-  background-color: rgb(46, 49, 56);
   border-radius: 50%;
+  color: #ffffff66;
+  background-color: rgb(46, 49, 56);
 
   &:hover {
     background-color: rgb(66, 70, 80);

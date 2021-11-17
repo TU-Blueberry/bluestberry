@@ -1,0 +1,29 @@
+<as-split direction="horizontal" class="main-split">
+  <as-split-area>
+    <as-split direction="vertical">
+      <as-split-area>
+        <app-tab-group>
+          <app-tab title="code">
+            <app-code-viewer class="code-wrapper"></app-code-viewer>
+          </app-tab>
+        </app-tab-group>
+      </as-split-area>
+      <as-split-area>
+        <app-terminal-viewer></app-terminal-viewer>
+      </as-split-area>
+    </as-split>
+  </as-split-area>
+  <as-split-area>
+    <app-tab-group>
+      <app-tab title="unity">
+        <app-unity-viewer></app-unity-viewer>
+      </app-tab>
+      <app-tab title="dog">
+        <app-image-viewer imagePath="assets/dog.png"></app-image-viewer>
+      </app-tab>
+    </app-tab-group>
+    <app-hint-viewer></app-hint-viewer>
+  </as-split-area>
+
+
+</as-split>

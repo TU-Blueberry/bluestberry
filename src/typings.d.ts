@@ -48,5 +48,10 @@ declare class Pyodide {
   runPythonAsync(code: string): Promise<any>;
   loadPackage(pythonPackage: string): Promise<any>;
   FS: typeof FS & MissingInEmscripten;
+  toPy(obj: any, options?: {depth: number}): PyProxy;
+}
+
+declare class PyProxy {
+
 }
 

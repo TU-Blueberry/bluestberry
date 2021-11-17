@@ -1,3 +1,3 @@
 export enum UnityScenes {
-  BerrySorter = '/assets/unity/berrysort/Build/berrysort.json',
+  BerrySorter = 'assets/unity/berrysort/Build/berrysort.json',
 }

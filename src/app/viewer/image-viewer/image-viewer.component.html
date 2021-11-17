@@ -1,0 +1,3 @@
+<div #imageContainer class="image-container" >
+    <img #imageLoaded class="image-responsive" [src]="imagePath" (click)="mouseClick($event)" (load)="onImageLoad($event)" (mouseover)="mouseOver($event)" (mouseout)="mouseOut($event)" [style.cursor]="hoverMode" />
+</div>

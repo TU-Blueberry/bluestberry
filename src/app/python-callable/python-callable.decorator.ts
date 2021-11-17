@@ -10,7 +10,7 @@ export function PythonCallable(target: any, propertyKey: string, descriptor: Pro
         return;
       }
       // @ts-ignore
-      globalThis[propertyKey] = () => serviceInstance[propertyKey]();
+      globalThis[propertyKey] = (...args) => serviceInstance[propertyKey](...args);
     });
 }
 

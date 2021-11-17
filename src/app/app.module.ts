@@ -13,12 +13,14 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
 import { UnityModule } from './unity/unity.module';
 import { UnityComponent } from './unity/unity.component';
 import { HttpClientModule } from '@angular/common/http';
+import {AngularSplitModule} from 'angular-split';
 
 @NgModule({
   declarations: [AppComponent, NavbarComponent, ActionbarComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
+    AngularSplitModule,
     MonacoEditorModule.forRoot(),
     ViewerModule,
     FormsModule,

@@ -1,5 +1,4 @@
 stages:
-  - test
   - publish
   - deploy
 
@@ -8,18 +7,20 @@ variables:
   TAG_COMMIT: $REGISTRY_ADDRESS/pg643/frontend/frontend:latest
   VERSION: latest
 
-test:
-  image: node:latest
-  stage: test
-  tags:
-    - blueberry
-  script:
-    - yarn
-    - yarn test:ci
+  # test:
+  #   image: node:latest
+  #   stage: test
+  #   tags:
+  #     - blueberry
+  #   script:
+  #     - yarn
+  #     - yarn test:ci
 
 publish:
   image: docker:latest
   stage: publish
+  only:
+    - development
   services:
     - docker:dind
   tags:
@@ -32,6 +33,8 @@ publish:
 deploy:
   image: tmaier/docker-compose:latest
   stage: deploy
+  only:
+    - development
   services:
     - docker:dind
   tags:
