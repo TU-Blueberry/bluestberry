@@ -33,7 +33,7 @@ import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
     CodeViewerComponent,
     UnityViewerComponent,
     TerminalViewerComponent,
-    LessonSelectionComponent
+    LessonSelectionComponent,
     ImageViewerComponent,
     MainViewerComponent,
     TabComponent,
