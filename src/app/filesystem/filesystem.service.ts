@@ -7,6 +7,7 @@ import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { ConfigObject } from './shared/configObject';
 import { isSystemDirectory } from './shared/system_folder';
+import { Location } from '@angular/common';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,7 @@ export class FilesystemService {
   zipper: JSZip = new JSZip();;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
 
-  constructor(private http: HttpClient, private pyService: PyodideService) {
+  constructor(private http: HttpClient, private pyService: PyodideService, private location: Location) {
     this.pyService.pyodide.subscribe(py => {
       this.PyFS = py.FS;
       this.fsSubject.next(this.PyFS);
@@ -54,7 +55,7 @@ export class FilesystemService {
             subscriber.error();
           } else {
             subscriber.complete();
-            this.printRecursively("/", 0, 2);
+            // this.printRecursively("/", 0, 2);
           }
         });
       } catch (e) {
@@ -65,7 +66,9 @@ export class FilesystemService {
 
   /** Retrieves lesson from server and stores it */
   loadFromServerAndOpen(name: string) {
-    return this.http.get(`/assets/${name}.zip`, { responseType: 'arraybuffer' }).pipe(mergeMap(
+    const url = this.location.prepareExternalUrl(`/assets/${name}.zip`);
+
+    return this.http.get(url, { responseType: 'arraybuffer' }).pipe(mergeMap(
       buff => {
         return this.loadZip(buff).pipe(mergeMap(zip => this.storeLesson(zip, name)));
       }
