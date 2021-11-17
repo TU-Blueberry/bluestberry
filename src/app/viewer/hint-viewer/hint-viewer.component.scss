@@ -1,38 +1,8 @@
 .hint-container {
     background-color: lightgray;
+    display: flex;
+    height: 100%;
 }
-
-.hint-icon {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-
-    height: 24px;
-    width: 24px;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 50%;
-
-    color: #ffffff66;
-    background-color: rgb(46, 49, 56);
-
-    &:hover {
-        background-color: rgb(66, 70, 80);
-        cursor: pointer;
-        color: rgb(240, 240, 240);
-    }
-
-}
-
-.hint-overlay-container {
-    background-color: #DFDFDF;
-    border-radius: 10px;
-    padding: 20px; 
-    width: 400px;
-    height: 600px;
-    overflow-y: auto;
-}
-
 
 .hint-overlay-bar {
     position: absolute;
@@ -53,16 +23,20 @@
 
     padding: 7px;
     border-radius: 5px;
+
+    max-width: 70%;
 }
 
 .hint-question {
     background-color: #AAD7EC;
-    margin-right: 0;
+    margin-right: 10%;
     margin-left: auto;
+    
 }
 
 .hint-answer {
     background-color: #46C0DE;
+    margin-left: 10%;
 }
 
 #hint-history {
