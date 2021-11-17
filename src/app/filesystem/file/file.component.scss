@@ -1,0 +1,58 @@
+.file {
+    color: white;
+    cursor: pointer;
+    display: flex;
+    font-size: 0.9rem;
+    padding-top: 5px;
+    padding-bottom: 5px; 
+    align-items: center;
+    justify-content: space-between;
+
+    &:hover {
+        background-color: hsl(220 12% 20%);
+    }
+}
+
+.active {
+    background-color: #0068b3;
+
+    &:hover {
+        background-color: #0068b3;
+    }
+}
+
+.file-heading {
+    padding-left: 16px;
+    display: flex;
+}
+
+.file:hover > .file-actions {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.file-actions {
+    display: none;
+}
+
+.file-action-icon {
+    width: 16px;
+    height: 16px;
+
+    &:hover {
+        color: white;
+    }
+}
+
+.file-type-image {
+    color: green;
+    width: 16px;
+    height: 16px;
+}
+
+.file-name {
+    padding-left: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

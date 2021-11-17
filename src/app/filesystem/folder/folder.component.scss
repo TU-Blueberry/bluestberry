@@ -1,0 +1,71 @@
+.folder {
+    color: rgb(204, 204, 204);
+    cursor: pointer;
+    display: flex;
+    font-size: 0.9rem;
+    padding-top: 5px;
+    padding-bottom: 5px; 
+    align-items: center;
+    justify-content: space-between;
+
+    &:hover {
+        background-color: hsl(220 12% 20%);
+    }
+}
+
+.folder-heading {
+    display: flex;
+}
+
+.folder:hover > .folder-actions {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+.folder-actions {
+    display: none;
+}
+
+.folder-action-icon {
+    width: 16px;
+    height: 16px;
+
+    &:hover {
+        color: white;
+    }
+}
+
+.root-folder {
+    background-color: hsl(220 12% 20%);
+}
+
+.active {
+    background-color: #0068b3;
+
+    &:hover {
+        background-color: #0068b3;
+    }
+}
+
+.folder-text {
+    color: white;
+    margin-left: 5px;
+}
+
+.folder-icon  {
+    width: 16px;
+    height: 16px;
+
+    & > .arrow {
+        color: #ffffff66;
+    }
+
+    & > .actual-folder {
+        fill: #0068b3;
+    }
+
+    & > .actual-folder-active {
+        fill: white;
+        color: white;
+    }
+}
