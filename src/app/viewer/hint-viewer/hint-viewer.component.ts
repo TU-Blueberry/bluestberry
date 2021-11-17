@@ -7,9 +7,6 @@ import { Component, OnInit } from '@angular/core';
 })
 export class HintViewerComponent {
 
-  // https://material.angular.io/cdk/overlay/examples#cdk-overlay-basic
-
-
   questions_storage_ : Array<Question> = [];
   answer_storage_ : Array<Answer> = [];
 
@@ -18,7 +15,6 @@ export class HintViewerComponent {
 
   is_open_ = false;
 
-
   constructor() { 
     this.loadQuestionAnswers();
     this.initDialogue();
@@ -26,83 +22,64 @@ export class HintViewerComponent {
 
   loadQuestionAnswers(): void {
 
-    var q0 = new Question(0, "Welche Klassifikatoren gibt es?");
-    var q1 = new Question(1, "Erzähl mir einen Witz!");
-    var q2 = new Question(2, "Was ist ein Random Forest?");
-    var q3 = new Question(3, "Was ist ein Neuronales Netz?");
-    var q4 = new Question(4, "Was ist eine Support Vector Machines?");
-    var q5 = new Question(5, "Was ist Clustering?");
-    
-    var a0 = new Answer(0, "Willkommen bei Blueberry. Wie kann ich dir helfen?");
-    var a1 = new Answer(1, "Es gibt viele Klassifikatoren, einige Beispiele sind Random Forests, Neuronale Netze, Support Vector Machines oder auch Clusteringverfahren.");
-    var a2 = new Answer(2, "Denk dir selber einen aus.");
-    var a3 = new Answer(3, "Ja weiß ich auch nicht...");
-    
-    a0.addQuestionIdOption(q0.getQuestionId());
-    a0.addQuestionIdOption(q1.getQuestionId());
-    a1.addQuestionIdOption(q2.getQuestionId());
-    a1.addQuestionIdOption(q3.getQuestionId());
-    a1.addQuestionIdOption(q4.getQuestionId());
-    a1.addQuestionIdOption(q5.getQuestionId());
-    
-    q0.setNextAnswerId(a1.getAnswerId());
-    q2.setNextAnswerId(a3.getAnswerId());
-    q3.setNextAnswerId(a3.getAnswerId());
-    q4.setNextAnswerId(a3.getAnswerId());
-    q5.setNextAnswerId(a3.getAnswerId());
-    q1.setNextAnswerId(a2.getAnswerId());
+    this.answer_storage_ = [
+      new Answer(0, "Wie kann ich dir helfen?", [0,1,2]),
+      new Answer(1, "Es gibt viele Klassifikatoren, einige Beispiele sind Random Forests, Neuronale Netze, Support Vector Machines oder auch Clusteringverfahren.", [3, 4, 5, 6]),
+      new Answer(2, "Was sind acht Hobbits? Ein Hobbyte!", [0,1,2]),
+      new Answer(3, "Das weiß ich auch noch nicht...", [0,1,2]),
+      new Answer(4, "Das hier ist Blueberry. Eine Lernplattform für DataScience :)", [0,1,2]),
+    ]
 
-    this.questions_storage_.push(q0);
-    this.questions_storage_.push(q1);
-    this.questions_storage_.push(q2);
-    this.questions_storage_.push(q3);
-    this.questions_storage_.push(q4);
-    this.questions_storage_.push(q5);
-    
-    this.answer_storage_.push(a0);
-    this.answer_storage_.push(a3);
-    this.answer_storage_.push(a1);
-    this.answer_storage_.push(a2);
+    this.questions_storage_ = [
+      new Question(0, "Welche Klassifikatoren gibt es?", 1),
+      new Question(1, "Erzähl mir einen Witz!", 2),
+      new Question(2, "Wo bin ich hier?", 4),
+      new Question(3, "Was ist ein Random Forest?", 3),
+      new Question(4, "Was ist ein Neuronales Netz?", 3),
+      new Question(5, "Was ist eine Support Vector Machines?", 3),
+      new Question(6, "Was ist Clustering?", 3),
+      new Question(7, "Welche Clusteringverfahren gibt es alles?", 9),
+    ]
     
   }
   
+  toggleHints(): void {
+    this.is_open_ = !this.is_open_;
+  }
 
   initDialogue(): void {
+    const starting_answer = this.answer_storage_.find(
+      a => a.getAnswerId() == 0
+    );
 
-    const starting_answer = this.answer_storage_.find(a => a.getAnswerId() == 0);
+    if(starting_answer == undefined) {
+      console.log("no starting answer found");
+      return;
+    }
+
     this.dialogue_history_.push(starting_answer!);
     const options = this.getQuestionOptions(starting_answer!);
 
     for(var o of options) {
       this.dialogue_options_.push(o);
     }
-
   }
 
-  toggleHints(): void {
-    this.is_open_ = !this.is_open_;
-  }
 
   optionSelected(selected_id: number): void {
-
-    // // get selected option object
-    const selected_option = this.dialogue_options_.find( q => q.getQuestionId() == selected_id)
+    // get selected question object
+    const selected_question = this.dialogue_options_.find( q => q.getQuestionId() == selected_id)
+    
+    // add question to history
+    this.dialogue_history_.push(selected_question!)
     this.dialogue_options_ = [];
 
-    // // add option to history
-    this.dialogue_history_.push(selected_option!)
+    const answer = this.answer_storage_.find(a => a.getAnswerId() == selected_question!.getNextAnswerId());
 
-    this.generateConversationStep();
+    console.log("next answer " + answer!.getAnswerId() + " " + answer!.getContent())
 
-  }
-
-  generateConversationStep(): void {
-
-    const last_question = this.dialogue_history_[this.dialogue_history_.length-1] as Question;
-
-    const answer = this.answer_storage_.find(a => a.getAnswerId() == last_question.getNextAnswerId());
     if(answer == undefined) {
-      console.log("next answer with id " + last_question.getNextAnswerId() + " not found");
+      console.log("next answer with id " + selected_question!.getNextAnswerId() + " not found");
       return;
     }
 
@@ -112,7 +89,6 @@ export class HintViewerComponent {
     for(var o of new_options) {
       this.dialogue_options_.push(o);
     }
-
   }
 
   undo(): void {
@@ -129,7 +105,6 @@ export class HintViewerComponent {
     for(var o of new_options) {
       this.dialogue_options_.push(o);
     }
-
   }
 
   getQuestionOptions(answer: Answer): Array<Question> {
@@ -141,11 +116,11 @@ export class HintViewerComponent {
 
 abstract class DialogueContent {
   
-  private content: string; // displayed text
+  protected content: string; // displayed text
 
   protected question: boolean = false; // false -> answer
 
-  constructor(content: string) {
+  constructor(content: string = "") {
     this.content = content;
   }
 
@@ -166,54 +141,134 @@ abstract class DialogueContent {
 
 class Answer extends DialogueContent {
 
-  private answer_id: number;
+  private answerId: number;
 
-  private question_id_options: Array<number> = [];
+  private questionIdOptions: Array<number> = [];
 
-  constructor(tipp_id: number, content: string) {
+  constructor(answerId: number, content: string, questionIdOptions: Array<number>) {
     super(content);
-    this.answer_id = tipp_id;
+    this.answerId = answerId;
     this.question = false;
+    this.questionIdOptions = questionIdOptions;
   }
 
   getAnswerId(): number {
-    return this.answer_id;
+    return this.answerId;
   }
 
   addQuestionIdOption(id: number): void {
-    this.question_id_options.push(id);
+    this.questionIdOptions.push(id);
   }
 
   getQuestionIdOptions(): Array<number> {
-    return this.question_id_options;
+    return this.questionIdOptions;
   }
 
 }
 
 class Question extends DialogueContent {
 
-  private question_id: number;
+  private questionId: number;
 
-  private next_answer_id: number = -1;
+  private nextAnswerId: number = -1;
 
-  constructor(question_id: number, content: string) {
+  constructor(question_id: number, content: string, nextAnswerId: number) {
     super(content);
-    this.question_id = question_id;
+    this.questionId = question_id;
     this.question = true;
+    this.nextAnswerId = nextAnswerId;
   }
 
   getQuestionId(): number {
-    return this.question_id;
+    return this.questionId;
   }
 
   setNextAnswerId(id: number): void {
-    this.next_answer_id = id;
+    this.nextAnswerId = id;
   }
 
   getNextAnswerId(): number {
-    return this.next_answer_id;
+    return this.nextAnswerId;
   }
 
 }
 
+
+
+const givenHints = `
+{
+
+  "questions": [
+      {
+          "questionId": 0,
+          "content": "Welche Klassifikatoren gibt es?",
+          "nextAnswerId": 1
+      },
+      {
+          "questionId": 1,
+          "content": "Erzähl mir einen Witz!",
+          "nextAnswerId": 2
+      },
+      {
+          "questionId": 2,
+          "content": "Wo bin ich hier?",
+          "nextAnswerId": 4
+      },
+      {
+          "questionId": 3,
+          "content": "Was ist ein Random Forest?",
+          "nextAnswerId": 3
+      },
+      {
+          "questionId": 4,
+          "content": "Was ist ein Neuronales Netz?",
+          "nextAnswerId": 3
+      },
+      {
+          "questionId": 5,
+          "content": "Was ist eine Support Vector Machines?",
+          "nextAnswerId": 3
+      },
+      {
+          "questionId": 6,
+          "content": "Was ist Clustering?",
+          "nextAnswerId": 3
+      },
+      {
+          "questionId": 7,
+          "content": "Welche Clusteringverfahren gibt es alles?",
+          "nextAnswerId": 0
+      }
+  ],
+
+  "answers": [
+      {
+          "answerId": 0, 
+          "content": "Wie kann ich dir helfen?",
+          "questionIdOptions": [0, 1, 2]
+      },
+      {
+          "answerId": 1,
+          "content": "Es gibt viele Klassifikatoren, einige Beispiele sind Random Forests, Neuronale Netze, Support Vector Machines oder auch Clusteringverfahren.",
+          "questionIdOptions": [3, 4, 5, 6]
+      },
+      {
+          "answerId": 2,
+          "content": "Was sind acht Hobbits? Ein Hobbyte!",
+          "questionIdOptions": [0]
+      },
+      {
+          "answerId": 3,
+          "content": "Das weiß ich auch noch nicht...",
+          "questionIdOptions": [0]
+      },
+      {
+          "answerId": 4,
+          "content": "Das hier ist Blueberry. Eine Lernplattform für DataScience :)",
+          "questionIdOptions": [0]
+      }
+  ]
+
+}
+`
 
