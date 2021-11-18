@@ -31,7 +31,7 @@ export class GlossaryEntryViewerComponent implements OnInit {
     }
 
     /* Sets content of this glossary entry according to the given entryIdentifier */
-    this.http.get('/assets/glossary/' + this.entryIdentifier + '/content.md', { responseType: 'text' })
+    this.http.get('assets/glossary/' + this.entryIdentifier + '/content.md', { responseType: 'text' })
       .subscribe(data => this.content = data);
     }
 }

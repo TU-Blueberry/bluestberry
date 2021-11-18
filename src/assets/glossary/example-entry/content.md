@@ -33,5 +33,4 @@ $f(x) = \\int_{-\\infty}^\\infty \\hat f(\\xi) e^{2 \\pi i \\xi x} d\\xi$
 
 ![logo]
 
-[comment]: <> (Path relative to the calling entity e.g. glossary-entry-viewer)
-[logo]: ../../assets/blueberry.png
+[logo]: assets/blueberry.png
