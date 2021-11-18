@@ -122,7 +122,7 @@ def main():
 
     send_to_unity(y_test, predictions)
 
-# comment the following line out for own classifier
+# comment out the following line for own classifier
 send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))
 #main()`
 
