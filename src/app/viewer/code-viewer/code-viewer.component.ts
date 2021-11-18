@@ -30,8 +30,7 @@ from skimage import io
 from sklearn import metrics
 from sklearn.dummy import DummyClassifier
 
-# TODO
-path = "BlueberryData/"
+path = "sortierroboter/sortierroboter/BlueberryData/"
 
 
 def load_images(path):
@@ -110,7 +109,7 @@ def main():
     X_train, X_test = extract_features(X_train), extract_features(X_test)
 
     # build model
-    model = DummyClassifier()
+    model = DummyClassifier(strategy="uniform")
 
     # train model
     model.fit(X_train, y_train)
