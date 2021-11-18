@@ -18,12 +18,13 @@
       <app-tab title="unity">
         <app-unity-viewer></app-unity-viewer>
       </app-tab>
+      <app-tab title="glossary-entry">
+        <app-glossary-entry-viewer [entryIdentifier]="'example-entry'"></app-glossary-entry-viewer>
+      </app-tab>
       <app-tab title="dog">
         <app-image-viewer imagePath="assets/dog.png"></app-image-viewer>
       </app-tab>
     </app-tab-group>
     <app-hint-viewer></app-hint-viewer>
   </as-split-area>
-
-
 </as-split>

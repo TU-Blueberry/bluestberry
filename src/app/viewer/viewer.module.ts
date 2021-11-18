@@ -14,6 +14,8 @@ import { TabComponent } from 'src/app/viewer/tab/tab.component'
 import { TabGroupComponent } from './tab-group/tab-group.component'
 import { AngularSplitModule } from 'angular-split'
 import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
+import { GlossaryEntryViewerComponent } from './glossary-entry-viewer/glossary-entry-viewer.component';
+import { MarkdownModule } from "ngx-markdown";
 
 /**
  * Module used for all the Viewer-Components.
@@ -39,6 +41,7 @@ import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
     TabComponent,
     TabGroupComponent,
     HintViewerComponent,
+    GlossaryEntryViewerComponent,
   ],
   imports: [
     CommonModule,
@@ -47,6 +50,7 @@ import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
     UnityModule,
     AngularSplitModule,
     OverlayModule,
+    MarkdownModule,
   ],
   exports: [
     CodeViewerComponent,
