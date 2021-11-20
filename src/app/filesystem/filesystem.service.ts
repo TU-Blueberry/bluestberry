@@ -21,6 +21,8 @@ export class FilesystemService {
       this.PyFS = py.FS;
       this.fsSubject.next(this.PyFS);
     });
+
+    this.pyService.getAfterExecution().subscribe(() => this.sync(false));
   }
 
   getFS() {
@@ -54,7 +56,7 @@ export class FilesystemService {
             subscriber.error();
           } else {
             subscriber.complete();
-            this.printRecursively("/", 0, 2);
+           // this.printRecursively("/", 0, 2);
           }
         });
       } catch (e) {
@@ -206,6 +208,27 @@ export class FilesystemService {
     }
   }
 
+  /* Returns all subfolders and - if requested - files of the given path as seperate arrays */
+  scan(path: string, depth: number, includeFiles: boolean) {
+    const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
+    const subfolders: FSNode[] = [];
+    const filesInFolder: FSNode[] = [];
+
+    Object.entries(entries).forEach(([_, value], key) =>  {
+      const currentPath = `${path}/${value.name}`;
+
+      if (!isSystemDirectory(currentPath) && this.isDirectory(currentPath)) {
+        subfolders.push(value);
+      }
+
+      if (this.isFile(currentPath) && !(depth == 0 && value.name === 'config.json') && includeFiles) {
+        filesInFolder.push(value);
+      }
+    });
+
+    return [subfolders, filesInFolder];
+  }
+
   fillZip(path: string, zip: JSZip, lessonName: string) {
     try {
       if (!this.isEmpty(path)) {
@@ -338,11 +361,19 @@ export class FilesystemService {
       const node = this.PyFS?.lookupPath(path, {}).node;
       return this.PyFS?.isDir((node as FSNode).mode) || false;
     } catch (e) {
-
       return false;
     }
   }
 
+  // TODO: errors
+  getNodeByPath(path: string): FSNode | undefined {
+    try {
+      return (this.PyFS?.lookupPath(path, {}).node as FSNode);
+    } catch(e) {
+      console.error(e);
+      return undefined;
+    }
+  }
 
   // -------------------------- TODO
   

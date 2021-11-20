@@ -1,4 +1,5 @@
 import { EventEmitter, Injectable } from '@angular/core';
+import { PyodideService } from 'src/app/pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
 import { isSystemDirectory } from '../shared/system_folder'; 
 
@@ -18,11 +19,11 @@ export class EventService {
   onMakeDirectory: EventEmitter<{path: string, mode: any}> = new EventEmitter();
   onMakeSymlink: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   onActiveElementChange: EventEmitter<string> = new EventEmitter();
-  onUserOpenFIle: EventEmitter<string> = new EventEmitter
-
+  afterCodeExecution: EventEmitter<void> = new EventEmitter();
+  
   // TODO: Kann sein, dass ich alles rund um path noch in file/directory aufschlüsseln muss
   // TODO: isSystemDirectory einheitlich regeln (d.h. entweder hier oder in den aufrufenden Methoden abfangen)
-  constructor(private fsService: FilesystemService) { 
+  constructor(private fsService: FilesystemService, private py: PyodideService) { 
     fsService.getFS().subscribe(fs => {
       fs.trackingDelegate['willMovePath'] = (_oldPath: string, _newPath: string) => this.willMovePath.emit({oldPath: _oldPath, newPath: _newPath});
       fs.trackingDelegate['willDeletePath'] = (_path: string) => this.willDeletePath.emit(_path);
@@ -37,6 +38,8 @@ export class EventService {
 
       fs.trackingDelegate['onWriteToFile'] = (_path: string, _bytesWritten: number) => this.onWriteToFile.emit({path: _path, bytesWritten: _bytesWritten})
     });
+
+    py.getAfterExecution().subscribe(() => this.afterCodeExecution.emit());
   }
 
   onUserOpenFile(_path: string, content: Uint8Array) {
