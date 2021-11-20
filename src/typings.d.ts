@@ -26,7 +26,7 @@ declare interface AnalyzeObject {
 }
 
 declare class FSNode {
-  contents: FSNode   
+  contents: FSNode | Uint8Array  
   mode: number;
   id: number;
   name: string;
