@@ -77,7 +77,6 @@ export class FolderComponent implements OnInit, OnDestroy {
     });
   }
 
-  // TODO: Testen
   // covers renaming and moving of files/folders
   onPathMove(params: { oldPath: string, newPath: string }): void {
     if (this.isDirectChild(params.newPath)) {

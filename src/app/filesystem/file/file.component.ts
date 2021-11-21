@@ -11,7 +11,7 @@ export class FileComponent {
 
   @Input('depth') depth: number = 0;
   @Input('path') path: string = '';
-  @Input('ref') ref?: FSNode;
+  @Input('ref') ref!: FSNode;
   constructor(private fsService: FilesystemService, private ev: EventService) { }
 
   deleteFile(ev: Event) {
@@ -23,7 +23,7 @@ export class FileComponent {
 
   onDoubleClick(): void {
     if (this.ref?.contents instanceof Uint8Array) {
-      this.ev.onUserOpenFile(this.path, this.ref?.contents)
+      this.ev.onUserOpenFile(this.path, this.ref)
     }
   }
 }

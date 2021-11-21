@@ -2,6 +2,7 @@ import { EventEmitter, Injectable } from '@angular/core';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
 import { isSystemDirectory } from '../shared/system_folder'; 
+import { FileType } from 'src/app/shared/filetypes.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -11,7 +12,7 @@ export class EventService {
   onMovePath: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   willDeletePath: EventEmitter<string> = new EventEmitter();
   onDeletePath: EventEmitter<string> = new EventEmitter();
-  onOpenFile: EventEmitter<{path: string, byUser: boolean, fileContent?: Uint8Array}> = new EventEmitter();
+  onOpenFile: EventEmitter<{path: string, byUser: boolean, fileContent?: Uint8Array, type?: FileType}> = new EventEmitter();
   onReadFile: EventEmitter<{path: string, bytesRead: number}> = new EventEmitter();
   onWriteToFile: EventEmitter<{path: string, bytesWritten: number}> = new EventEmitter();
   onSeekFile: EventEmitter<{path: string, position: number, whence: any}> = new EventEmitter();
@@ -42,9 +43,22 @@ export class EventService {
     py.getAfterExecution().subscribe(() => this.afterCodeExecution.emit());
   }
 
-  onUserOpenFile(_path: string, content: Uint8Array) {
+  onUserOpenFile(_path: string, node: FSNode) {
     if (!isSystemDirectory(_path)) {
-      this.onOpenFile.emit({path: _path, byUser: true, fileContent: content});
+      const content = node.contents instanceof Uint8Array ? node.contents : undefined;
+        const matches = RegExp(/[a-zA-Z\d]+\.[a-zA-Z]{2,5}$/).exec(node.name);
+        let fileType: FileType | undefined;
+
+        if (!matches || matches.length === 0) {
+          fileType = FileType.OTHER;
+        } else {
+          const extension = matches[matches.length - 1].split(".");
+          const trimmedExtension = extension[extension.length - 1];
+          fileType = FileType[trimmedExtension.toUpperCase() as keyof typeof FileType];
+          fileType = fileType === undefined ? FileType.OTHER : fileType;
+        }
+
+      this.onOpenFile.emit({path: _path, byUser: true, fileContent: content, type: fileType});
     }
   }
 
