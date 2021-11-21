@@ -3,7 +3,13 @@
     <div class="hint-dialogue">
       <ng-container *ngFor="let action of dialogue_history_">
         <div id="hint-history" [ngClass]="action.getDivClass()">
-          {{ action.getContent() }}
+          {{ action.getTextSlice(0) }}
+          <ng-container
+            *ngFor="let link of action.getHrefDividers(); let i = index"
+          >
+            <a href="{{ link }}" style="display: inline">{{ link }}</a>
+            {{ action.getTextSlice(i + 1) }}
+          </ng-container>
         </div>
       </ng-container>
 
@@ -13,7 +19,13 @@
           [ngClass]="option.getDivClass()"
           (click)="optionSelected(option.getQuestionId())"
         >
-          {{ option.getContent() }}
+          {{ option.getTextSlice(0) }}
+          <ng-container
+            *ngFor="let link of option.getHrefDividers(); let i = index"
+          >
+            <a href="{{ link }}" style="display: inline">{{ link }}</a>
+            {{ option.getTextSlice(i + 1) }}
+          </ng-container>
         </div>
       </ng-container>
     </div>
