@@ -392,6 +392,22 @@ export class FilesystemService {
     return concat(writing, this.sync(false));
   }
 
+  getFileContent(path: string, _encoding: allowedEncodings): Observable<Uint8Array | undefined> {
+    return new Observable(subscriber => {
+      if (!this.isFile(path)) {
+        subscriber.error("Path doesn't belong to a file");
+      } else {
+        try {
+          const content = this.PyFS?.readFile(path, { encoding: _encoding});
+          subscriber.next(content);
+          subscriber.complete();
+        } catch (e) {
+          subscriber.error("Error reading file");
+        }
+      }
+    });
+  }
+
   // -------------------------- TODO
   
   // TODO: Fetch from server (browser cache), unzip and replace specified file

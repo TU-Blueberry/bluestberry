@@ -38,9 +38,13 @@ declare interface FSTypes {
   IDBFS: any;
 }
 
+type allowedEncodings = "binary" | "utf8";
+
 declare class MissingInEmscripten {
   filesystems: FSTypes;
   analyzePath(path: string, dontResolveLastLink: boolean): AnalyzeObject;
+  readFile(path: string, opts: { encoding: allowedEncodings; flags?: string | undefined }): Uint8Array;
+   
 }
 
 declare class Pyodide {
