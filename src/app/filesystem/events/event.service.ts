@@ -46,7 +46,7 @@ export class EventService {
   onUserOpenFile(_path: string, node: FSNode) {
     if (!isSystemDirectory(_path)) {
       const content = node.contents instanceof Uint8Array ? node.contents : undefined;
-        const matches = RegExp(/[a-zA-Z\d]+\.[a-zA-Z]{2,5}$/).exec(node.name);
+        const matches = RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z]{2,5}$/, "i").exec(node.name);
         let fileType: FileType | undefined;
 
         if (!matches || matches.length === 0) {

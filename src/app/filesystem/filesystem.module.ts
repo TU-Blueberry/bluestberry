@@ -4,6 +4,8 @@ import { FiletreeComponent } from './filetree/filetree.component';
 import { PyodideModule } from '../pyodide/pyodide.module';
 import { FolderComponent } from './folder/folder.component';
 import { FileComponent } from './file/file.component';
+import { UserInputComponent } from './user-input/user-input.component';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 /**
  * Module for Filesystem-Management related Classes.
@@ -14,11 +16,14 @@ import { FileComponent } from './file/file.component';
   declarations: [
     FiletreeComponent,
     FolderComponent,
-    FileComponent
+    FileComponent,
+    UserInputComponent
   ],
   imports: [
     CommonModule,
-    PyodideModule
+    PyodideModule,
+    FormsModule, 
+    ReactiveFormsModule
   ],
   exports: [
     FiletreeComponent

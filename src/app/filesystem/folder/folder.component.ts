@@ -13,11 +13,12 @@ export class FolderComponent implements OnInit, OnDestroy {
   folderFactory: ComponentFactory<FolderComponent>;
   fileFactory: ComponentFactory<FileComponent>;
   showSubfolders = false;
-  additionalData?: AnalyzeObject;
   hasSubfolders = false;
   isActive = false;
+  isRenaming = false;
+  isCreatingNew = false;
   allSubfolders: Map<string, Array<ComponentRef<FolderComponent>>> = new Map();
-  allFiles: Map<string, Array<ComponentRef<FileComponent>>> = new Map();
+  allFiles: Map<string, Array<ComponentRef<FileComponent>>> = new Map(); 
   deleteSubscription: Subscription;
   moveSubscription: Subscription;
   writeSubscription: Subscription;
@@ -26,7 +27,7 @@ export class FolderComponent implements OnInit, OnDestroy {
 
   @Input('depth') depth: number = 0;
   @Input('path') path: string = '';
-  @Input('ref') ref!: FSNode;
+  @Input('ref') ref?: FSNode;
   @Input('rootname') rootname?: string;
   @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef;
   @ViewChild('files', { read: ViewContainerRef, static: true }) filesRef!: ViewContainerRef;
@@ -95,6 +96,14 @@ export class FolderComponent implements OnInit, OnDestroy {
     }
   }
 
+  // called when user clicks button to add a new file/new folder
+  createNewElement(isFile: boolean): void {
+    // TODO: Add new user input component to UI, set edit mode to false (because we are creating a new one)
+    // on output: 
+    //    call pyfs.mkdir/writeFile
+    //    onSuccess: call createComponent (ONLY FOR FOLDERS! FILES SHOULD BE COVERED BY onWriteFiles callback!)
+  }
+
   // path of a direct child is identical to our path + /<something> at the end
   isDirectChild(pathToCheck: string): boolean {
     const splitPath = pathToCheck.split("/");
@@ -113,8 +122,10 @@ export class FolderComponent implements OnInit, OnDestroy {
       this.showSubfolders = true;
     }
 
-    Object.keys(this.ref.contents).length > 0 ? this.hasSubfolders = true : this.hasSubfolders = false;
-    this.createInitial();
+    if (this.ref) {
+      Object.keys(this.ref.contents).length > 0 ? this.hasSubfolders = true : this.hasSubfolders = false;
+      this.createInitial();
+    }
   }
 
   deleteFolder(ev: Event): void {

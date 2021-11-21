@@ -9,9 +9,12 @@
             <circle cx="13.5" cy="7.5" r="2.5" />
             <path stroke-linecap="round" d="M13.5 16.5L21 9" />
         </svg>
-        <div class="file-name">
+        <div class="file-name" *ngIf="!isRenaming">
             {{ ref?.name }}
         </div> 
+        <div *ngIf="isRenaming">
+            <app-user-input [parentPath]="this.path" [depth]="this.depth" [isFile]="true" [editMode]="true"></app-user-input>
+        </div>
     </div>
     <div class="file-actions">
         <div class="delete-file file-action-icon" (click)="deleteFile($event)">
@@ -20,6 +23,9 @@
             <title id="binIconTitle">Löschen</title> 
             <path d="M19 6L5 6M14 5L10 5M6 10L6 20C6 20.6666667 6.33333333 21 7 21 7.66666667 21 11 21 17 21 17.6666667 21 18 20.6666667 18 20 18 19.3333333 18 16 18 10"/> 
           </svg>
+        </div>
+        <div (click)="this.isRenaming = true">
+            Re
         </div>
     </div>
 </div>

@@ -13,7 +13,7 @@ import { isSystemDirectory } from './shared/system_folder';
 })
 export class FilesystemService {
   PyFS?: typeof FS & MissingInEmscripten;
-  zipper: JSZip = new JSZip();;
+  zipper: JSZip = new JSZip();
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
 
   constructor(private http: HttpClient, private pyService: PyodideService) {
@@ -27,17 +27,6 @@ export class FilesystemService {
 
   getFS() {
     return this.fsSubject;
-  }
-
-  /** Checks whether lesson with the given name already exists in the local filesystem. 
-   * If yes, the content from the local filesystem is used.
-   * If no, the lesson with the given name will be requested from the server and stored afterwards 
-   * Intended for situations where user shall choose between multiple lessons (e.g. application startup)
-   * */
-  openLessonByName(name: string): Observable<any> {
-    return concat(this.checkIfLessonDoesntExistYet(name).pipe(
-      mergeMap(isEmpty => iif(() => isEmpty, this.loadFromServerAndOpen(name), EMPTY))
-    ), this.sync(false))
   }
 
   /** Lesson exists, if the corresponding dir either already exists OR if we can create the
@@ -65,15 +54,6 @@ export class FilesystemService {
     });
   }
 
-  /** Retrieves lesson from server and stores it */
-  loadFromServerAndOpen(name: string) {
-    return this.http.get(`/assets/${name}.zip`, { responseType: 'arraybuffer' }).pipe(mergeMap(
-      buff => {
-        return this.loadZip(buff).pipe(mergeMap(zip => this.storeLesson(zip, name)));
-      }
-    ));
-  }
-
   importLesson(existsAlready: boolean, config: ConfigObject, zip?: JSZip): Observable<any> {
     return new Observable(subscriber => {
       const path = `/${config.name}`;
@@ -94,10 +74,6 @@ export class FilesystemService {
         () =>  subscriber.complete());
     });
 
-  }
-
-  loadZip(buff: ArrayBuffer): Observable<JSZip> {
-    return from(this.zipper.loadAsync(buff));
   }
 
   // TODO: Error handling (catchError)
@@ -282,19 +258,6 @@ export class FilesystemService {
     } catch (e) {
       console.error(e);
     }
-  }
-
-  exportLesson(name: string): Observable<Blob> {
-    return new Observable(subscriber => {
-      const zip = new JSZip();
-      this.fillZip(`/${name}/`, zip, name);
-      zip.generateAsync({ type: "blob" }).then(function (blob) {
-        subscriber.next(blob);
-        subscriber.complete();
-      }, function (err) {
-        subscriber.error();
-      });
-    });
   }
 
   storeLesson(unzippedLesson: JSZip, name: string): Observable<any> {

@@ -19,8 +19,13 @@
             fill="currentColor"> <title id="folderIconTitle">Ordner</title>
              <path d="M3 5h6l1 2h11v12H3z"/> </svg>
       </div>
-      <div class="folder-text" *ngIf="!rootname">{{ref?.name}}</div>
-      <div class="folder-text" *ngIf="rootname">{{rootname}}</div>
+      <div *ngIf="!isRenaming">
+        <div class="folder-text" *ngIf="!rootname">{{ref?.name}}</div>
+        <div class="folder-text" *ngIf="rootname">{{rootname}}</div>
+      </div>
+      <div *ngIf="isRenaming">
+          <app-user-input [parentPath]="this.path" [depth]="this.depth" [isFile]="false" [editMode]="true"></app-user-input>
+      </div>
     </div>
     <div class="folder-actions">
         <div class="delete-folder folder-action-icon" (click)="deleteFolder($event)">
@@ -31,10 +36,13 @@
           </svg>
         </div>
     </div>
+    <div (click)="this.isRenaming = true">
+      Re
+    </div>
 </div>
 
 <div [class.invisible]="!showSubfolders">
-    <div *ngIf="!hasSubfolders">Leerer Ordner</div>
+    <div *ngIf="!hasSubfolders && !isCreatingNew">Leerer Ordner</div>
     <div #subfolders></div>
     <div #files></div>    
 </div>

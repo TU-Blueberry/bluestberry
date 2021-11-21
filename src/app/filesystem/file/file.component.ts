@@ -8,10 +8,11 @@ import { FilesystemService } from '../filesystem.service';
   styleUrls: ['./file.component.scss']
 })
 export class FileComponent {
+  isRenaming = false;
 
   @Input('depth') depth: number = 0;
   @Input('path') path: string = '';
-  @Input('ref') ref!: FSNode;
+  @Input('ref') ref?: FSNode;
   constructor(private fsService: FilesystemService, private ev: EventService) { }
 
   deleteFile(ev: Event) {
@@ -25,5 +26,14 @@ export class FileComponent {
     if (this.ref?.contents instanceof Uint8Array) {
       this.ev.onUserOpenFile(this.path, this.ref)
     }
+  }
+
+  cancelRenaming(): void {
+    this.isRenaming = false;
+  }
+
+  rename(): void {
+    // TODO: Emit event etc.
+    this.isRenaming = false;
   }
 }
