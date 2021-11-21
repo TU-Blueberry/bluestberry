@@ -375,6 +375,23 @@ export class FilesystemService {
     }
   }
 
+  writeToFile(path: string, content: Uint8Array): Observable<any> {
+    const writing = new Observable(subscriber => {
+      if (!this.isFile(path)) {
+        subscriber.error("Path doesn't belong to a file");
+      } else {
+        try {
+          this.PyFS?.writeFile(path, content);
+          subscriber.complete();
+        } catch (e) {
+          subscriber.error("Error while writing to file");
+        }
+      }
+    });
+
+    return concat(writing, this.sync(false));
+  }
+
   // -------------------------- TODO
   
   // TODO: Fetch from server (browser cache), unzip and replace specified file
@@ -385,12 +402,6 @@ export class FilesystemService {
 
   resetLesson(): void {
 
-  }
-
-  // ----- V2: 
-  usercreateFile(): void {
-    // kann im popup namen + erweiterung angeben, dann öffnet sich neuer tab und man kann text content pasten
-    // bilder lohnt sich nicht, dafür gibts ja img uploader
   }
 
   updateLesson(): void {
