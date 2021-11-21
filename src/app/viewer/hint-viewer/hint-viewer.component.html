@@ -5,9 +5,22 @@
         <div id="hint-history" [ngClass]="action.getDivClass()">
           {{ action.getTextSlice(0) }}
           <ng-container
-            *ngFor="let link of action.getHrefDividers(); let i = index"
+            *ngFor="let divider of action.getTextDividers(); let i = index"
           >
-            <a href="{{ link }}" style="display: inline">{{ link }}</a>
+            <a
+              *ngIf="divider[1] == 'HREF'"
+              href="{{ divider[0] }}"
+              style="display: inline"
+              >{{ divider[0] }}</a
+            >
+            <markdown
+              emoji
+              lineNumbers [start]="1" [lineOffset]="0"
+              katex [katexOptions]="katexOptions"
+              *ngIf="divider[1] == 'MARKDOWN'"
+              style="display: inline"
+              >{{ divider[0] }}</markdown
+            >
             {{ action.getTextSlice(i + 1) }}
           </ng-container>
         </div>
@@ -21,9 +34,22 @@
         >
           {{ option.getTextSlice(0) }}
           <ng-container
-            *ngFor="let link of option.getHrefDividers(); let i = index"
+            *ngFor="let divider of option.getTextDividers(); let i = index"
           >
-            <a href="{{ link }}" style="display: inline">{{ link }}</a>
+            <a
+              *ngIf="divider[1] == 'HREF'"
+              href="{{ divider[0] }}"
+              style="display: inline"
+              >{{ divider[0] }}</a
+            >
+            <markdown
+              emoji
+              lineNumbers [start]="1" [lineOffset]="0"
+              katex [katexOptions]="katexOptions"
+              *ngIf="divider[1] == 'MARKDOWN'"
+              style="display: inline"
+              >{{ divider[0] }}</markdown
+            >
             {{ option.getTextSlice(i + 1) }}
           </ng-container>
         </div>

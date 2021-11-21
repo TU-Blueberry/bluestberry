@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core'
 import { load } from 'js-yaml'
+import {KatexOptions, MarkdownService} from "ngx-markdown";
 
 @Component({
   selector: 'app-hint-viewer',
   templateUrl: './hint-viewer.component.html',
   styleUrls: ['./hint-viewer.component.scss'],
 })
+
 export class HintViewerComponent {
   questions_storage_: Array<Question> = []
   answer_storage_: Array<Answer> = []
@@ -14,6 +16,12 @@ export class HintViewerComponent {
   dialogue_options_: Array<Question> = []
 
   is_open_ = false
+
+  katexOptions: KatexOptions = {
+    // displayMode: true,
+    throwOnError: false,
+    errorColor: '#cc0000',
+  }
 
   constructor() {
     this.loadQuestionAnswers()
@@ -152,14 +160,23 @@ export class HintViewerComponent {
   }
 }
 
+
+enum TextDividerTypes {
+  HREF = 'HREF',
+  MARKDOWN = 'MARKDOWN',
+  IMAGE = 'IMAGE',
+  NONE = 'NONE',
+}
+
 abstract class DialogueContent {
 
   protected text_slices: Array<string> = [];
-  protected href_dividers: Array<string> = [];
+  protected text_dividers: Array<[string, TextDividerTypes]> = [];
 
   protected question: boolean = false // false -> answer
 
-  private re_link = /link<.*?>/g
+  // private re_divider = /link<.*?>|markdown<.*?>|code<.*?>/g
+  private re_divider = /link<.*?>|markdown<.*?>/g
 
   constructor(content: string = '') {
     this.parseContent(content);
@@ -176,18 +193,39 @@ abstract class DialogueContent {
 
   parseContent(original_content: string): void {
 
-    this.text_slices = original_content.split(this.re_link);
+    this.text_slices = original_content.split(this.re_divider);
 
-    let matches = original_content.match(this.re_link);
+    let matches = original_content.match(this.re_divider);
     console.log(original_content);
     if(matches != null) {
       for(let match of matches) {
 
-        var actual_link = match.slice(5, -2);
-        if(!actual_link.startsWith("http://") || !actual_link.startsWith("https://")) {
-          actual_link = "https://" + actual_link;
+        var actual_content: string = "";
+        var divider_type: TextDividerTypes = TextDividerTypes.NONE;
+
+        if(match.startsWith("link")) {
+
+          actual_content = match.slice(5, -2);
+          if(!actual_content.startsWith("http://") || !actual_content.startsWith("https://")) {
+            actual_content = "https://" + actual_content;
+          }
+          divider_type = TextDividerTypes.HREF;
+        
+        } else if(match.startsWith("markdown")) {
+
+          actual_content = match.slice(9, -2);
+          divider_type = TextDividerTypes.MARKDOWN;
+
+        } else if(match.startsWith("code")) {
+
+          actual_content = match.slice(5, -2);
+          actual_content = "```python\n" + actual_content + "```"
+
+          divider_type = TextDividerTypes.MARKDOWN;
+
         }
-        this.href_dividers.push(actual_link);
+
+        this.text_dividers.push([actual_content, divider_type]);
       }
     }
 
@@ -200,16 +238,19 @@ abstract class DialogueContent {
     return "error";
   }
 
-  getHrefDivider(index: number): string {
-    if(index < this.href_dividers.length) {
-      return this.href_dividers[index];
+  getTextDivider(index: number): [string, TextDividerTypes] {
+    if(index < this.text_dividers.length) {
+      return this.text_dividers[index];
     } 
-    return "error";
+    return ["error", TextDividerTypes.NONE];
   }
 
-  getHrefDividers(): Array<string> {
-    return this.href_dividers;
+  getTextDividers(): Array<[string, TextDividerTypes]> {
+    return this.text_dividers;
   }
+
+
+  
 
 }
 
@@ -272,7 +313,7 @@ const string_from_yaml = `
 - item01:
     answer_id: 0 # start
     question_options: [0]
-    content: Willkommen. Welche Fragen hast du?
+    content: Willkommen. Welche Fragen hast du? markdown< Hier ist etwas **markdown** !!/>
 
 - item02:
     question_id: 0
@@ -283,7 +324,7 @@ const string_from_yaml = `
     answer_id: 1 
     question_options: [1]
     content: |
-        Ein Klassifikator ist ein Verfahren zur Einteilung von Objekten oder Situationen in verschiedene Klassen. Hier in diesem Beispiel wird der Klassifikator eingesetzt, um gute Blaubeeren von schlechten Blaubeeren zu unterscheiden, das heißt die Einteilung der Blaubeeren in die Klassen „gut“ und „schlecht“.
+        Ein Klassifikator ist ein Verfahren zur Einteilung von Objekten oder Situationen in verschiedene Klassen. Hier in diesem Beispiel wird der Klassifikator eingesetzt, um gute Blaubeeren von schlechten Blaubeeren zu unterscheiden, das heißt die Einteilung der Blaubeeren in die Klassen „gut“ und „schlecht“. markdown< $f(x) = \\int_{-\\infty}^\\infty \\hat f(\\xi) e^{2 \\pi i \\xi x} d\\xi$ />
         
 - item04:
     question_id: 1
@@ -295,6 +336,8 @@ const string_from_yaml = `
     question_options: [2]
     content: |
         Es gibt viele Klassifikatoren, einige Beispiele sind Random Forests, Neuronale Netze, Support Vector Machines oder auch Clusteringverfahren. 
+        code<for i in range(100):
+          print("hi")/>
 
 - item06:
     question_id: 2
