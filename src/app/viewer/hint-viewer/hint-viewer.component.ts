@@ -22,7 +22,6 @@ export class HintViewerComponent {
 
   loadQuestionAnswers(): void {
     var loadedYaml = load(string_from_yaml) as Array<Object>
-    console.log(loadedYaml)
 
     for (let item_id in loadedYaml) {
       var outerItem = loadedYaml[item_id] as any
@@ -30,7 +29,6 @@ export class HintViewerComponent {
       var item = outerItem[name]
 
       if (item.hasOwnProperty('content')) {
-        console.log("item.hasOwnProperty('content')")
         const content = item['content'] as string
 
         if (item.hasOwnProperty('answer_id')) {
@@ -112,10 +110,6 @@ export class HintViewerComponent {
       (a) => a.getAnswerId() == selected_question!.getNextAnswerId()
     )
 
-    console.log(
-      'next answer ' + answer!.getAnswerId() + ' ' + answer!.getContent()
-    )
-
     if (answer == undefined) {
       console.log(
         'next answer with id ' +
@@ -159,12 +153,17 @@ export class HintViewerComponent {
 }
 
 abstract class DialogueContent {
-  protected content: string // displayed text
+
+  protected text_slices: Array<string> = [];
+  protected href_dividers: Array<string> = [];
 
   protected question: boolean = false // false -> answer
 
+  private re_link = /link<.*?>/g
+
   constructor(content: string = '') {
-    this.content = content
+    this.parseContent(content);
+
   }
 
   getDivClass(): string {
@@ -175,9 +174,43 @@ abstract class DialogueContent {
     }
   }
 
-  getContent(): string {
-    return this.content
+  parseContent(original_content: string): void {
+
+    this.text_slices = original_content.split(this.re_link);
+
+    let matches = original_content.match(this.re_link);
+    console.log(original_content);
+    if(matches != null) {
+      for(let match of matches) {
+
+        var actual_link = match.slice(5, -2);
+        if(!actual_link.startsWith("http://") || !actual_link.startsWith("https://")) {
+          actual_link = "https://" + actual_link;
+        }
+        this.href_dividers.push(actual_link);
+      }
+    }
+
   }
+  
+  getTextSlice(index: number): string {
+    if(index < this.text_slices.length) {
+      return this.text_slices[index];
+    } 
+    return "error";
+  }
+
+  getHrefDivider(index: number): string {
+    if(index < this.href_dividers.length) {
+      return this.href_dividers[index];
+    } 
+    return "error";
+  }
+
+  getHrefDividers(): Array<string> {
+    return this.href_dividers;
+  }
+
 }
 
 class Answer extends DialogueContent {
@@ -272,7 +305,7 @@ const string_from_yaml = `
     answer_id: 3
     question_options: []
     content: |
-        Dann sieh dir gerne diese Seiten an: link<www.google.de>
+        Dann sieh dir gerne diese Seiten an: link<www.google.de/> oder link<www.google.com/>
         
 
 `
