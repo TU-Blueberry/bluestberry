@@ -1,3 +1,11 @@
-<form>
-    <input type="text" placeholder="Namen eingeben" [(ngModel)]="inputText" [formControl]="nameFormControl">
+<form [formGroup]="formGroup" (submit)="onSubmitClicked()">
+    <label>
+        <span 
+        class="input-error" 
+        *ngIf="formGroup.get('nameFormControl')?.hasError('error') && formGroup.get('nameFormControl')?.dirty">{{ formGroup.get('nameFormControl')?.errors | json}}</span>
+        <!-- TODO! Set proper error names -->
+    </label>
+    <input type="text" placeholder="Namen eingeben" [formControl]="nameFormControl"/>
+    <button type="submit">S</button>
+    
 </form>

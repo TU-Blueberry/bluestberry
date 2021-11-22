@@ -13,10 +13,11 @@
             {{ ref?.name }}
         </div> 
         <div *ngIf="isRenaming">
-            <app-user-input [parentPath]="this.path" [depth]="this.depth" [isFile]="true" [editMode]="true"></app-user-input>
+            <app-user-input [parentPath]="this.parentPath" [depth]="this.depth" [isFile]="true" [editMode]="true" 
+            [currentName]="this.ref?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
         </div>
     </div>
-    <div class="file-actions">
+    <div class="file-actions" *ngIf="ref">
         <div class="delete-file file-action-icon" (click)="deleteFile($event)">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="binIconTitle" 
             stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
@@ -24,8 +25,12 @@
             <path d="M19 6L5 6M14 5L10 5M6 10L6 20C6 20.6666667 6.33333333 21 7 21 7.66666667 21 11 21 17 21 17.6666667 21 18 20.6666667 18 20 18 19.3333333 18 16 18 10"/> 
           </svg>
         </div>
-        <div (click)="this.isRenaming = true">
-            Re
+        <div (click)="startRenaming($event)" class="file-action-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="editIconTitle"
+            stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+              <title id="editIconTitle">Name bearbeiten</title>
+              <path d="M18.4142136 4.41421356L19.5857864 5.58578644C20.366835 6.36683502 20.366835 7.63316498 19.5857864 8.41421356L8 20 4 20 4 16 15.5857864 4.41421356C16.366835 3.63316498 17.633165 3.63316498 18.4142136 4.41421356zM14 6L18 10"/> 
+            </svg>
         </div>
     </div>
 </div>

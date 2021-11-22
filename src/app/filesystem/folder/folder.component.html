@@ -1,13 +1,13 @@
 <div class="folder" [style.padding-left.px]="depth * 10" [class.root-folder]="rootname" [class.active]="isActive" (click)="toggleSubfolders($event)">
     <div class="folder-heading">
       <div class="folder-icon">
-        <svg class="arrow" *ngIf="!showSubfolders" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+        <svg class="arrow" *ngIf="!showSubfolders && this.ref" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
           aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
           stroke-linejoin="miter" fill="none">
           <title id="chevronRightIconTitle">Ausklappen</title>
           <polyline points="10 6 16 12 10 18 10 18" />
         </svg>
-        <svg class="arrow" *ngIf="showSubfolders" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+        <svg class="arrow" *ngIf="showSubfolders && this.ref" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
          aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
          stroke-linejoin="miter" fill="none"> 
          <title id="chevronDownIconTitle">Einklappen</title>
@@ -24,10 +24,11 @@
         <div class="folder-text" *ngIf="rootname">{{rootname}}</div>
       </div>
       <div *ngIf="isRenaming">
-          <app-user-input [parentPath]="this.path" [depth]="this.depth" [isFile]="false" [editMode]="true"></app-user-input>
+          <app-user-input [parentPath]="this.parentPath" [depth]="this.depth" [isFile]="false" [editMode]="true" 
+          [currentName]="this.ref?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
       </div>
     </div>
-    <div class="folder-actions">
+    <div class="folder-actions" *ngIf="ref">
         <div class="delete-folder folder-action-icon" (click)="deleteFolder($event)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="binIconTitle" 
             stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
@@ -35,14 +36,40 @@
             <path d="M19 6L5 6M14 5L10 5M6 10L6 20C6 20.6666667 6.33333333 21 7 21 7.66666667 21 11 21 17 21 17.6666667 21 18 20.6666667 18 20 18 19.3333333 18 16 18 10"/> 
           </svg>
         </div>
-    </div>
-    <div (click)="this.isRenaming = true">
-      Re
+      <div (click)="startRenaming($event)" class="folder-action-icon" *ngIf="this.parentPath !== '/'">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="editIconTitle"
+        stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+          <title id="editIconTitle">Ordnernamen bearbeiten</title>
+          <path d="M18.4142136 4.41421356L19.5857864 5.58578644C20.366835 6.36683502 20.366835 7.63316498 19.5857864 8.41421356L8 20 4 20 4 16 15.5857864 4.41421356C16.366835 3.63316498 17.633165 3.63316498 18.4142136 4.41421356zM14 6L18 10"/> 
+        </svg>
+      </div>
+      <div (click)="createNewFromUI($event, false)" class="folder-action-icon">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-labelledby="folderAddIconTitle" 
+        stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none" >
+          <title id="folderAddIconTitle">Neuen Ordner erstellen</title> 
+          <path d="M3 5H9L10 7H21V19H3V5Z"/> <path d="M15 13H9"/>
+          <path d="M12 10V16"/> </svg>
+      </div>
+      <div (click)="createNewFromUI($event, true)" class="folder-action-icon">
+        <svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="fileIconTitle"
+        stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
+          <title id="fileIconTitle">Neue Datei erstellen</title>
+          <path stroke-linecap="round" d="M13 3v6h6"/> <path d="M13 3l6 6v12H5V3z"/>
+        </svg>
+      </div>
+      <div class="folder-action-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="uploadIconTitle" 
+          stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
+          <title id="uploadIconTitle">Datei hochladen</title> 
+          <path d="M12,4 L12,17"/> <polyline points="7 8 12 3 17 8"/> 
+          <path d="M20,21 L4,21"/> 
+        </svg>
+      </div>
     </div>
 </div>
 
 <div [class.invisible]="!showSubfolders">
-    <div *ngIf="!hasSubfolders && !isCreatingNew">Leerer Ordner</div>
+    <div *ngIf="!hasSubfolders && ref">Leerer Ordner</div>
     <div #subfolders></div>
     <div #files></div>    
 </div>

@@ -21,6 +21,7 @@ export class EventService {
   onMakeSymlink: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   onActiveElementChange: EventEmitter<string> = new EventEmitter();
   afterCodeExecution: EventEmitter<void> = new EventEmitter();
+  onNewNodeByUser: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
   
   // TODO: Kann sein, dass ich alles rund um path noch in file/directory aufschlüsseln muss
   // TODO: isSystemDirectory einheitlich regeln (d.h. entweder hier oder in den aufrufenden Methoden abfangen)
@@ -65,4 +66,9 @@ export class EventService {
   changeActiveElement(newActiveElement: string): void {
     this.onActiveElementChange.emit(newActiveElement);
   }
+
+  createNewNodeByUser(path: string, isFile: boolean): void {
+    console.log("on new node: emitting now!");
+    this.onNewNodeByUser.emit({path: path, isFile: isFile});
+  } 
 }

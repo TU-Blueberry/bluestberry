@@ -48,6 +48,7 @@ export class FiletreeComponent implements OnDestroy{
     folderComp.path = "/sortierroboter";
     folderComp.ref = root;
     folderComp.rootname = "Sortierroboter";
+    folderComp.parentPath = "/";
     this.rootComponent = folderComp;
   }
 
