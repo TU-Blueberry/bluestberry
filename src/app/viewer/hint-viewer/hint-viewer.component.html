@@ -14,13 +14,13 @@
               >{{ divider[0] }}</a
             >
             <markdown
-              emoji
               lineNumbers [start]="1" [lineOffset]="0"
               katex [katexOptions]="katexOptions"
               *ngIf="divider[1] == 'MARKDOWN'"
               style="display: inline"
               >{{ divider[0] }}</markdown
             >
+            <img *ngIf="divider[1] == 'IMAGE'" src="{{divider[0]}}" />
             {{ action.getTextSlice(i + 1) }}
           </ng-container>
         </div>
@@ -43,13 +43,13 @@
               >{{ divider[0] }}</a
             >
             <markdown
-              emoji
               lineNumbers [start]="1" [lineOffset]="0"
               katex [katexOptions]="katexOptions"
               *ngIf="divider[1] == 'MARKDOWN'"
               style="display: inline"
               >{{ divider[0] }}</markdown
             >
+            <img *ngIf="divider[1] == 'IMAGE'" src="{{divider[0]}}" />
             {{ option.getTextSlice(i + 1) }}
           </ng-container>
         </div>

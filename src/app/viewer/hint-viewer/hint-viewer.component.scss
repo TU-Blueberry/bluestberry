@@ -27,6 +27,10 @@
     max-width: 70%;
 }
 
+.markdown > p {
+    display: inline;
+}
+
 .hint-question {
     background-color: #AAD7EC;
     margin-right: 10%;
