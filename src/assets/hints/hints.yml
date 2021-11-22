@@ -1,0 +1,216 @@
+
+- item300001:
+    question_id: 300001
+    following_answer_id: 300001
+    content: |
+        Ich möchte etwas über Merkmalsextraktion erfahren.
+
+- item300002:
+    question_id: 300002
+    following_answer_id: 300002
+    content: |
+        Was bringen mir diese Merkmale?
+
+- item300003:
+    question_id: 300003
+    following_answer_id: 300003
+    content: |
+        Was sind Beispiele für solche Merkmale für dieses Problem?
+
+- item300004:
+    question_id: 300004
+    following_answer_id: 300004
+    content: |
+        Ich möchte mir einfache Methoden angucken.
+
+- item300005:
+    question_id: 300005
+    following_answer_id: 300005
+    content: |
+        Ich möchte mir mittlere Methoden angucken..
+
+- item300007:
+    question_id: 300007
+    following_answer_id: 300007
+    content: |
+        Welche Merkmale sollte ich nutzen?
+
+- item300008:
+    question_id: 300008
+    following_answer_id: 300008
+    content: |
+        Was sind Histogramme?
+
+- item300009:
+    question_id: 300009
+    following_answer_id: 300009
+    content: |
+        Wie nutze ich Histogramme für Bilder?
+
+- item300010:
+    question_id: 300011
+    following_answer_id: 300011
+    content: |
+        Wie sieht ein Code-Beispiel dafür aus?
+
+- item300011:
+    question_id: 300012
+    following_answer_id: 300012
+    content: |
+        Wie sieht ein graphisches Beispiel dafür aus?
+
+- item300012:
+    question_id: 300013
+    following_answer_id: 300013
+    content: |
+        Welche Parameter kann ich für die Methode nutzen?
+
+- item300013:
+    question_id: 300014
+    following_answer_id: 300014
+    content: |
+        In welchem Format muss input sein?
+
+- item300014:
+    question_id: 300015
+    following_answer_id: 300015
+    content: |
+        Was bewirkt der Parameter bins?
+
+- item300015:
+    question_id: 300016
+    following_answer_id: 300016
+    content: |
+        Auf welchen Wert sollte ich Bins setzen?
+
+- item300016:
+    question_id: 300017
+    following_answer_id: 300017
+    content: |
+        Was bringt mir der Parameter range?
+
+- item300017:
+    question_id: 300018
+    following_answer_id: 300018
+    content: |
+        Wo finde ich die Dokumentation für Histogramme?
+
+- item300018:
+    question_id: 300010
+    following_answer_id: 300010
+    content: |
+        Wie kann ich mir die Histogramme anzeigen lassen?
+
+- item300019:
+    question_id: 300019
+    following_answer_id: 300999
+    content: |
+        Ich möchte mir selbst ein Histogramm aus einem Balkendiagramm zusammenbauen. (Hilfe)
+
+- item300020:
+    question_id: 300020
+    following_answer_id: 300020
+    content: |
+        Ich möchte nutzbaren Code haben.
+
+- item300021:
+    question_id: 300021
+    following_answer_id: 300021
+    content: |
+        Ich habe das Histogramm schon erzeugt.
+
+- item300022:
+    question_id: 300022
+    following_answer_id: 300022
+    content: |
+        Ich habe das Histogramm noch nicht erzeugt.
+
+- item300023:
+    question_id: 300023
+    following_answer_id: 300023
+    content: |
+        Wieso sollte ich Histogramme nutzen?
+
+
+
+- artificialStart:
+    answer_id: 0
+    question_options: [300002,300003,300004,300005,300006,300007,300008,300009]
+    content: |
+        Künstlicher Anfang...
+
+
+
+
+- item300024:
+    answer_id: 300001
+    question_options: [300002,300003]
+    content: |
+        Merkmalsextraktion beschäftigt sich mit der Extraktion sogenannter "high-level features" (also "höher" als Rohdaten) von Daten, beispielsweise die Form eines Bildes anstatt das Bild selbst.
+
+- item300025:
+    answer_id: 300002
+    question_options: []
+    content: |
+        Oftmals wird dadurch der Datensatz kleiner, glossar<Overfitting/> wird reduziert und für klassische Klassifikatoren wird eine höhere Genauigkeit erreicht.
+
+- item300026:
+    answer_id: 300003
+    question_options: []
+    content: |
+        Für das Problem der Blueberrys gibt es einige Methoden, die du testen könntest, wie z.B. Histogramme oder PCA. Wir haben die Methoden nach einfach, mittel und fortgeschritten aufgrund des Implementierungsaufwands und Schwierigkeit des Verständnis aufgeteilt.
+
+- item300027:
+    answer_id: 300004
+    question_options: [300008]
+    content: |
+        Zu den einfachen Methoden der Merkmalsextaktion gehören Histogramme und Patches.
+
+- item300028:
+    answer_id: 300008
+    question_options: [300009,300012,300011]
+    content: |
+        Histogramme unterteilen Werte in Klassen (Buckets) und stellen eine Häufigkeitsverteilung dar. In einem sehr dunklem Bild wären z.B. die niedrigen Grauwerte stark vertreten.
+
+- item300029:
+    answer_id: 300009
+    question_options: [300013,300018]
+    content: |
+        Du kannst dafür die Methode code<numpy.histogram(input, bins=10, range=None)/> nutzen.
+
+- item300030:
+    answer_id: 300011
+    question_options: []
+    content: |
+        code<
+        # wähle den Grün-Anteil
+        image_g = image[:,:,1]
+        # das Histogramm des Bildes mit 2 Klassen (bins)
+        # lege die Grenzen innerhalb von 0 und 255
+        # (d.h. die zwei Klassen sind 0 bis 127 und 128 bis 255)
+        np.histogram(image_g, bins=2, range=(0,255))
+        />
+
+- item300031:
+    answer_id: 300012
+    question_options: []
+    content: |
+         img<resources/feature_extraction/histogram_example.png/>
+
+- item300032:
+    answer_id: 300013
+    question_options: [300014,300015,300016,300017]
+    content: |
+        Die wichtigsten Parameter sind input, bins und range. Darüber hinaus gibt es noch die Parameter weights und density.
+
+- item300033:
+    answer_id: 300014
+    question_options: []
+    content: |
+        Am besten sollte input im Format eines Numpy-Arrays sein. Das darf auch im 2D-Format sein.
+
+- item300034:
+    answer_id: 300015
+    question_options: []
+    content: |
+        Der Parameter bins legt, wenn du einen int übergibst, die Anzahl der Klassen fest. Du kannst aber auch eine Liste oder ein Numpy-Array übergeben, das die Grenzen direkt angibt.

@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core'
+import { Component } from '@angular/core'
 import { load } from 'js-yaml'
-import {KatexOptions, MarkdownService} from "ngx-markdown";
+import {KatexOptions} from "ngx-markdown";
+import {HttpClient} from "@angular/common/http";
 
 @Component({
   selector: 'app-hint-viewer',
@@ -23,13 +24,26 @@ export class HintViewerComponent {
     errorColor: '#cc0000',
   }
 
-  constructor() {
-    this.loadQuestionAnswers()
-    this.initDialogue()
+  constructor(private http: HttpClient) {
+    this.loadContent()
   }
 
-  loadQuestionAnswers(): void {
-    var loadedYaml = load(string_from_yaml) as Array<Object>
+  loadContent() {
+    this.http.get('assets/hints/hints.yml', { responseType: 'text' })
+      .subscribe(data => { 
+        this.loadQuestionAnswers(data);
+    });
+  }
+
+  loadQuestionAnswers(yamlString: string): void {  
+  
+    if(yamlString != null && yamlString != undefined && yamlString != '') {
+      console.log("YamlString loaded!")
+    } else {
+      console.log("Could not load YamlString from hints.yml")
+    }
+
+    var loadedYaml = load(yamlString) as Array<Object>
 
     for (let item_id in loadedYaml) {
       var outerItem = loadedYaml[item_id] as any
@@ -79,6 +93,8 @@ export class HintViewerComponent {
         console.log('Error parsing hint-yaml. Item has no content.')
       }
     }
+
+    this.initDialogue();
 
   }
 
@@ -135,18 +151,31 @@ export class HintViewerComponent {
     }
   }
 
-  undo(): void {
+  undo(): void { // TODO
     if (this.dialogue_history_.length < 2) {
       return
     }
 
     this.dialogue_options_ = [] // clear current options
-    this.dialogue_history_.pop() // remove last answer
-    this.dialogue_history_.pop() // remove last question
+    
+    var last_answer: Answer;
 
-    const last_answer = this.dialogue_history_[
-      this.dialogue_history_.length - 1
-    ] as Answer
+    if(this.dialogue_history_.length % 2 == 0) {
+      this.dialogue_history_.pop() // remove last answer
+      this.dialogue_history_.pop() // remove last question
+
+      last_answer = this.dialogue_history_[
+        this.dialogue_history_.length - 1
+      ] as Answer
+    } else {
+      // could not find a next answer
+      this.dialogue_history_.pop() 
+
+      last_answer = this.dialogue_history_[
+        this.dialogue_history_.length - 2
+      ] as Answer
+    }
+
     const new_options = this.getQuestionOptions(last_answer)
     for (var o of new_options) {
       this.dialogue_options_.push(o)
@@ -175,12 +204,12 @@ abstract class DialogueContent {
 
   protected question: boolean = false // false -> answer
 
-  // private re_divider = /link<.*?>|markdown<.*?>|code<.*?>/g
-  private re_divider = /link<.*?>|markdown<.*?>/g
+  // private re_divider = /((markdown)|(link)|(code))<(.|[\r\n])*?\/>/g
+
+  private re_divider = /link<(.|[\r\n])*?\/>|markdown<(.|[\r\n])*?\/>|code<(.|[\r\n])*?\/>|img<(.|[\r\n])*?\/>/g
 
   constructor(content: string = '') {
     this.parseContent(content);
-
   }
 
   getDivClass(): string {
@@ -194,9 +223,8 @@ abstract class DialogueContent {
   parseContent(original_content: string): void {
 
     this.text_slices = original_content.split(this.re_divider);
-
     let matches = original_content.match(this.re_divider);
-    console.log(original_content);
+
     if(matches != null) {
       for(let match of matches) {
 
@@ -219,11 +247,16 @@ abstract class DialogueContent {
         } else if(match.startsWith("code")) {
 
           actual_content = match.slice(5, -2);
+          if(actual_content.startsWith("\n")) {
+            actual_content = actual_content.slice(1);
+          }
           actual_content = "```python\n" + actual_content + "```"
-
           divider_type = TextDividerTypes.MARKDOWN;
 
-        }
+        } else if(match.startsWith("img")) {
+            actual_content = match.slice(4, -2);
+            divider_type = TextDividerTypes.IMAGE;
+        } 
 
         this.text_dividers.push([actual_content, divider_type]);
       }
@@ -318,7 +351,7 @@ const string_from_yaml = `
 - item02:
     question_id: 0
     following_answer_id: 1
-    content: Was ist ein Klassifikator?
+    content: Was ist ein Klassifikator? img<assets/bad_berry.JPG/>
         
 - item03:
     answer_id: 1 
@@ -329,15 +362,17 @@ const string_from_yaml = `
 - item04:
     question_id: 1
     following_answer_id: 2
-    content: Welche Klassifikatoren gibt es?
+    content: Welche Klassifikatoren gibt es? 
 
 - item05:
     answer_id: 2 
     question_options: [2]
     content: |
         Es gibt viele Klassifikatoren, einige Beispiele sind Random Forests, Neuronale Netze, Support Vector Machines oder auch Clusteringverfahren. 
-        code<for i in range(100):
-          print("hi")/>
+        code<
+        for i in range(10):
+          print("hi")
+        />
 
 - item06:
     question_id: 2
