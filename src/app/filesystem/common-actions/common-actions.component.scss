@@ -4,7 +4,12 @@
 
     &:hover {
         color: white;
+        cursor: pointer;
     }
+}
+
+label:hover {
+    cursor: pointer;
 }
 
 .common-actions {

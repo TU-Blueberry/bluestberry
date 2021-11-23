@@ -28,12 +28,16 @@
       <path stroke-linecap="round" d="M13 3v6h6"/> <path d="M13 3l6 6v12H5V3z"/>
     </svg>
   </div>
-  <div class="common-action-icon" *ngIf="!isFile">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="uploadIconTitle" 
-      stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
-      <title id="uploadIconTitle">Datei hochladen</title> 
-      <path d="M12,4 L12,17"/> <polyline points="7 8 12 3 17 8"/> 
-      <path d="M20,21 L4,21"/> 
-    </svg>
+  <div class="common-action-icon" *ngIf="!isFile" (click)="stopPropagation($event)">
+    <label>
+      <input type="file" multiple="true" (change)="this.selectedFiles.emit($event)" class="invisible">  
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="uploadIconTitle" 
+        stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
+        <title id="uploadIconTitle">Datei hochladen</title> 
+        <path d="M12,4 L12,17"/> 
+        <polyline points="7 8 12 3 17 8"/> 
+        <path d="M20,21 L4,21"/> 
+      </svg>
+    </label>
   </div>
 </div>

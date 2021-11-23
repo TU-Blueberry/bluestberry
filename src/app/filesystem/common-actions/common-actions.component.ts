@@ -12,5 +12,10 @@ export class CommonActionsComponent {
   @Output() delete: EventEmitter<Event> = new EventEmitter();
   @Output() startRenaming: EventEmitter<Event> = new EventEmitter();
   @Output() createNewFromUI: EventEmitter<{ev: Event, newFile: boolean}> = new EventEmitter();
+  @Output() selectedFiles: EventEmitter<Event> = new EventEmitter();
   constructor() { }
+
+  stopPropagation(ev: Event): void {
+    ev.stopPropagation();
+  }
 }

@@ -30,12 +30,12 @@
     </div>
     <div *ngIf="ref && !isRenaming" class="common-actions">
       <app-common-actions [parentPath]="this.parentPath" [isFile]="false"
-      (createNewFromUI)="this.createNewFromUI($event)" (delete)="this.deleteFolder($event)" (startRenaming)="this.startRenaming($event)"></app-common-actions>
+      (createNewFromUI)="this.createNewFromUI($event)" (delete)="this.deleteFolder($event)" (startRenaming)="this.startRenaming($event)" (selectedFiles)="this.filesChange($event)"></app-common-actions>
     </div>
 </div>
 
 <div [class.invisible]="!showSubfolders">
-    <div *ngIf="!hasSubfolders && ref">Leerer Ordner</div>
+    <div *ngIf="!hasSubfolders && ref && !tentativeNode">Leerer Ordner</div>
     <div #subfolders></div>
     <div #files></div>    
 </div>

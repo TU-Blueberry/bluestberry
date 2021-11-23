@@ -1,5 +1,6 @@
 import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { concat, from, Observable, Subscription } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { EventService } from '../events/event.service';
 import { FileComponent } from '../file/file.component';
 import { FilesystemService } from '../filesystem.service';
@@ -276,4 +277,28 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.isRenaming = false;
     this.onDeleteRequested.emit(false);
   }
+
+  filesChange(ev: Event): void {
+    ev.preventDefault();
+    ev.stopPropagation();
+
+    const fileList = (ev.target as HTMLInputElement)?.files;
+
+    if (fileList) {
+      // TODO: Vielleicht kann man die errors irgendwie aggregieren, sodass man nach dem import eine anzeige kriegt, welche Dateien erfolgreich importiert werden
+      // konnten und welche nicht (z.B. weil sie schon existieren)
+      concat(...Array.from(fileList).map(file => this.creatFileFromBuffer(file))).subscribe(() => {}, 
+      err => console.error(err), () =>  console.log("import complete!"));      
+    } else {
+      // TODO: Error
+    }
+  }
+
+  creatFileFromBuffer(file: File) {
+    return from(file.arrayBuffer()).pipe(
+      map(buffer => new Uint8Array(buffer)), 
+      switchMap(uintArr => this.fsService.createFile(`${this.path}/${file.name}`, new Uint8Array(uintArr)))
+    );
+  }
+
 }
