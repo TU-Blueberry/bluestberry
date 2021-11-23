@@ -1,13 +1,13 @@
 <div class="folder" [style.padding-left.px]="depth * 10" [class.root-folder]="rootname" [class.active]="isActive" (click)="toggleSubfolders($event)">
     <div class="folder-heading">
       <div class="folder-icon">
-        <svg class="arrow" *ngIf="!showSubfolders && this.ref" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+        <svg class="arrow" *ngIf="!showSubfolders && this.ref && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
           aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
           stroke-linejoin="miter" fill="none">
           <title id="chevronRightIconTitle">Ausklappen</title>
           <polyline points="10 6 16 12 10 18 10 18" />
         </svg>
-        <svg class="arrow" *ngIf="showSubfolders && this.ref" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+        <svg class="arrow" *ngIf="showSubfolders && this.ref && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
          aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
          stroke-linejoin="miter" fill="none"> 
          <title id="chevronDownIconTitle">Einklappen</title>
@@ -28,7 +28,7 @@
           [currentName]="this.ref?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
       </div>
     </div>
-    <div *ngIf="ref" class="common-actions">
+    <div *ngIf="ref && !isRenaming" class="common-actions">
       <app-common-actions [parentPath]="this.parentPath" [isFile]="false"
       (createNewFromUI)="this.createNewFromUI($event)" (delete)="this.deleteFolder($event)" (startRenaming)="this.startRenaming($event)"></app-common-actions>
     </div>

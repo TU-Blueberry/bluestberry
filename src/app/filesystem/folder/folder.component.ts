@@ -46,9 +46,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.newNodeByUserSubscription = ev.onNewNodeByUser.subscribe(this.onNewNodeByUser.bind(this));
 
     this.activeElementChangeSubscription = this.ev.onActiveElementChange.subscribe(newActiveElementPath => {
-      if (this.path !== newActiveElementPath) {
-        this.isActive = false;
-      }
+      this.isActive = this.path === newActiveElementPath;
     });
   }
 
@@ -85,9 +83,10 @@ export class FolderComponent implements OnInit, OnDestroy {
           console.error("Error, new node is undefined")
           return;
         }
-        
         this.createSubcomponent(params.isFile, params.path, newNode);
       }
+
+      this.ev.changeActiveElement(params.path);
     }
   }
 
@@ -229,6 +228,10 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   toggleSubfolders(ev: Event): void {
+    if (this.isRenaming) {
+      return;
+    }
+
     this.showSubfolders = !this.showSubfolders;
 
     if (!this.isActive) {

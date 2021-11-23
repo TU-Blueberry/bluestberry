@@ -10,7 +10,8 @@ import { AbstractControl, FormControl, FormGroup, ValidationErrors } from '@angu
 })
 export class UserInputComponent implements OnInit, OnChanges {
   folderContent: FSNode[] = [];
-  fileRegex = new RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z]{2,5}$/, "i");
+  fileRegex = new RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z\d]{2,5}$/, "i");
+  extensionRegex = new RegExp(/\.[a-zA-Z\d]{2,5}$/, "i");
   folderRegex = new RegExp(/[a-zA-Z\d-_]+/, "i");
   inputText = '';
   nameFormControl: FormControl;
@@ -81,7 +82,19 @@ export class UserInputComponent implements OnInit, OnChanges {
       return { error: 'Name wird bereits verwendet'}
     }
 
-    return regex.test(control.value) ? null :  { error: "Ungültiger Name. Nur Buchstaben, Zahlen sowie Binde- und Unterstriche sind als Dateiname zulässig"}
+    const testResult = regex.test(control.value);
+
+    if (testResult) {
+      return null;
+    } else {
+      if (this.isFile) {
+        if (!this.extensionRegex.test(control.value)) {
+          return { error: 'Ungültige Dateierweiterung (zwischen 2 und 5 Buchstaben/Zahlen sind erlaubt)'}
+        }
+      }
+      
+      return { error: "Ungültiger Name. Es dürfen nur Nur Buchstaben, Zahlen sowie Binde- und Unterstriche sind als Dateiname zulässig"}
+    }
   }
 }
 

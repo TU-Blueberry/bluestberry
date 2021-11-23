@@ -9,13 +9,18 @@ import { FilesystemService } from '../filesystem.service';
 })
 export class FileComponent {
   isRenaming = false;
+  isActive = false;
 
   @Input('depth') depth: number = 0;
   @Input('path') path: string = '';
   @Input('ref') ref?: FSNode;
   @Input('parentPath') parentPath: string = '';
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
-  constructor(private fsService: FilesystemService, private ev: EventService) { }
+  constructor(private fsService: FilesystemService, private ev: EventService) {
+    this.ev.onActiveElementChange.subscribe(newPath => {
+      this.isActive = this.path === newPath;
+    });
+  }
 
   deleteFile(ev: Event) {
     ev.stopPropagation();
@@ -26,7 +31,8 @@ export class FileComponent {
 
   onDoubleClick(): void {
     if (this.ref?.contents instanceof Uint8Array) {
-      this.ev.onUserOpenFile(this.path, this.ref)
+      this.ev.onUserOpenFile(this.path, this.ref);
+      this.ev.onActiveElementChange.emit(this.path);
     }
   }
 

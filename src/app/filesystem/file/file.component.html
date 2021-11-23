@@ -1,4 +1,4 @@
-<div class="file" [style.padding-left.px] = "depth * 10" (dblclick)="onDoubleClick()">
+<div class="file" [style.padding-left.px] = "depth * 10" (dblclick)="onDoubleClick()" [class.active]="isActive">
     <div class="file-heading">
         <svg class="file-type-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
             aria-labelledby="imageIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
@@ -17,7 +17,7 @@
             [currentName]="this.ref?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
         </div>
     </div>
-    <div *ngIf="ref" class="common-actions">
+    <div *ngIf="ref && !isRenaming" class="common-actions">
         <app-common-actions [parentPath]="this.parentPath" [isFile]="true"
         (delete)="this.deleteFile($event)" (startRenaming)="this.startRenaming($event)"></app-common-actions>
     </div>
