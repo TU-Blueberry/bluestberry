@@ -15,11 +15,11 @@ import { CommonActionsComponent } from './common-actions/common-actions.componen
 
 @NgModule({
   declarations: [
-    FiletreeComponent,
     FolderComponent,
     FileComponent,
     UserInputComponent,
-    CommonActionsComponent
+    CommonActionsComponent,
+    FiletreeComponent
   ],
   imports: [
     CommonModule,

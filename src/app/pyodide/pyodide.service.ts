@@ -4,7 +4,6 @@ import initCode from '!raw-loader!../../assets/util/init.py';
 import {BehaviorSubject, defer, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
 import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 import {PythonCallable} from 'src/app/python-callable/python-callable.decorator';
-import { EventService } from '../filesystem/events/event.service';
 
 @Injectable({
   providedIn: 'root',

@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { EventService } from '../events/event.service';
+import { UiEventsService } from 'src/app/ui-events.service';
+import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FilesystemService } from '../filesystem.service';
 
 @Component({
@@ -16,8 +17,8 @@ export class FileComponent {
   @Input('ref') ref?: FSNode;
   @Input('parentPath') parentPath: string = '';
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
-  constructor(private fsService: FilesystemService, private ev: EventService) {
-    this.ev.onActiveElementChange.subscribe(newPath => {
+  constructor(private fsService: FilesystemService, private ev: FilesystemEventService, private uiEv: UiEventsService) {
+    this.uiEv.onActiveElementChange.subscribe(newPath => {
       this.isActive = this.path === newPath;
     });
   }
@@ -32,7 +33,7 @@ export class FileComponent {
   onDoubleClick(): void {
     if (this.ref?.contents instanceof Uint8Array) {
       this.ev.onUserOpenFile(this.path, this.ref);
-      this.ev.onActiveElementChange.emit(this.path);
+      this.uiEv.onActiveElementChange.emit(this.path);
     }
   }
 

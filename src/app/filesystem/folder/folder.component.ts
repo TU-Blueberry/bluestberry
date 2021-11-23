@@ -1,7 +1,8 @@
 import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Observable, Subscription } from 'rxjs';
+import { concat, from, Subscription } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
-import { EventService } from '../events/event.service';
+import { UiEventsService } from 'src/app/ui-events.service';
+import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FileComponent } from '../file/file.component';
 import { FilesystemService } from '../filesystem.service';
 
@@ -36,7 +37,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
   @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef;
   @ViewChild('files', { read: ViewContainerRef, static: true }) filesRef!: ViewContainerRef;
-  constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, private ev: EventService) {
+  constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, private ev: FilesystemEventService, private uiEv: UiEventsService) {
     this.folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     this.fileFactory = this.componentFactoryResolver.resolveComponentFactory(FileComponent);
 
@@ -46,7 +47,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.afterCodeExecutionSubscription = ev.afterCodeExecution.subscribe(() => this.checkForNewFolders());
     this.newNodeByUserSubscription = ev.onNewNodeByUser.subscribe(this.onNewNodeByUser.bind(this));
 
-    this.activeElementChangeSubscription = this.ev.onActiveElementChange.subscribe(newActiveElementPath => {
+    this.activeElementChangeSubscription = this.uiEv.onActiveElementChange.subscribe(newActiveElementPath => {
       this.isActive = this.path === newActiveElementPath;
     });
   }
@@ -87,7 +88,7 @@ export class FolderComponent implements OnInit, OnDestroy {
         this.createSubcomponent(params.isFile, params.path, newNode);
       }
 
-      this.ev.changeActiveElement(params.path);
+      this.uiEv.changeActiveElement(params.path);
     }
   }
 
@@ -237,7 +238,7 @@ export class FolderComponent implements OnInit, OnDestroy {
 
     if (!this.isActive) {
       this.isActive = !this.isActive;
-      this.ev.changeActiveElement(this.path);
+      this.uiEv.changeActiveElement(this.path);
     } 
   }
 

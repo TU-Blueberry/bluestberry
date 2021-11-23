@@ -14,6 +14,7 @@ import { TabComponent } from 'src/app/viewer/tab/tab.component'
 import { TabGroupComponent } from './tab-group/tab-group.component'
 import { AngularSplitModule } from 'angular-split'
 import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
+import { FilesystemModule } from '../filesystem/filesystem.module'
 
 /**
  * Module used for all the Viewer-Components.
@@ -47,6 +48,7 @@ import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
     UnityModule,
     AngularSplitModule,
     OverlayModule,
+    FilesystemModule
   ],
   exports: [
     CodeViewerComponent,

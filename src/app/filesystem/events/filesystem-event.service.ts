@@ -1,13 +1,13 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
-import { FilesystemService } from '../filesystem.service';
-import { isSystemDirectory } from '../shared/system_folder'; 
+import { FilesystemService } from 'src/app/filesystem/filesystem.service';
+import { isSystemDirectory } from 'src/app/filesystem/shared/system_folder'; 
 import { FileType } from 'src/app/shared/filetypes.enum';
 
 @Injectable({
   providedIn: 'root'
 })
-export class EventService { 
+export class FilesystemEventService { 
   willMovePath: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   onMovePath: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   willDeletePath: EventEmitter<string> = new EventEmitter();
@@ -19,7 +19,6 @@ export class EventService {
   onCloseFile: EventEmitter<string> = new EventEmitter();
   onMakeDirectory: EventEmitter<{path: string, mode: any}> = new EventEmitter();
   onMakeSymlink: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
-  onActiveElementChange: EventEmitter<string> = new EventEmitter();
   afterCodeExecution: EventEmitter<void> = new EventEmitter();
   onNewNodeByUser: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
   
@@ -61,10 +60,6 @@ export class EventService {
 
       this.onOpenFile.emit({path: _path, byUser: true, fileContent: content, type: fileType});
     }
-  }
-
-  changeActiveElement(newActiveElement: string): void {
-    this.onActiveElementChange.emit(newActiveElement);
   }
 
   createNewNodeByUser(path: string, isFile: boolean): void {
