@@ -89,6 +89,10 @@ export class FolderComponent implements OnInit, OnDestroy {
       }
 
       this.uiEv.changeActiveElement(params.path);
+      
+      if (this.ref) {
+        Object.keys(this.ref.contents).length > 0 ? this.hasSubfolders = true : this.hasSubfolders = false;
+      }
     }
   }
 
