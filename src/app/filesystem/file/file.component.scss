@@ -26,23 +26,14 @@
     display: flex;
 }
 
-.file:hover > .file-actions {
-    display: flex;
-    justify-content: space-evenly;
+.file:hover > .common-actions {
+    display: inline-block;
 }
 
-.file-actions {
+.common-actions {
     display: none;
 }
 
-.file-action-icon {
-    width: 16px;
-    height: 16px;
-
-    &:hover {
-        color: white;
-    }
-}
 
 .file-type-image {
     color: green;

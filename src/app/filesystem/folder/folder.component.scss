@@ -17,26 +17,16 @@
     display: flex;
 }
 
-.folder:hover > .folder-actions {
-    display: flex;
-    justify-content: space-evenly;
-}
-
-.folder-actions {
-    display: none;
-}
-
-.folder-action-icon {
-    width: 16px;
-    height: 16px;
-
-    &:hover {
-        color: white;
-    }
+.folder:hover > .common-actions {
+    display: inline-block;
 }
 
 .root-folder {
     background-color: hsl(220 12% 20%);
+}
+
+.common-actions {
+    display: none;
 }
 
 .active {

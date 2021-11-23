@@ -211,11 +211,11 @@ export class FolderComponent implements OnInit, OnDestroy {
     }
   }
 
-  createNewFromUI(ev: Event, isFile: boolean): void {
-    ev.stopPropagation();
-    ev.preventDefault();
+  createNewFromUI(params: {ev: Event, newFile: boolean}): void {
+    params.ev.stopPropagation();
+    params.ev.preventDefault();
     this.showSubfolders = true;
-    this.createSubcomponent(isFile);
+    this.createSubcomponent(params.newFile);
   }
 
   // TODO: Catch errors

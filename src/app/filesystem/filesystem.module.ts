@@ -6,6 +6,7 @@ import { FolderComponent } from './folder/folder.component';
 import { FileComponent } from './file/file.component';
 import { UserInputComponent } from './user-input/user-input.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { CommonActionsComponent } from './common-actions/common-actions.component';
 
 /**
  * Module for Filesystem-Management related Classes.
@@ -17,7 +18,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     FiletreeComponent,
     FolderComponent,
     FileComponent,
-    UserInputComponent
+    UserInputComponent,
+    CommonActionsComponent
   ],
   imports: [
     CommonModule,

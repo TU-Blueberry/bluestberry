@@ -68,7 +68,6 @@ export class EventService {
   }
 
   createNewNodeByUser(path: string, isFile: boolean): void {
-    console.log("on new node: emitting now!");
     this.onNewNodeByUser.emit({path: path, isFile: isFile});
   } 
 }
