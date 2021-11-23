@@ -7,7 +7,6 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ActionbarComponent implements OnInit {
   showFiles = false;
-  showTestOverlay = false;
 
   constructor() { }
 
@@ -16,9 +15,5 @@ export class ActionbarComponent implements OnInit {
 
   toggleFiles(): void {
     this.showFiles = !this.showFiles;
-  }
-
-  showTests(): void {
-    this.showTestOverlay = true;
   }
 }
