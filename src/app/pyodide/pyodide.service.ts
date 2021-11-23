@@ -10,7 +10,7 @@ import {PythonCallable} from 'src/app/python-callable/python-callable.decorator'
 })
 export class PyodideService {
   // standard packages included with pyodide
-  static readonly DEFAULT_LIBS = ['micropip', 'matplotlib', 'numpy', 'pandas'];
+  static readonly DEFAULT_LIBS = ['micropip', 'matplotlib', 'numpy', 'pandas', 'scikit-learn', 'scikit-image'];
   // packages that should be included by installing with micropip
   // this should probably be handled dynamically e.g. by parsing a requirements.txt file in the project
   static readonly MICROPIP_LIBS = ['plotly'];
