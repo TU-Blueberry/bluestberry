@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core'
+import {Component, Input, OnInit} from '@angular/core'
 import { PyodideService } from 'src/app/pyodide/pyodide.service'
 import { EditorComponent } from 'ngx-monaco-editor'
 import { editor } from 'monaco-editor'
@@ -10,6 +10,9 @@ import ICodeEditor = editor.ICodeEditor
   styleUrls: ['./code-viewer.component.scss'],
 })
 export class CodeViewerComponent implements OnInit {
+  @Input()
+  data?: { path: string };
+
   private editor!: ICodeEditor
   editorOptions = {
     theme: 'vs-dark',
@@ -127,7 +130,9 @@ send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))
 
   constructor(private pyodideService: PyodideService) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    console.log(this.data);
+  }
 
   executeCode(): void {
     this.pyodideService.runCode(this.code).subscribe()

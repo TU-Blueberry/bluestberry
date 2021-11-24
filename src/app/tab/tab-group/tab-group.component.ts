@@ -3,7 +3,7 @@ import {
   Component,
   ContentChildren,
   EventEmitter,
-  Input,
+  Input, OnInit,
   Output,
   QueryList,
   ViewChild,
@@ -11,13 +11,14 @@ import {
 } from '@angular/core';
 import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {Tab} from 'src/app/tab/model/tab.model';
+import {TabEventService} from 'src/app/tab/tab-event.service';
 
 @Component({
   selector: 'app-tab-group',
   templateUrl: './tab-group.component.html',
   styleUrls: ['./tab-group.component.scss']
 })
-export class TabGroupComponent implements AfterContentInit {
+export class TabGroupComponent implements OnInit {
   scrollPosition = 0;
 
   @ContentChildren(TabTemplateDirective, {descendants: true})
@@ -39,7 +40,7 @@ export class TabGroupComponent implements AfterContentInit {
     if (value) {
       if (!value.view) {
         const directive = this.templates?.find(template => template.type === value.type);
-        value.view = this.viewContainerRef?.createEmbeddedView(directive!.templateRef);
+        value.view = this.viewContainerRef?.createEmbeddedView(directive!.templateRef, { data: value.data });
       } else {
         this.viewContainerRef?.insert(value.view);
       }
@@ -49,10 +50,15 @@ export class TabGroupComponent implements AfterContentInit {
     return this._activeTab;
   }
 
-  ngAfterContentInit(): void {
-    setTimeout(() => {
-      this.activeTab = this.dataSource[0];
-    });
+  constructor(private tabEventService: TabEventService) {
+  }
+
+  ngOnInit(): void {
+    this.activeTab = this.dataSource[0];
+    this.tabEventService.openTab$.subscribe(tab => {
+      this.dataSource.push(tab);
+      this.dataSourceChange.emit(this.dataSource);
+    })
   }
 
   handleScroll(event: WheelEvent) {
@@ -76,4 +82,5 @@ export class TabGroupComponent implements AfterContentInit {
       this.activeTab = this.dataSource[index] || this.dataSource[index - 1];
     }
   }
+
 }

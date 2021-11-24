@@ -3,8 +3,8 @@
     <as-split direction="vertical">
       <as-split-area>
         <app-tab-group [dataSource]="[{type: 'CODE', title: 'code', icon: 'hero-document-text'}]">
-          <ng-container *appTabTemplate="let content = content; type: 'CODE'">
-            <app-code-viewer class="code-wrapper"></app-code-viewer>
+          <ng-container *appTabTemplate="let data = data; type: 'CODE'">
+            <app-code-viewer class="code-wrapper" [data]="data"></app-code-viewer>
           </ng-container>
         </app-tab-group>
       </as-split-area>
