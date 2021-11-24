@@ -2,10 +2,10 @@
   <as-split-area>
     <as-split direction="vertical">
       <as-split-area>
-        <app-tab-group>
-          <app-tab title="code">
+        <app-tab-group [dataSource]="[{type: 'CODE', title: 'code'}]">
+          <div *appTabTemplate="let content = content; type: 'CODE'">
             <app-code-viewer class="code-wrapper"></app-code-viewer>
-          </app-tab>
+          </div>
         </app-tab-group>
       </as-split-area>
       <as-split-area>
@@ -14,13 +14,12 @@
     </as-split>
   </as-split-area>
   <as-split-area>
-    <app-tab-group>
-      <app-tab title="unity">
-        <app-unity-viewer></app-unity-viewer>
-      </app-tab>
-      <app-tab title="dog">
+    <app-tab-group [dataSource]="[{type: 'UNITY', title: 'Unity'}, {type: 'IMAGE', title: 'Dog'}]">
+        <app-unity-viewer *appTabTemplate="let content = content; type: 'UNITY'">
+        </app-unity-viewer>
+      <div *appTabTemplate="let content = content; type: 'IMAGE'">
         <app-image-viewer imagePath="assets/dog.png"></app-image-viewer>
-      </app-tab>
+      </div>
     </app-tab-group>
   </as-split-area>
 </as-split>

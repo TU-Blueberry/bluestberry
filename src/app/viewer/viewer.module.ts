@@ -8,9 +8,8 @@ import { UnityModule } from '../unity/unity.module'
 import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.component'
 import { ImageViewerComponent } from './image-viewer/image-viewer.component';
 import {MainViewerComponent} from './main-viewer/main-viewer.component';
-import {TabComponent} from 'src/app/viewer/tab/tab.component';
-import {TabGroupComponent} from './tab-group/tab-group.component';
 import {AngularSplitModule} from 'angular-split';
+import {TabModule} from 'src/app/tab/tab.module';
 
 /**
  * Module used for all the Viewer-Components.
@@ -31,10 +30,8 @@ import {AngularSplitModule} from 'angular-split';
     TerminalViewerComponent,
     ImageViewerComponent,
     MainViewerComponent,
-    TabComponent,
-    TabGroupComponent
   ],
-  imports: [CommonModule, MonacoEditorModule, FormsModule, UnityModule, AngularSplitModule],
+  imports: [CommonModule, MonacoEditorModule, FormsModule, UnityModule, AngularSplitModule, TabModule],
   exports: [CodeViewerComponent, UnityViewerComponent, TerminalViewerComponent, ImageViewerComponent, MainViewerComponent],
 })
 export class ViewerModule {

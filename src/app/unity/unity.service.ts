@@ -12,6 +12,9 @@ export class UnityService {
   isReady = false
 
   initUnity(path: string): any {
+    if (this.gameInstance) {
+      return this.gameInstance;
+    }
     const loader = (window as any).UnityLoader
     this.gameInstance = loader.instantiate('gameContainer', path, {
       onProgress: (gameInstance: any, progress: number) => {

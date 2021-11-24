@@ -7,7 +7,7 @@ import {Component, Input, TemplateRef, ViewChild} from '@angular/core';
 })
 export class TabComponent {
   @Input()
-  title = '';
+  templateRef: TemplateRef<any> | null = null;
 
   @ViewChild(TemplateRef)
   content: TemplateRef<any> | null = null;

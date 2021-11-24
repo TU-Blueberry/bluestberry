@@ -6,7 +6,7 @@
   <button
     class="tab-button"
     [ngClass]="{'active': tab === activeTab}"
-    *ngFor="let tab of tabs; let i = index"
+    *ngFor="let tab of dataSource; let i = index"
     (click)="activeTab = tab"
   >
     <div class="tab-icon">
@@ -35,7 +35,6 @@
   </button>
 </div>
 <div class="tab-body">
-  <ng-container *ngIf="activeTab">
-    <ng-container *ngTemplateOutlet="activeTab.content"></ng-container>
+  <ng-container #tabcontainer>
   </ng-container>
 </div>
