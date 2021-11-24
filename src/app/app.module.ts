@@ -11,10 +11,11 @@ import { FilesystemModule } from './filesystem/filesystem.module';
 import { NavbarComponent } from './navbar/navbar.component';
 import { ActionbarComponent } from './actionbar/actionbar.component';
 import { UnityModule } from './unity/unity.module';
-import { UnityComponent } from './unity/unity.component';
 import {HttpClient, HttpClientModule} from '@angular/common/http';
 import {AngularSplitModule} from 'angular-split';
 import {MarkdownModule, MarkedOptions, MarkedRenderer} from "ngx-markdown";
+import {NgIconsModule} from '@ng-icons/core';
+import {HeroDocument, HeroDocumentText, HeroPhotograph, HeroX} from '@ng-icons/heroicons';
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -38,6 +39,7 @@ export function markedOptionsFactory(): MarkedOptions {
     FilesystemModule,
     UnityModule,
     HttpClientModule,
+    NgIconsModule.withIcons({ HeroDocumentText, HeroDocument, HeroX, HeroPhotograph }),
     MarkdownModule.forRoot({
       loader: HttpClient, // Optional, only needed if we use [src] attribute
       markedOptions: {

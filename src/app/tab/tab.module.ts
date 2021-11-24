@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {TabGroupComponent} from 'src/app/tab/tab-group/tab-group.component';
 import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
+import {NgIconsModule} from '@ng-icons/core';
 
 
 
@@ -15,7 +16,8 @@ import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
     TabTemplateDirective,
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    NgIconsModule
   ]
 })
 export class TabModule { }

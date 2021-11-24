@@ -1413,6 +1413,20 @@
     merge-source-map "^1.1.0"
     schema-utils "^2.7.0"
 
+"@ng-icons/core@^13.1.2":
+  version "13.1.2"
+  resolved "https://registry.yarnpkg.com/@ng-icons/core/-/core-13.1.2.tgz#c2a1f65ccdf442c1127b449edb56c7432f0c0665"
+  integrity sha512-br5zRPdGvQFm5uXuxfIybSTpE3YOFVDclo8GaolsjJ+xoG7H22gT2fmCCgkEZrPgFaK+/+sA7Mi0XfdOxV/vOg==
+  dependencies:
+    tslib "^2.2.0"
+
+"@ng-icons/heroicons@^13.1.2":
+  version "13.1.2"
+  resolved "https://registry.yarnpkg.com/@ng-icons/heroicons/-/heroicons-13.1.2.tgz#89a91aae2f71c6d0df1a908581389ac9212521a6"
+  integrity sha512-IjUb0FVWURfeTxZu46PbLLkBeg3q8l3CNhcm6ZzgWr4S+Wqe1+E3VYtSzzs43zc5sT5F+rz0xUwewLaNclccPQ==
+  dependencies:
+    tslib "^2.2.0"
+
 "@ngtools/webpack@12.2.12":
   version "12.2.12"
   resolved "https://registry.npmjs.org/@ngtools/webpack/-/webpack-12.2.12.tgz"

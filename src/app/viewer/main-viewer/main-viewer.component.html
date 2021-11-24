@@ -2,7 +2,7 @@
   <as-split-area>
     <as-split direction="vertical">
       <as-split-area>
-        <app-tab-group [dataSource]="[{type: 'CODE', title: 'code'}]">
+        <app-tab-group [dataSource]="[{type: 'CODE', title: 'code', icon: 'hero-document-text'}]">
           <ng-container *appTabTemplate="let content = content; type: 'CODE'">
             <app-code-viewer class="code-wrapper"></app-code-viewer>
           </ng-container>
@@ -14,7 +14,7 @@
     </as-split>
   </as-split-area>
   <as-split-area>
-    <app-tab-group [dataSource]="[{type: 'UNITY', title: 'Unity'}, {type: 'IMAGE', title: 'Dog'}]">
+    <app-tab-group [dataSource]="[{type: 'UNITY', title: 'Unity'}, {type: 'IMAGE', title: 'Dog', icon: 'hero-photograph'}]">
         <app-unity-viewer *appTabTemplate="let content = content; type: 'UNITY'">
         </app-unity-viewer>
       <div *appTabTemplate="let content = content; type: 'IMAGE'">
