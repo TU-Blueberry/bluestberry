@@ -1,0 +1,19 @@
+<form [formGroup]="formGroup" (submit)="onSubmitClicked()">
+    <div class="input-element">
+        <input type="text" placeholder="Namen eingeben" [formControl]="nameFormControl"/>
+        <button type="submit">
+            <svg xmlns="http://www.w3.org/2000/svg" class="icon" viewBox="0 0 24 24" aria-labelledby="sendIconTitle" stroke="currentColor" stroke-width="2" 
+            stroke-linecap="square" stroke-linejoin="miter" fill="none" color="#2329D6"> 
+                <title id="sendIconTitle">Erstellen</title> 
+                <polygon points="21.368 12.001 3 21.609 3 14 11 12 3 9.794 3 2.394"/>
+             </svg>
+        </button>
+    </div>
+    <label>
+        <span 
+        class="input-error" 
+        *ngIf="formGroup.get('nameFormControl')?.hasError('error') && formGroup.get('nameFormControl')?.dirty">
+            {{ formGroup.get('nameFormControl')?.errors?.error}}
+        </span>
+    </label>
+</form>

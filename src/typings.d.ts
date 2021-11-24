@@ -26,7 +26,7 @@ declare interface AnalyzeObject {
 }
 
 declare class FSNode {
-  contents: FSNode   
+  contents: FSNode | Uint8Array  
   mode: number;
   id: number;
   name: string;
@@ -38,9 +38,12 @@ declare interface FSTypes {
   IDBFS: any;
 }
 
+type allowedEncodings = "binary" | "utf8";
+
 declare class MissingInEmscripten {
   filesystems: FSTypes;
   analyzePath(path: string, dontResolveLastLink: boolean): AnalyzeObject;
+  readFile(path: string, opts: { encoding: allowedEncodings; flags?: string | undefined }): Uint8Array | string;
 }
 
 declare class Pyodide {

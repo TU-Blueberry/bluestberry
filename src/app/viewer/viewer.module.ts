@@ -14,6 +14,7 @@ import { TabComponent } from 'src/app/viewer/tab/tab.component'
 import { TabGroupComponent } from './tab-group/tab-group.component'
 import { AngularSplitModule } from 'angular-split'
 import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
+import { FilesystemModule } from '../filesystem/filesystem.module'
 import { GlossaryEntryViewerComponent } from './glossary-entry-viewer/glossary-entry-viewer.component';
 import { MarkdownModule } from "ngx-markdown";
 
@@ -50,7 +51,8 @@ import { MarkdownModule } from "ngx-markdown";
     UnityModule,
     AngularSplitModule,
     OverlayModule,
-    MarkdownModule,
+    FilesystemModule,
+    MarkdownModule
   ],
   exports: [
     CodeViewerComponent,

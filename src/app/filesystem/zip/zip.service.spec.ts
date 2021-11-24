@@ -1,13 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import { EventService } from './event.service';
+import { ZipService } from './zip.service';
 
-describe('EventService', () => {
-  let service: EventService;
+describe('ZipService', () => {
+  let service: ZipService;
 
   beforeEach(() => {
     TestBed.configureTestingModule({});
-    service = TestBed.inject(EventService);
+    service = TestBed.inject(ZipService);
   });
 
   it('should be created', () => {
