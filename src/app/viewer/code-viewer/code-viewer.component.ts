@@ -3,6 +3,7 @@ import { PyodideService } from 'src/app/pyodide/pyodide.service'
 import { EditorComponent } from 'ngx-monaco-editor'
 import { editor } from 'monaco-editor'
 import ICodeEditor = editor.ICodeEditor
+import {FileTabDirective} from 'src/app/tab/file-tab.directive';
 
 @Component({
   selector: 'app-code-viewer',
@@ -10,8 +11,6 @@ import ICodeEditor = editor.ICodeEditor
   styleUrls: ['./code-viewer.component.scss'],
 })
 export class CodeViewerComponent implements OnInit {
-  @Input()
-  data?: { path: string };
 
   private editor!: ICodeEditor
   editorOptions = {
@@ -128,10 +127,12 @@ def main():
 send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))
 #main()`
 
-  constructor(private pyodideService: PyodideService) {}
+  constructor(private pyodideService: PyodideService, private fileTabDirective: FileTabDirective) {}
 
   ngOnInit(): void {
-    console.log(this.data);
+    this.fileTabDirective.dataChanges.subscribe(data => {
+        this.code = new TextDecoder().decode(data.content);
+    });
   }
 
   executeCode(): void {

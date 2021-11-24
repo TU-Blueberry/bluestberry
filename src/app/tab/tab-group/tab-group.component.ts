@@ -1,5 +1,5 @@
 import {
-  AfterContentInit,
+  AfterViewInit,
   Component,
   ContentChildren,
   EventEmitter,
@@ -12,19 +12,20 @@ import {
 import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {Tab} from 'src/app/tab/model/tab.model';
 import {TabEventService} from 'src/app/tab/tab-event.service';
+import {filter} from 'rxjs/operators';
 
 @Component({
   selector: 'app-tab-group',
   templateUrl: './tab-group.component.html',
   styleUrls: ['./tab-group.component.scss']
 })
-export class TabGroupComponent implements OnInit {
+export class TabGroupComponent implements AfterViewInit {
   scrollPosition = 0;
 
   @ContentChildren(TabTemplateDirective, {descendants: true})
   templates?: QueryList<TabTemplateDirective>;
 
-  @ViewChild('tabcontainer', { read: ViewContainerRef })
+  @ViewChild('tabcontainer', { read: ViewContainerRef, static: true })
   viewContainerRef?: ViewContainerRef;
 
   @Input()
@@ -40,7 +41,11 @@ export class TabGroupComponent implements OnInit {
     if (value) {
       if (!value.view) {
         const directive = this.templates?.find(template => template.type === value.type);
-        value.view = this.viewContainerRef?.createEmbeddedView(directive!.templateRef, { data: value.data });
+        const close = () => {
+          const index = this.dataSource.indexOf(value);
+          this.closeTab(index);
+        }
+        value.view = this.viewContainerRef?.createEmbeddedView(directive!.templateRef, { tab: value, close });
       } else {
         this.viewContainerRef?.insert(value.view);
       }
@@ -53,11 +58,16 @@ export class TabGroupComponent implements OnInit {
   constructor(private tabEventService: TabEventService) {
   }
 
-  ngOnInit(): void {
-    this.activeTab = this.dataSource[0];
-    this.tabEventService.openTab$.subscribe(tab => {
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.activeTab = this.dataSource[0];
+    });
+    this.tabEventService.openTab$.pipe(
+      filter(tab => !!this.templates?.find(template => template.type === tab.type)),
+    ).subscribe(tab => {
       this.dataSource.push(tab);
       this.dataSourceChange.emit(this.dataSource);
+      this.activeTab = tab;
     })
   }
 
@@ -82,5 +92,4 @@ export class TabGroupComponent implements OnInit {
       this.activeTab = this.dataSource[index] || this.dataSource[index - 1];
     }
   }
-
 }

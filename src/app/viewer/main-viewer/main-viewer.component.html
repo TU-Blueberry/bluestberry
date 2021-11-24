@@ -6,8 +6,8 @@
     <as-split direction="vertical" [gutterSize]="4">
       <as-split-area>
         <app-tab-group [dataSource]="[{type: 'CODE', title: 'code', icon: 'hero-document-text'}]">
-          <ng-container *appTabTemplate="let data = data; type: 'CODE'">
-            <app-code-viewer class="code-wrapper" [data]="data"></app-code-viewer>
+          <ng-container *appTabTemplate="let tab = tab; let close = close; type: 'CODE'">
+            <app-code-viewer class="code-wrapper" [appFileTab]="tab" (close)="close()"></app-code-viewer>
           </ng-container>
         </app-tab-group>
       </as-split-area>
@@ -17,11 +17,11 @@
     </as-split>
   </as-split-area>
   <as-split-area [order]="2" [minSize]="10" [size]="42.5" [size]="42.5">
-    <app-tab-group [dataSource]="[{type: 'UNITY', title: 'Unity'}, {type: 'IMAGE', title: 'Dog', icon: 'hero-photograph'}]">
-        <app-unity-viewer *appTabTemplate="let content = content; type: 'UNITY'">
-        </app-unity-viewer>
-      <div *appTabTemplate="let content = content; type: 'IMAGE'">
-        <app-image-viewer imagePath="assets/dog.png"></app-image-viewer>
+    <app-tab-group [dataSource]="[{type: 'UNITY', title: 'Unity'}]">
+      <app-unity-viewer *appTabTemplate="let data = data; type: 'UNITY'">
+      </app-unity-viewer>
+      <div *appTabTemplate="let tab = tab; let close = close; type: 'IMAGE'">
+        <app-image-viewer [appFileTab]="tab" (close)="close()"></app-image-viewer>
       </div>
     </app-tab-group>
     <app-hint-viewer></app-hint-viewer>

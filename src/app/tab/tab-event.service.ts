@@ -1,10 +1,10 @@
-import { Injectable } from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
 import {Tab} from 'src/app/tab/model/tab.model';
-import {EventService} from 'src/app/filesystem/events/event.service';
 import {filter, map} from 'rxjs/operators';
-import {FilesystemService} from 'src/app/filesystem/filesystem.service';
 import {TabType} from 'src/app/tab/model/tab-type.model';
+import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
+import {FileType} from 'src/app/shared/filetypes.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -16,51 +16,51 @@ export class TabEventService {
     return this._openTab.asObservable();
   }
 
-  constructor(private fileEventService: EventService) {
-    fileEventService.onOpenFile.pipe(
+  constructor(private filesystemEventService: FilesystemEventService) {
+    filesystemEventService.onOpenFile.pipe(
       filter(e => e.byUser),
       map(e => ({
-        title: e.path.split('/').pop(),
-        icon: this.mapPathToIcon(e.path),
-        type: this.mapPathToType(e.path),
-        data: { path: e.path },
+        title: e.path.split('/').pop() || e.path,
+        icon: this.mapTypeToIcon(e.type),
+        type: this.mapFileTypeToTabType(e.type),
+        data: { path: e.path, content: e.fileContent },
       })),
-    )
+    ).subscribe(t => this._openTab.next(t));
   }
 
-  mapPathToIcon(path: string): string {
-    const extension = this.getFileExtension(path);
-    switch (extension) {
-      case 'py':
-      case 'txt':
+  mapTypeToIcon(fileType?: FileType): string {
+    switch (fileType) {
+      case FileType.PY:
+      case FileType.MD:
+      case FileType.JSON:
+      case FileType.TEX:
+      case FileType.CSV:
         return 'hero-document-text';
-      case 'png':
-      case 'jpg':
-      case 'jpeg':
-      case 'gif':
+      case FileType.BMP:
+      case FileType.JPEG:
+      case FileType.JPG:
+      case FileType.PNG:
         return 'hero-photograph';
       default:
         return 'hero-document';
     }
   }
 
-  mapPathToType(path: string): TabType {
-    const extension = this.getFileExtension(path);
-    switch (extension) {
-      case 'py':
-      case 'txt':
+  mapFileTypeToTabType(fileType?: FileType): TabType {
+    switch (fileType) {
+      case FileType.PY:
+      case FileType.MD:
+      case FileType.JSON:
+      case FileType.TEX:
+      case FileType.CSV:
         return 'CODE';
-      case 'png':
-      case 'jpg':
-      case 'jpeg':
-      case 'gif':
+      case FileType.BMP:
+      case FileType.JPEG:
+      case FileType.JPG:
+      case FileType.PNG:
         return 'IMAGE';
       default:
         return 'CODE';
     }
-  }
-
-  private getFileExtension(path: string) {
-    return path.split('.').pop();
   }
 }
