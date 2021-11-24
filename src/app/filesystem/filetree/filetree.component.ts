@@ -30,7 +30,7 @@ export class FiletreeComponent implements OnDestroy{
     private zipService: ZipService, private mgmtService: LessonManagementService ) {
 
     // TODO: error handling
-    concat(this.pys.pyodide, this.mgmtService.openLessonByName('/sortierroboter'))
+    concat(this.pys.pyodide, this.mgmtService.openLessonByName('sortierroboter'))
       .subscribe(
         () => { },
         err => { },

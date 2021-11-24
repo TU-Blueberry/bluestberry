@@ -1,5 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
+import { Location } from '@angular/common';
 import { concat, EMPTY, iif, Observable } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 import { FilesystemService } from '../filesystem.service';
@@ -10,11 +11,13 @@ import { ZipService } from '../zip/zip.service';
 })
 export class LessonManagementService {
 
-  constructor(private http: HttpClient, private zipService: ZipService, private fsService: FilesystemService) { }
+  constructor(private http: HttpClient, private zipService: ZipService, private fsService: FilesystemService, private location: Location) { }
 
   /** Retrieves lesson from server and stores it */
   loadFromServerAndOpen(name: string) {
-    return this.http.get(`/assets/${name}.zip`, { responseType: 'arraybuffer' }).pipe(mergeMap(
+    const url = this.location.prepareExternalUrl(`/assets/${name}.zip`);
+
+    return this.http.get(url, { responseType: 'arraybuffer' }).pipe(mergeMap(
       buff => {
         return this.zipService.loadZip(buff).pipe(mergeMap(zip => this.fsService.storeLesson(zip, name)));
       }

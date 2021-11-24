@@ -416,15 +416,19 @@ export class FilesystemService {
     })), this.sync(false));
   }
 
-  getFileContent(path: string, _encoding: allowedEncodings): Observable<Uint8Array | string | undefined> {
+  getFileContent(path: string, _encoding: allowedEncodings): Observable<Uint8Array | string> {
     return new Observable(subscriber => {
       if (!this.isFile(path)) {
         subscriber.error("Path doesn't belong to a file");
       } else {
         try {
-          const content = this.PyFS?.readFile(path, { encoding: _encoding});
-          subscriber.next(content);
-          subscriber.complete();
+          if (this.PyFS) {
+            const content = this.PyFS.readFile(path, { encoding: _encoding});
+            subscriber.next(content);
+            subscriber.complete();
+          } else {
+            subscriber.error("Error reading file");
+          }
         } catch (e) {
           subscriber.error("Error reading file");
         }

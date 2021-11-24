@@ -123,8 +123,16 @@ def main():
 
     send_to_unity(y_test, predictions)
 
-# comment out the following line for own classifier
-send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))
+    # comment out the following line for own classifier
+send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))   
+#js.enableManual()
+#js.start()
+#js.stop()
+#js.sendManualBerry("1,1,THIS IS THE FILEPATH")
+#js.sendManualBerry("0,0,THIS IS THE FILEPATH")
+#js.sendManualBerry("1,0,THIS IS THE FILEPATH")
+#js.sendManualBerry("0,1,THIS IS THE FILEPATH")
+
 #main()`
 
   constructor(private pyodideService: PyodideService, private fileTabDirective: FileTabDirective) {}
