@@ -3,12 +3,10 @@ import { concat, from, Observable, Subject, Subscription } from 'rxjs';
 import { PyodideService } from '../../pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
-import { saveAs } from 'file-saver';
-import { EventService } from '../events/event.service';
-import { switchMap } from 'rxjs/operators';
-import { ConfigObject } from '../shared/configObject';
-import { JSZipObject } from 'jszip';
+import { switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
+import { ZipService } from '../zip/zip.service';
+import { LessonManagementService } from '../lesson-management/lesson-management.service';
 
 @Component({
   selector: 'app-filetree',
@@ -28,22 +26,17 @@ export class FiletreeComponent implements OnDestroy{
   test: any;
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
-  constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, private ev: EventService) {
+  constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
+    private zipService: ZipService, private mgmtService: LessonManagementService ) {
 
     // TODO: error handling
-    concat(this.pys.pyodide, this.fsService.openLessonByName('/sortierroboter'))
+    concat(this.pys.pyodide, this.mgmtService.openLessonByName('/sortierroboter'))
       .subscribe(
         () => { },
         err => { },
         () => { 
           this.kickstartTreeGeneration();
         });
-
-    // Sync after every write
-    // TODO: Should probably be done automatically after every code execution by pyodide service
-    ev.onWriteToFile.subscribe(() => {
-      this.fsService.sync(false).subscribe()
-    });
   }
 
   // TODO: Remove hardcoded stuff
@@ -55,6 +48,7 @@ export class FiletreeComponent implements OnDestroy{
     folderComp.path = "/sortierroboter";
     folderComp.ref = root;
     folderComp.rootname = "Sortierroboter";
+    folderComp.parentPath = "/";
     this.rootComponent = folderComp;
   }
 
@@ -65,23 +59,22 @@ export class FiletreeComponent implements OnDestroy{
   // Nach dem Import: openLeft und openRight der neuen Lektion aufrufen
 
   // TODO: Dateien laden bugg bei FF irgendwie
+  // TODO: Catch error
   export(name: string): void {
-    this.fsService.exportLesson(name).subscribe(blob => {
-      saveAs(blob, name);
-    });
+    this.zipService.export(name).subscribe()
   }
 
   finishImport(): void {
     this.userResult$.next(true);
   }
 
-  // TODO: Additionally check whether it zip is completely empty or only consists of config.json
+  // TODO: Additionally check whether zip is completely empty or only consists of config.json
   unpackCheckAndPossiblyImport(file: File) {
     this.checkInProgress = true;
     return from(file.arrayBuffer()).pipe(
-      switchMap(buffer => this.fsService.loadZip(buffer)),
-      switchMap(zip => this.getFileFromZip(zip)),
-      switchMap(res => this.getConfigFromStream(res)),
+      switchMap(buffer => this.zipService.loadZip(buffer)),
+      tap(unzipped => this.tempZip = unzipped),
+      switchMap(res => this.zipService.getConfigFromStream(res)),
       switchMap(conf => this.fsService.checkIfLessonDoesntExistYet(conf.name)
         .pipe(
             switchMap(isEmpty => { 
@@ -99,37 +92,6 @@ export class FiletreeComponent implements OnDestroy{
     return new Observable(subscriber => {
       this.userResult$.complete();
       subscriber.complete();
-    });
-  }
-
-  getConfigFromStream(config: JSZipObject): Observable<ConfigObject> {
-    return new Observable(subscriber => {
-      const stream = config.internalStream("string");
-      stream.on("error", () => subscriber.error("Error trying to stream config"));
-      stream.accumulate().then((data => {
-        const parsedConfig: ConfigObject = JSON.parse(data);
-      
-        if (parsedConfig.name) {
-          subscriber.next(parsedConfig);
-          subscriber.complete();
-        } else {
-          subscriber.error("Config is missing name property");
-        }      
-      }));
-    });
-  }
-
-  getFileFromZip(unzipped: JSZip): Observable<JSZipObject> {
-    return new Observable(subscriber => {
-      this.tempZip = unzipped;
-      const config = unzipped.file("config.json");
-
-      if (!config) {
-        subscriber.error("Couldn't find config file");
-      } else {
-        subscriber.next(config);
-        subscriber.complete();
-      }
     });
   }
 

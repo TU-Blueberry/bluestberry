@@ -1,6 +1,9 @@
-<as-split direction="horizontal" class="main-split">
-  <as-split-area>
-    <as-split direction="vertical">
+<as-split direction="horizontal" class="main-split" [gutterSize]="4">
+  <as-split-area *ngIf="filetreeVisible" [order]="0" [minSize]="10" [size]="15" [maxSize]="30">
+    <app-filetree></app-filetree>
+  </as-split-area>
+  <as-split-area [order]="1" [minSize]="10" [size]="42.5" [size]="42.5">
+    <as-split direction="vertical" [gutterSize]="4">
       <as-split-area>
         <app-tab-group [dataSource]="[{type: 'CODE', title: 'code', icon: 'hero-document-text'}]">
           <ng-container *appTabTemplate="let data = data; type: 'CODE'">
@@ -13,7 +16,7 @@
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area>
+  <as-split-area [order]="2" [minSize]="10" [size]="42.5" [size]="42.5">
     <app-tab-group [dataSource]="[{type: 'UNITY', title: 'Unity'}, {type: 'IMAGE', title: 'Dog', icon: 'hero-photograph'}]">
         <app-unity-viewer *appTabTemplate="let content = content; type: 'UNITY'">
         </app-unity-viewer>

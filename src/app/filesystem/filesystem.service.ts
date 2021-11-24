@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
-import { iif, from, Observable, concat, forkJoin, EMPTY } from 'rxjs';
-import { map, mergeMap } from 'rxjs/operators';
+import { Observable, concat, forkJoin } from 'rxjs';
+import { map, switchMap } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { ConfigObject } from './shared/configObject';
@@ -14,7 +14,6 @@ import { Location } from '@angular/common';
 })
 export class FilesystemService {
   PyFS?: typeof FS & MissingInEmscripten;
-  zipper: JSZip = new JSZip();;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
 
   constructor(private http: HttpClient, private pyService: PyodideService, private location: Location) {
@@ -22,21 +21,12 @@ export class FilesystemService {
       this.PyFS = py.FS;
       this.fsSubject.next(this.PyFS);
     });
+
+    this.pyService.getAfterExecution().subscribe(() => this.sync(false));
   }
 
   getFS() {
     return this.fsSubject;
-  }
-
-  /** Checks whether lesson with the given name already exists in the local filesystem. 
-   * If yes, the content from the local filesystem is used.
-   * If no, the lesson with the given name will be requested from the server and stored afterwards 
-   * Intended for situations where user shall choose between multiple lessons (e.g. application startup)
-   * */
-  openLessonByName(name: string): Observable<any> {
-    return concat(this.checkIfLessonDoesntExistYet(name).pipe(
-      mergeMap(isEmpty => iif(() => isEmpty, this.loadFromServerAndOpen(name), EMPTY))
-    ), this.sync(false))
   }
 
   /** Lesson exists, if the corresponding dir either already exists OR if we can create the
@@ -64,17 +54,6 @@ export class FilesystemService {
     });
   }
 
-  /** Retrieves lesson from server and stores it */
-  loadFromServerAndOpen(name: string) {
-    const url = this.location.prepareExternalUrl(`/assets/${name}.zip`);
-
-    return this.http.get(url, { responseType: 'arraybuffer' }).pipe(mergeMap(
-      buff => {
-        return this.loadZip(buff).pipe(mergeMap(zip => this.storeLesson(zip, name)));
-      }
-    ));
-  }
-
   importLesson(existsAlready: boolean, config: ConfigObject, zip?: JSZip): Observable<any> {
     return new Observable(subscriber => {
       const path = `/${config.name}`;
@@ -95,10 +74,6 @@ export class FilesystemService {
         () =>  subscriber.complete());
     });
 
-  }
-
-  loadZip(buff: ArrayBuffer): Observable<JSZip> {
-    return from(this.zipper.loadAsync(buff));
   }
 
   // TODO: Error handling (catchError)
@@ -209,6 +184,28 @@ export class FilesystemService {
     }
   }
 
+  /* Returns all subfolders and - if requested - files of the given path as seperate arrays */
+  scan(path: string, depth: number, includeFiles: boolean) {
+    const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
+    const subfolders: FSNode[] = [];
+    const filesInFolder: FSNode[] = [];
+
+    Object.entries(entries).forEach(([_, value], key) =>  {
+      const currentPath = `${path}/${value.name}`;
+
+      if (!isSystemDirectory(currentPath) && this.isDirectory(currentPath)) {
+        subfolders.push(value);
+      }
+
+      if (this.isFile(currentPath) && !(depth == 0 && value.name === 'config.json') && includeFiles) {
+        filesInFolder.push(value);
+      }
+    });
+
+    return [subfolders, filesInFolder];
+  }
+
+  // TODO: Probably also check if path exists?
   fillZip(path: string, zip: JSZip, lessonName: string) {
     try {
       if (!this.isEmpty(path)) {
@@ -264,26 +261,13 @@ export class FilesystemService {
     }
   }
 
-  exportLesson(name: string): Observable<Blob> {
-    return new Observable(subscriber => {
-      const zip = new JSZip();
-      this.fillZip(`/${name}/`, zip, name);
-      zip.generateAsync({ type: "blob" }).then(function (blob) {
-        subscriber.next(blob);
-        subscriber.complete();
-      }, function (err) {
-        subscriber.error();
-      });
-    });
-  }
-
   storeLesson(unzippedLesson: JSZip, name: string): Observable<any> {
     const folders: string[] = [];
     const files: string[] = [];
 
     unzippedLesson.forEach(entry => {
       if (entry !== `${name}/`) {
-        this.zipper.file(entry) ? files.push(entry) : folders.push(entry);
+        unzippedLesson.file(entry) ? files.push(entry) : folders.push(entry);
       }
     });
 
@@ -307,7 +291,13 @@ export class FilesystemService {
     return concat(folderObs, forkJoin(fileObservables));
   }
 
+  /**
+   * Eigtl. bei allen Pfaden noch zusätzlich vorher prüfen, ob sie existieren
+   * Schreit nach einer eigenen Methode, die trim() etc. macht und dann prüft, ob Pfad existiert
+   */
+
   // TODO: How to handle errors?
+  // TODO: Check if path exists
   isEmpty(path: string): boolean {
     try {
       const node = this.PyFS?.lookupPath(path, {}).node;
@@ -319,12 +309,14 @@ export class FilesystemService {
   }
 
   // TODO: Fehlerbehandlung
+  // TODO: Check if path exists
   getTopLevelOfLesson(path: string): FSNode {
     const node = this.PyFS?.lookupPath(path, {}).node;
     return (node as FSNode);
   }
 
   // TODO: How to handle errors?
+  // TODO: Check if path exists
   isFile(path: string): boolean {
     try {
       const node = this.PyFS?.lookupPath(path, {}).node;
@@ -341,11 +333,123 @@ export class FilesystemService {
       const node = this.PyFS?.lookupPath(path, {}).node;
       return this.PyFS?.isDir((node as FSNode).mode) || false;
     } catch (e) {
-
       return false;
     }
   }
 
+  // TODO: errors
+  getNodeByPath(path: string): FSNode | undefined {
+    try {
+      return (this.PyFS?.lookupPath(path, {}).node as FSNode);
+    } catch(e) {
+      console.error(e);
+      return undefined;
+    }
+  }
+
+  exists(path: string): Observable<boolean> {
+    return new Observable(subscriber => {
+      try {
+        const node = this.PyFS?.analyzePath(path, false);
+
+        if (!node) {
+          subscriber.error("Error analyzing path");
+        } else {
+          subscriber.next(node.exists);
+          subscriber.complete();
+        }
+      } catch (e) {
+        subscriber.error("Error checking existence of path");
+      }
+    });
+  }
+
+  /** Writes to an existing file */
+  writeToFile(path: string, content: Uint8Array): Observable<any> {
+    const writing = new Observable(subscriber => {
+      if (!this.isFile(path)) {
+        subscriber.error("Path doesn't belong to a file");
+      } else {
+        try {
+          this.PyFS?.writeFile(path, content);
+          subscriber.complete();
+        } catch (e) {
+          subscriber.error("Error while writing to file");
+        }
+      }
+    });
+
+    return concat(writing, this.sync(false));
+  }
+
+  createFile(path: string, content: Uint8Array): Observable<any> {
+    const writing = new Observable(subscriber => {
+      try {
+        this.PyFS?.writeFile(path, content);
+        subscriber.complete();
+      } catch (e) {
+        subscriber.error("Error while writing to file");
+      }
+    });
+
+    return concat(writing, this.sync(false));
+  }
+
+  createFolder(path: string): Observable<any> {
+    return concat(this.exists(path).pipe(switchMap(exists => {
+      const mkDir = new Observable(subscriber => {
+        if (exists) {
+          subscriber.error("Destination is not empty");
+          return;
+        }
+  
+        try {
+          this.PyFS?.mkdir(path);
+          subscriber.complete();
+        } catch (e) {
+          subscriber.error("Error creating directory");
+        }
+  
+      });
+  
+      return mkDir;
+    })), this.sync(false));
+  }
+
+  getFileContent(path: string, _encoding: allowedEncodings): Observable<Uint8Array | string | undefined> {
+    return new Observable(subscriber => {
+      if (!this.isFile(path)) {
+        subscriber.error("Path doesn't belong to a file");
+      } else {
+        try {
+          const content = this.PyFS?.readFile(path, { encoding: _encoding});
+          subscriber.next(content);
+          subscriber.complete();
+        } catch (e) {
+          subscriber.error("Error reading file");
+        }
+      }
+    });
+  }
+
+  /** Renaming and moving (works for both files and folders) */
+  rename(oldPath: string, newPath: string): Observable<any> {
+    return concat(this.exists(newPath).pipe(switchMap(exists => {
+      return new Observable(subscriber => {  
+        if (exists) {
+          subscriber.error("New path not empty");
+          return;
+        }
+  
+        try {
+          this.PyFS?.rename(oldPath, newPath);
+          subscriber.complete();
+        } catch (e) {
+          subscriber.error("Error while moving node");
+        }
+      });
+    })), this.sync(false));
+  }
 
   // -------------------------- TODO
   
@@ -357,12 +461,6 @@ export class FilesystemService {
 
   resetLesson(): void {
 
-  }
-
-  // ----- V2: 
-  usercreateFile(): void {
-    // kann im popup namen + erweiterung angeben, dann öffnet sich neuer tab und man kann text content pasten
-    // bilder lohnt sich nicht, dafür gibts ja img uploader
   }
 
   updateLesson(): void {

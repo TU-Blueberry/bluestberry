@@ -12,6 +12,7 @@ import { ImageViewerComponent } from './image-viewer/image-viewer.component'
 import { MainViewerComponent } from './main-viewer/main-viewer.component'
 import { AngularSplitModule } from 'angular-split'
 import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
+import { FilesystemModule } from '../filesystem/filesystem.module'
 import { GlossaryEntryViewerComponent } from './glossary-entry-viewer/glossary-entry-viewer.component';
 import { MarkdownModule } from "ngx-markdown";
 import {TabModule} from 'src/app/tab/tab.module';
@@ -47,6 +48,7 @@ import {TabModule} from 'src/app/tab/tab.module';
     UnityModule,
     AngularSplitModule,
     OverlayModule,
+    FilesystemModule,
     MarkdownModule,
     TabModule,
   ],

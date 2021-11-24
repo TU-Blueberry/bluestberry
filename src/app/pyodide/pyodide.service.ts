@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { EventEmitter, Injectable } from '@angular/core';
 import { Location } from '@angular/common';
 import initCode from '!raw-loader!../../assets/util/init.py';
 import {BehaviorSubject, defer, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
@@ -18,6 +18,7 @@ export class PyodideService {
   // cache 1000 lines of stdout and stderr
   private stdOut$ = new ReplaySubject<string>(1000);
   private stdErr$ = new ReplaySubject<string>(1000);
+  private afterExecution$ = new EventEmitter<void>();
   pyodide = this.initPyodide();
 
   // Overwrite stderr and stdout. Sources:
@@ -63,14 +64,9 @@ export class PyodideService {
   runCode(code: string): Observable<any> {
     return this.pyodide.pipe(switchMap(pyodide => {
       return defer(() => from(pyodide.runPythonAsync(code)))
-        .pipe(tap(res => this.results$.next(res)));
+        .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
     }));
   }
-
-  // https://pyodide.org/en/stable/usage/faq.html#why-can-t-i-load-files-from-the-local-file-system
-  // "Cant load files from local filesystem"
-  // Vielleicht kann man das durch virtual filesystem umgehen?
-
 
   // We use python globals() to store the result from matplotlib
   getGlobal(key: string): Observable<string[]> {
@@ -98,5 +94,9 @@ export class PyodideService {
 
   getStdErr(): Observable<string> {
     return this.stdErr$.asObservable();
+  }
+
+  getAfterExecution(): EventEmitter<void> {
+    return this.afterExecution$;
   }
 }

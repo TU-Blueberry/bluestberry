@@ -33,7 +33,7 @@ from skimage import io
 from sklearn import metrics
 from sklearn.dummy import DummyClassifier
 
-path = "sortierroboter/sortierroboter/BlueberryData/"
+path = "sortierroboter/BlueberryData/"
 
 
 def load_images(path):
