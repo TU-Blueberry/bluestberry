@@ -3,13 +3,19 @@ import { CommonModule } from '@angular/common'
 import { CodeViewerComponent } from './code-viewer/code-viewer.component'
 import { MonacoEditorModule } from 'ngx-monaco-editor'
 import { FormsModule } from '@angular/forms'
+import { OverlayModule } from '@angular/cdk/overlay'
 import { UnityViewerComponent } from './unity-viewer/unity-viewer.component'
 import { UnityModule } from '../unity/unity.module'
 import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.component'
-import { ImageViewerComponent } from './image-viewer/image-viewer.component';
-import {MainViewerComponent} from './main-viewer/main-viewer.component';
-import {AngularSplitModule} from 'angular-split';
-import {TabModule} from 'src/app/tab/tab.module';
+import { LessonSelectionComponent } from './lesson-selection/lesson-selection.component'
+import { ImageViewerComponent } from './image-viewer/image-viewer.component'
+import { MainViewerComponent } from './main-viewer/main-viewer.component'
+import { TabComponent } from 'src/app/viewer/tab/tab.component'
+import { TabGroupComponent } from './tab-group/tab-group.component'
+import { AngularSplitModule } from 'angular-split'
+import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
+import { GlossaryEntryViewerComponent } from './glossary-entry-viewer/glossary-entry-viewer.component';
+import { MarkdownModule } from "ngx-markdown";
 
 /**
  * Module used for all the Viewer-Components.
@@ -21,6 +27,7 @@ import {TabModule} from 'src/app/tab/tab.module';
  * - ImageViewer
  * - DeckerViewer
  * - PdfViewer
+ * - LessonSelection
  */
 
 @NgModule({
@@ -28,11 +35,31 @@ import {TabModule} from 'src/app/tab/tab.module';
     CodeViewerComponent,
     UnityViewerComponent,
     TerminalViewerComponent,
+    LessonSelectionComponent,
+    ImageViewerComponent,
+    MainViewerComponent,
+    TabComponent,
+    TabGroupComponent,
+    HintViewerComponent,
+    GlossaryEntryViewerComponent,
+  ],
+  imports: [
+    CommonModule,
+    MonacoEditorModule,
+    FormsModule,
+    UnityModule,
+    AngularSplitModule,
+    OverlayModule,
+    MarkdownModule,
+    TabModule,
+  ],
+  exports: [
+    CodeViewerComponent,
+    UnityViewerComponent,
+    TerminalViewerComponent,
     ImageViewerComponent,
     MainViewerComponent,
   ],
-  imports: [CommonModule, MonacoEditorModule, FormsModule, UnityModule, AngularSplitModule, TabModule],
-  exports: [CodeViewerComponent, UnityViewerComponent, TerminalViewerComponent, ImageViewerComponent, MainViewerComponent],
 })
 export class ViewerModule {
   constructor() {}

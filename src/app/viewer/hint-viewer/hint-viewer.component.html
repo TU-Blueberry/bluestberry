@@ -1,0 +1,16 @@
+<div class="hint-container">
+  <div class="hint-icon" (click)="toggleHints()" cdkOverlayOrigin #trigger="cdkOverlayOrigin">
+  </div>
+
+  <ng-template
+    cdkConnectedOverlay
+    [cdkConnectedOverlayOrigin]="trigger"
+    [cdkConnectedOverlayOpen]="isOpen"
+  >
+    <ul class="example-overlay">
+      <li>Item 1</li>
+      <li>Item 2</li>
+      <li>Item 3</li>
+    </ul>
+  </ng-template>
+</div>
