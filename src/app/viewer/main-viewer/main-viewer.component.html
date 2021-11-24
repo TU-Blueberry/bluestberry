@@ -3,9 +3,9 @@
     <as-split direction="vertical">
       <as-split-area>
         <app-tab-group [dataSource]="[{type: 'CODE', title: 'code'}]">
-          <div *appTabTemplate="let content = content; type: 'CODE'">
+          <ng-container *appTabTemplate="let content = content; type: 'CODE'">
             <app-code-viewer class="code-wrapper"></app-code-viewer>
-          </div>
+          </ng-container>
         </app-tab-group>
       </as-split-area>
       <as-split-area>

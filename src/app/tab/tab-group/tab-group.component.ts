@@ -1,15 +1,14 @@
 import {
   AfterContentInit,
-  AfterViewInit,
   Component,
   ContentChildren,
-  EventEmitter, Input, OnChanges,
-  OnInit,
+  EventEmitter,
+  Input,
   Output,
   QueryList,
-  SimpleChanges, TemplateRef, ViewChild, ViewChildren, ViewContainerRef, ViewRef
+  ViewChild,
+  ViewContainerRef
 } from '@angular/core';
-import {TabComponent} from 'src/app/tab/tab/tab.component';
 import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {Tab} from 'src/app/tab/model/tab.model';
 
@@ -19,17 +18,19 @@ import {Tab} from 'src/app/tab/model/tab.model';
   styleUrls: ['./tab-group.component.scss']
 })
 export class TabGroupComponent implements AfterContentInit {
+  scrollPosition = 0;
+
   @ContentChildren(TabTemplateDirective, {descendants: true})
   templates?: QueryList<TabTemplateDirective>;
-
-  @Output()
-  close = new EventEmitter<number>();
 
   @ViewChild('tabcontainer', { read: ViewContainerRef })
   viewContainerRef?: ViewContainerRef;
 
   @Input()
   dataSource: Tab[] = [];
+
+  @Output()
+  dataSourceChange = new EventEmitter<Tab[]>();
 
   _activeTab?: Tab;
   set activeTab(value) {
@@ -47,10 +48,6 @@ export class TabGroupComponent implements AfterContentInit {
   get activeTab() {
     return this._activeTab;
   }
-  scrollPosition = 0;
-
-  constructor() {
-  }
 
   ngAfterContentInit(): void {
     setTimeout(() => {
@@ -65,6 +62,18 @@ export class TabGroupComponent implements AfterContentInit {
   }
 
   startDrag(event: DragEvent, tab: TabTemplateDirective): void {
+    //TBD
+  }
 
+  closeTab(index: number) {
+    const tab = this.dataSource[index];
+    tab.view?.destroy();
+    this.dataSource.splice(index, 1);
+    this.dataSourceChange.emit(this.dataSource);
+    if (this._activeTab === tab) {
+      // if activeTab is closed, set activeTab to tab on the right. If last tab is closed, set to tab on the left.
+      // setter handles undefined correctly (in case last tab is closed)
+      this.activeTab = this.dataSource[index] || this.dataSource[index - 1];
+    }
   }
 }
