@@ -1,13 +1,13 @@
 .hint-container {
     background-color: lightgray;
     display: flex;
+    overflow-y: scroll;
     height: 100%;
 }
 
 .hint-overlay-bar {
     position: absolute;
     bottom: 10px;
-    // margin-top: auto;
 }
 
 .undo-button {
@@ -25,10 +25,16 @@
     border-radius: 5px;
 
     max-width: 70%;
+
 }
 
 .markdown > p {
     display: inline;
+}
+
+.hint-dialogue {
+    height: 100%;
+    width: 100%;
 }
 
 .hint-question {
