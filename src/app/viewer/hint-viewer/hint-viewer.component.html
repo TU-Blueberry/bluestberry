@@ -17,7 +17,7 @@
               katex [katexOptions]="katexOptions"
               *ngIf="divider[1] == 'MARKDOWN'"
               style="display: inline"
-              >{{ divider[0] }}</markdown
+              >{{divider[0]}}</markdown
             >
             <img *ngIf="divider[1] == 'IMAGE'" src="{{divider[0]}}" />
             <code *ngIf="divider[1] == 'INLINE_CODE'">{{ divider[0] }}</code>
