@@ -209,8 +209,6 @@ abstract class DialogueContent {
 
   constructor(content: string = '') {
     this.parseContent(content);
-    console.log(this.text_slices);
-    console.log(this.text_dividers);
   }
 
   getDivClass(): string {
@@ -226,29 +224,18 @@ abstract class DialogueContent {
     var matches: Array<string> = []
     this.text_slices = [];
 
-    var remaining_content = original_content;
-
     var match;
     var last_regex_end_index = 0;
-    console.log("-------------------")
     while((match = this.re_divider.exec(original_content)) != null) {
       
-      console.log("match ", match)
-      console.log("regex ", this.re_divider)
-
       var text = original_content.slice(last_regex_end_index, match.index);
       this.text_slices.push(text);
-      console.log("text", text);
-
       last_regex_end_index = match.index + match[0].length;
-
       matches.push(match[0]);
     }
 
     var end_text = original_content.slice(last_regex_end_index, original_content.length);
     this.text_slices.push(end_text);
-    console.log("text", end_text);
-
 
     if(matches != null && matches.length > 0) {
       for(let match of matches) {
@@ -260,7 +247,7 @@ abstract class DialogueContent {
 
           actual_content = match.slice(5, -2).trim();
           if(!actual_content.startsWith("http://") && !actual_content.startsWith("https://")) {
-            actual_content = "https://";
+            actual_content = "https://" + actual_content;
           }
           divider_type = TextDividerTypes.HREF;
         
