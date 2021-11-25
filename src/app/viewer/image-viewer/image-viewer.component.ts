@@ -88,7 +88,6 @@ export class ImageViewerComponent implements OnInit {
   }
 
   mouseClick(event: any): void {
-    console.log("zoom factor " + this._zoom_factor)
     if(this._zoom_in) {
       this._zoom_factor += this._zoom_step;
     } else {

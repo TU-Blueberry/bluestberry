@@ -16,6 +16,8 @@ export class HintViewerComponent {
   dialogue_history_: Array<DialogueContent> = []
   dialogue_options_: Array<Question> = []
 
+  error_answer: Answer = new Answer(-1, "Ich konnte leider keine Antwort finden.", []);
+
   is_open_ = false
 
   katexOptions: KatexOptions = {
@@ -112,6 +114,15 @@ export class HintViewerComponent {
       return
     }
 
+    if(starting_answer.getQuestionIdOptions().length == 0) {
+      console.log('starting answer must have question options!');
+      return
+    }
+
+    for(var default_option of starting_answer.getQuestionIdOptions()) {
+      this.error_answer.addQuestionIdOption(default_option);
+    }
+
     this.dialogue_history_.push(starting_answer!)
     const options = this.getQuestionOptions(starting_answer!)
 
@@ -130,7 +141,7 @@ export class HintViewerComponent {
     this.dialogue_history_.push(selected_question!)
     this.dialogue_options_ = []
 
-    const answer = this.answer_storage_.find(
+    var answer = this.answer_storage_.find(
       (a) => a.getAnswerId() == selected_question!.getNextAnswerId()
     )
 
@@ -140,8 +151,9 @@ export class HintViewerComponent {
           selected_question!.getNextAnswerId() +
           ' not found'
       )
-      return
-    }
+
+      answer = this.error_answer;
+    } 
 
     this.dialogue_history_.push(answer!)
 
@@ -151,31 +163,19 @@ export class HintViewerComponent {
     }
   }
 
-  undo(): void { // TODO
+  undo(): void { 
+
     if (this.dialogue_history_.length < 2) {
       return
     }
 
     this.dialogue_options_ = [] // clear current options
-    
-    var last_answer: Answer;
+    this.dialogue_history_.pop() 
+    this.dialogue_history_.pop()
 
-    if(this.dialogue_history_.length % 2 == 0) {
-      this.dialogue_history_.pop() // remove last answer
-      this.dialogue_history_.pop() // remove last question
-
-      last_answer = this.dialogue_history_[
-        this.dialogue_history_.length - 1
-      ] as Answer
-    } else {
-      // could not find a next answer
-      this.dialogue_history_.pop() 
-
-      last_answer = this.dialogue_history_[
-        this.dialogue_history_.length - 2
-      ] as Answer
-    }
-
+    const last_answer = this.dialogue_history_[
+      this.dialogue_history_.length - 1
+    ] as Answer
     const new_options = this.getQuestionOptions(last_answer)
     for (var o of new_options) {
       this.dialogue_options_.push(o)
@@ -194,6 +194,7 @@ enum TextDividerTypes {
   HREF = 'HREF',
   MARKDOWN = 'MARKDOWN',
   IMAGE = 'IMAGE',
+  INLINE_CODE = 'INLINE_CODE',
   NONE = 'NONE',
 }
 
@@ -201,15 +202,15 @@ abstract class DialogueContent {
 
   protected text_slices: Array<string> = [];
   protected text_dividers: Array<[string, TextDividerTypes]> = [];
-
   protected question: boolean = false // false -> answer
 
-  // private re_divider = /((markdown)|(link)|(code))<(.|[\r\n])*?\/>/g
-
-  private re_divider = /link<(.|[\r\n])*?\/>|markdown<(.|[\r\n])*?\/>|code<(.|[\r\n])*?\/>|img<(.|[\r\n])*?\/>/g
+  // private re_divider = /link<(.|[\r\n])*?\/>|markdown<(.|[\r\n])*?\/>|code<(.|[\r\n])*?\/>|codeinline<(.|[\r\n])*?\/>|img<(.|[\r\n])*?\/>/g
+  private re_divider = /((markdown)|(link)|(codeinline)|(code)|(img))<(.| |[\r\n])*?\/>/g
 
   constructor(content: string = '') {
     this.parseContent(content);
+    console.log(this.text_slices);
+    console.log(this.text_dividers);
   }
 
   getDivClass(): string {
@@ -222,10 +223,34 @@ abstract class DialogueContent {
 
   parseContent(original_content: string): void {
 
-    this.text_slices = original_content.split(this.re_divider);
-    let matches = original_content.match(this.re_divider);
+    var matches: Array<string> = []
+    this.text_slices = [];
 
-    if(matches != null) {
+    var remaining_content = original_content;
+
+    var match;
+    var last_regex_end_index = 0;
+    console.log("-------------------")
+    while((match = this.re_divider.exec(original_content)) != null) {
+      
+      console.log("match ", match)
+      console.log("regex ", this.re_divider)
+
+      var text = original_content.slice(last_regex_end_index, match.index);
+      this.text_slices.push(text);
+      console.log("text", text);
+
+      last_regex_end_index = match.index + match[0].length;
+
+      matches.push(match[0]);
+    }
+
+    var end_text = original_content.slice(last_regex_end_index, original_content.length);
+    this.text_slices.push(end_text);
+    console.log("text", end_text);
+
+
+    if(matches != null && matches.length > 0) {
       for(let match of matches) {
 
         var actual_content: string = "";
@@ -233,20 +258,25 @@ abstract class DialogueContent {
 
         if(match.startsWith("link")) {
 
-          actual_content = match.slice(5, -2);
-          if(!actual_content.startsWith("http://") || !actual_content.startsWith("https://")) {
-            actual_content = "https://" + actual_content;
+          actual_content = match.slice(5, -2).trim();
+          if(!actual_content.startsWith("http://") && !actual_content.startsWith("https://")) {
+            actual_content = "https://";
           }
           divider_type = TextDividerTypes.HREF;
         
         } else if(match.startsWith("markdown")) {
 
-          actual_content = match.slice(9, -2);
+          actual_content = match.slice(9, -2).trim();
           divider_type = TextDividerTypes.MARKDOWN;
+
+        } else if(match.startsWith("codeinline")) {
+
+          actual_content = match.slice(11, -2).trim();
+          divider_type = TextDividerTypes.INLINE_CODE;
 
         } else if(match.startsWith("code")) {
 
-          actual_content = match.slice(5, -2);
+          actual_content = match.slice(5, -2).trim();
           if(actual_content.startsWith("\n")) {
             actual_content = actual_content.slice(1);
           }
@@ -254,14 +284,13 @@ abstract class DialogueContent {
           divider_type = TextDividerTypes.MARKDOWN;
 
         } else if(match.startsWith("img")) {
-            actual_content = match.slice(4, -2);
-            divider_type = TextDividerTypes.IMAGE;
+          actual_content = match.slice(4, -2).trim();
+          divider_type = TextDividerTypes.IMAGE;
         } 
 
         this.text_dividers.push([actual_content, divider_type]);
       }
     }
-
   }
   
   getTextSlice(index: number): string {
@@ -281,9 +310,6 @@ abstract class DialogueContent {
   getTextDividers(): Array<[string, TextDividerTypes]> {
     return this.text_dividers;
   }
-
-
-  
 
 }
 
@@ -340,50 +366,3 @@ class Question extends DialogueContent {
     return this.nextAnswerId
   }
 }
-
-const string_from_yaml = `
-
-- item01:
-    answer_id: 0 # start
-    question_options: [0]
-    content: Willkommen. Welche Fragen hast du? markdown< Hier ist etwas **markdown** !!/>
-
-- item02:
-    question_id: 0
-    following_answer_id: 1
-    content: Was ist ein Klassifikator? img<assets/bad_berry.JPG/>
-        
-- item03:
-    answer_id: 1 
-    question_options: [1]
-    content: |
-        Ein Klassifikator ist ein Verfahren zur Einteilung von Objekten oder Situationen in verschiedene Klassen. Hier in diesem Beispiel wird der Klassifikator eingesetzt, um gute Blaubeeren von schlechten Blaubeeren zu unterscheiden, das heißt die Einteilung der Blaubeeren in die Klassen „gut“ und „schlecht“. markdown< $f(x) = \\int_{-\\infty}^\\infty \\hat f(\\xi) e^{2 \\pi i \\xi x} d\\xi$ />
-        
-- item04:
-    question_id: 1
-    following_answer_id: 2
-    content: Welche Klassifikatoren gibt es? 
-
-- item05:
-    answer_id: 2 
-    question_options: [2]
-    content: |
-        Es gibt viele Klassifikatoren, einige Beispiele sind Random Forests, Neuronale Netze, Support Vector Machines oder auch Clusteringverfahren. 
-        code<
-        for i in range(10):
-          print("hi")
-        />
-
-- item06:
-    question_id: 2
-    following_answer_id: 3
-    content: Ich möchte mehr darüber erfahren.
-    
-- item07:
-    answer_id: 3
-    question_options: []
-    content: |
-        Dann sieh dir gerne diese Seiten an: link<www.google.de/> oder link<www.google.com/>
-        
-
-`
