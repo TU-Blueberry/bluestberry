@@ -1,5 +1,4 @@
 <div class="hint-container">
-  <div class="hint-overlay-container">
     <div class="hint-dialogue">
       <ng-container *ngFor="let action of dialogue_history_">
         <div id="hint-history" [ngClass]="action.getDivClass()">
@@ -21,6 +20,7 @@
               >{{ divider[0] }}</markdown
             >
             <img *ngIf="divider[1] == 'IMAGE'" src="{{divider[0]}}" />
+            <code *ngIf="divider[1] == 'INLINE_CODE'">{{ divider[0] }}</code>
             {{ action.getTextSlice(i + 1) }}
           </ng-container>
         </div>
@@ -73,5 +73,4 @@
         </svg>
       </button>
     </div>
-  </div>
 </div>
