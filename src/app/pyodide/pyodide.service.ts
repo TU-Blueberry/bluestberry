@@ -63,7 +63,8 @@ export class PyodideService {
   // see https://pyodide.org/en/stable/usage/api/js-api.html
   runCode(code: string): Observable<any> {
     return this.pyodide.pipe(switchMap(pyodide => {
-      return defer(() => from(pyodide.runPythonAsync(code)))
+      pyodide.globals.set('editor_input', code);
+      return defer(() => from(pyodide.runPythonAsync('run_code()')))
         .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
     }));
   }
@@ -73,6 +74,12 @@ export class PyodideService {
     return this.pyodide.pipe(map(pyodide => {
       const strings = pyodide.globals.get(key)?.toJs();
       return strings !== undefined ? strings : [];
+    }));
+  }
+
+  setGlobal(key:string, value: any): Observable<void> {
+    return this.pyodide.pipe(map(pyodide => {
+      pyodide.globals.set(key, value);
     }));
   }
 
