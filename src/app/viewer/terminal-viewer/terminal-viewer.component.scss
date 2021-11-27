@@ -1,14 +1,26 @@
-#terminal {
+.terminal {
+  margin-left: 5px;
+  margin-right: 5px;
   padding: 10px;
   height: 240px;
-  width: 100%;
+  width: 95%;
   resize: none;
   background: #262626;
   border: 1px solid #424242;
   color: #c6c6c6;
+  overflow: auto;
 }
 
-#terminal:focus {
+.terminal:focus {
   outline: none !important;
   border: 1px solid #0080ff;
+}
+
+.action-bar-icon {
+  position: absolute;
+  bottom: 10px;
+}
+
+.error {
+  border-color: #dc3545;
 }
