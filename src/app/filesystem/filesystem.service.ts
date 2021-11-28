@@ -19,6 +19,10 @@ export class FilesystemService {
   constructor(private http: HttpClient, private pyService: PyodideService, private location: Location) {
     this.pyService.pyodide.subscribe(py => {
       this.PyFS = py.FS;
+
+      console.log("FS: ");
+      console.log(this.PyFS);
+
       this.fsSubject.next(this.PyFS);
     });
 
@@ -327,6 +331,24 @@ export class FilesystemService {
     }
   }
 
+  isFile2(path: string): Observable<boolean> {
+    return new Observable(subscriber => {
+      try {
+        const node = this.PyFS?.lookupPath(path, {}).node;
+        const isFile = this.PyFS?.isFile((node as FSNode).mode);
+
+        if (isFile !== undefined) {
+          subscriber.next(isFile);
+          subscriber.complete();
+        } else {
+          subscriber.error("Error checking file")
+        }        
+      } catch (e) {
+        subscriber.error("Error while checking file");
+      }
+    })
+  }
+
   // TODO: How to handle errors?
   isDirectory(path: string): boolean {
     try {
@@ -345,6 +367,18 @@ export class FilesystemService {
       console.error(e);
       return undefined;
     }
+  }
+
+  getNodeByPath2(path: string): Observable<FSNode> {
+    return new Observable(subscriber => {
+      try {
+        const node = (this.PyFS?.lookupPath(path, {}).node as FSNode);
+        subscriber.next(node);
+        subscriber.complete();
+      } catch(e) {
+        subscriber.error("No node at specified path");
+      }
+    });
   }
 
   exists(path: string): Observable<boolean> {

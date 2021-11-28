@@ -45,11 +45,12 @@ export class PyodideService {
         return pyodide;
       });
     }).pipe(
-      switchMap(pyodide => forkJoin(
+      shareReplay(1),
+     /*  switchMap(pyodide => forkJoin(
         PyodideService.DEFAULT_LIBS.map(lib => from(pyodide.loadPackage(lib)))
       ).pipe(map(() => pyodide))),
       switchMap(pyodide => from(pyodide.runPythonAsync(initCode)).pipe(map(() => pyodide))),
-      shareReplay(1),
+      shareReplay(1), */
     );
   }
 

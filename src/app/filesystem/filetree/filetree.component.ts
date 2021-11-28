@@ -7,6 +7,9 @@ import { switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
 import { LessonManagementService } from '../lesson-management/lesson-management.service';
+import { TreeNode } from '../tree-node';
+import { UiEventsService } from 'src/app/ui-events.service';
+import { FilesystemEventService } from '../events/filesystem-event.service';
 
 @Component({
   selector: 'app-filetree',
@@ -27,7 +30,7 @@ export class FiletreeComponent implements OnDestroy{
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
   constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
-    private zipService: ZipService, private mgmtService: LessonManagementService ) {
+    private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService) {
 
     // TODO: error handling
     concat(this.pys.pyodide, this.mgmtService.openLessonByName('sortierroboter'))
@@ -44,11 +47,16 @@ export class FiletreeComponent implements OnDestroy{
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     const root = this.fsService.getTopLevelOfLesson("/sortierroboter");
     const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
-    folderComp.depth = 0;
-    folderComp.path = "/sortierroboter";
-    folderComp.ref = root;
-    folderComp.rootname = "Sortierroboter";
-    folderComp.parentPath = "/";
+
+    const tn = new TreeNode(this.uiEv, this.fsService, this.ev);
+    tn.depth = 0;
+    tn.path = "/sortierroboter";
+    tn.ref = root;
+    tn.rootName = "Sortierroboter";
+    tn.parentPath = "/";
+    folderComp.node = tn;
+
+
     this.rootComponent = folderComp;
   }
 

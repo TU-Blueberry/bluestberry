@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FilesystemService } from '../filesystem.service';
 import { isSystemDirectory } from '../shared/system_folder';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors } from '@angular/forms';
@@ -8,7 +8,7 @@ import { AbstractControl, FormControl, FormGroup, ValidationErrors } from '@angu
   templateUrl: './user-input.component.html',
   styleUrls: ['./user-input.component.scss']
 })
-export class UserInputComponent implements OnInit, OnChanges {
+export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
   folderContent: FSNode[] = [];
   fileRegex = new RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z\d]{2,5}$/, "i");
   extensionRegex = new RegExp(/\.[a-zA-Z\d]{2,5}$/, "i");
@@ -25,6 +25,8 @@ export class UserInputComponent implements OnInit, OnChanges {
 
   @Output() onSubmit: EventEmitter<{newName: string, isFile: boolean}> = new EventEmitter();
   @Output() dismiss: EventEmitter<void> = new EventEmitter();
+
+  @ViewChild("userInput") inputElement!: ElementRef;
   constructor(private fsService: FilesystemService, private ref: ElementRef) {
     this.nameFormControl = new FormControl(this.inputText, { updateOn: "submit", validators: this.validateInput.bind(this)});
     this.formGroup = new FormGroup({
@@ -41,6 +43,10 @@ export class UserInputComponent implements OnInit, OnChanges {
     if (this.currentName) {
       this.formGroup.get('nameFormControl')?.setValue(this.currentName);
     }
+  }
+
+  ngAfterViewInit(): void {
+    (this.inputElement.nativeElement as HTMLInputElement).focus();
   }
 
   ngOnChanges(changes: SimpleChanges): void {

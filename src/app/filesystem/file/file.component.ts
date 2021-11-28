@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FilesystemService } from '../filesystem.service';
+import { TreeNode } from '../tree-node';
 
 @Component({
   selector: 'app-file',
@@ -12,29 +13,34 @@ export class FileComponent {
   isRenaming = false;
   isActive = false;
 
-  @Input('depth') depth: number = 0;
+  public _node: TreeNode;
+
+  /* @Input('depth') depth: number = 0;
   @Input('path') path: string = '';
   @Input('ref') ref?: FSNode;
-  @Input('parentPath') parentPath: string = '';
+  @Input('parentPath') parentPath: string = ''; */
+
+   @Input('node') set node(node: TreeNode) {
+    this._node = node;
+  }
+
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
   constructor(private fsService: FilesystemService, private ev: FilesystemEventService, private uiEv: UiEventsService) {
-    this.uiEv.onActiveElementChange.subscribe(newPath => {
-      this.isActive = this.path === newPath;
-    });
+    this._node = new TreeNode(this.uiEv, this.fsService, this.ev);
   }
 
   deleteFile(ev: Event) {
     ev.stopPropagation();
     ev.preventDefault();
-    this.fsService.deleteFile(this.path);
+    this.fsService.deleteFile(this._node.path);
     this.fsService.sync(false).subscribe();
   }
 
   onDoubleClick(): void {
-    if (this.ref?.contents instanceof Uint8Array) {
-      this.ev.onUserOpenFile(this.path, this.ref);
-      this.uiEv.onActiveElementChange.emit(this.path);
-    }
+    if (this._node.ref?.contents instanceof Uint8Array) {
+      this.ev.onUserOpenFile(this._node.path, this._node.ref);
+      this.uiEv.onActiveElementChange.emit(this._node.path);
+    } 
   }
 
   startRenaming(ev: Event): void {
@@ -50,11 +56,11 @@ export class FileComponent {
   changeName(params: {newName: string, isFile: boolean}): void {
     this.isRenaming = false;
 
-    if (this.ref) {
-      this.fsService.rename(`${this.parentPath}/${this.ref.name}`, `${this.parentPath}/${params.newName}`).subscribe();
+    if (!this._node.isNewNode) {
+      this.fsService.rename(`${this._node.parentPath}/${this._node.name}`, `${this._node.parentPath}/${params.newName}`).subscribe();
     } else {
-      this.fsService.createFile(`${this.parentPath}/${params.newName}`, new Uint8Array()).subscribe(() => {}, (err) => console.error(err), () => {
-        this.ev.createNewNodeByUser(`${this.parentPath}/${params.newName}`, params.isFile);
+      this.fsService.createFile(`${this._node.parentPath}/${params.newName}`, new Uint8Array()).subscribe(() => {}, (err) => console.error(err), () => {
+        this.ev.createNewNodeByUser(`${this._node.parentPath}/${params.newName}`, params.isFile);
     });
     }
   }
