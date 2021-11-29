@@ -26,45 +26,32 @@ export class FiletreeComponent implements OnDestroy{
   selectedFile?: File;
   userResult$: Subject<boolean> = new Subject();
   lastCheck?: Subscription;
-  test: any;
+
+  readonly SELECTED_LESSON = "sortierroboter"
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
   constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
     private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService) {
 
     // TODO: error handling
-    concat(this.pys.pyodide, this.mgmtService.openLessonByName('sortierroboter'))
+    concat(this.pys.pyodide, this.mgmtService.openLessonByName(this.SELECTED_LESSON))
       .subscribe(
         () => { },
         err => { },
-        () => { 
-          this.kickstartTreeGeneration();
-        });
+        () => this.kickstartTreeGeneration());
   }
 
-  // TODO: Remove hardcoded stuff
-  kickstartTreeGeneration(): void {
+  kickstartTreeGeneration() {
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
-    const root = this.fsService.getTopLevelOfLesson("/sortierroboter");
+    const root = this.fsService.getTopLevelOfLesson(`/${this.SELECTED_LESSON}`);
     const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
+    const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
+    baseNode.path = "/";
+    folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, root, "Sortierroboter");
 
-    const tn = new TreeNode(this.uiEv, this.fsService, this.ev);
-    tn.depth = 0;
-    tn.path = "/sortierroboter";
-    tn.ref = root;
-    tn.rootName = "Sortierroboter";
-    tn.parentPath = "/";
-    folderComp.node = tn;
-
-
+    console.log("ROOT NODE ", folderComp._node);
     this.rootComponent = folderComp;
   }
-
-  // TODO: Soll man mehr als eine Lektion gleichzeitig offen haben können?
-  // Falls ja müsste es beim Import noch eine Flag wie "nach dem importieren öffnen" geben (ngModel)
-
-  // TODO: Vor dem Import alle Tabs der alten Lektion schließen, changes discarden
-  // Nach dem Import: openLeft und openRight der neuen Lektion aufrufen
 
   // TODO: Dateien laden bugg bei FF irgendwie
   // TODO: Catch error

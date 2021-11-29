@@ -86,6 +86,8 @@ export class FilesystemService {
     return new Observable(subscriber => {
       try {
         const fullPath = `/${name}`;
+        console.log("fullpath in mountandsync ", fullPath)
+
         const node = this.PyFS?.analyzePath(fullPath, false);
 
         if (!node?.exists) {
@@ -188,9 +190,20 @@ export class FilesystemService {
     }
   }
 
+  // TODO: Add other restrictions to scan (hidden files/folders etc.)
+
   /* Returns all subfolders and - if requested - files of the given path as seperate arrays */
   scan(path: string, depth: number, includeFiles: boolean) {
-    const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
+    const node = this.getNodeByPath(path);
+    
+    if (node && !(node.contents instanceof Uint8Array)) {
+      return this.scanWithoutFetch(node.contents, path, depth, includeFiles);
+    } else {
+      return [];
+    }
+  }
+
+  scanWithoutFetch(entries: FSNode, path: string, depth: number, includeFiles: boolean) {
     const subfolders: FSNode[] = [];
     const filesInFolder: FSNode[] = [];
 
@@ -420,6 +433,7 @@ export class FilesystemService {
     const writing = new Observable(subscriber => {
       try {
         this.PyFS?.writeFile(path, content);
+        console.log("file written, complete now")
         subscriber.complete();
       } catch (e) {
         subscriber.error("Error while writing to file");
@@ -443,7 +457,6 @@ export class FilesystemService {
         } catch (e) {
           subscriber.error("Error creating directory");
         }
-  
       });
   
       return mkDir;

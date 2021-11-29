@@ -18,7 +18,7 @@
         </div>
     </div>
     <div *ngIf="!isRenaming" class="common-actions">
-        <app-common-actions [parentPath]="this._node.parentPath" [isFile]="true"
+        <app-common-actions [isRoot]="_node.isRoot" [isFile]="true"
         (delete)="this.deleteFile($event)" (startRenaming)="this.startRenaming($event)"></app-common-actions>
     </div>
 </div>

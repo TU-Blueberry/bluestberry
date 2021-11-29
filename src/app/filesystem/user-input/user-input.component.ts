@@ -17,9 +17,9 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
   nameFormControl: FormControl;
   formGroup: FormGroup;
 
-  @Input() parentPath: string = '';
+  @Input() parentPath?: string = '';
   @Input() isFile: boolean = false;
-  @Input() depth: number = -1;
+  @Input() depth?: number = -1;
   @Input() editMode: boolean = false;
   @Input() currentName?: string;
 
@@ -35,7 +35,7 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
    }
 
   ngOnInit(): void {
-    if (this.parentPath !== '' && !isSystemDirectory(this.parentPath) && this.depth >= 0) {
+    if (this.parentPath && this.depth && this.parentPath !== '' && !isSystemDirectory(this.parentPath) && this.depth >= 0) {
       const [folders, files] = this.fsService.scan(this.parentPath, this.depth, this.isFile);
       this.folderContent = this.isFile ? files : folders;
     }
