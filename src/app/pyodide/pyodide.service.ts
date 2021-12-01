@@ -1,19 +1,15 @@
-import { EventEmitter, Injectable } from '@angular/core';
-import { Location } from '@angular/common';
+import {EventEmitter, Injectable} from '@angular/core';
+import {Location} from '@angular/common';
 import initCode from '!raw-loader!../../assets/util/init.py';
 import {BehaviorSubject, concat, defer, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
 import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
-import {PythonCallable} from 'src/app/python-callable/python-callable.decorator';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PyodideService {
   // standard packages included with pyodide
-  static readonly DEFAULT_LIBS = ['micropip', 'matplotlib', 'numpy', 'pandas', 'scikit-learn', 'scikit-image'];
-  // packages that should be included by installing with micropip
-  // this should probably be handled dynamically e.g. by parsing a requirements.txt file in the project
-  static readonly MICROPIP_LIBS = ['plotly'];
+  static readonly DEFAULT_LIBS = ['micropip'];
   private results$ = new BehaviorSubject([]);
   // cache 1000 lines of stdout and stderr
   private stdOut$ = new ReplaySubject<string>(1000);
@@ -30,7 +26,7 @@ export class PyodideService {
   }
 
   private initPyodide(): Observable<Pyodide> {
-    return defer(() =>  {
+    return defer(() => {
       // unset define as pyodide is a little POS
       const anyWindow = (window as any);
       const define = anyWindow.define;
@@ -38,8 +34,12 @@ export class PyodideService {
 
       return loadPyodide({
         indexURL: this.location.prepareExternalUrl('/assets/pyodide'),
-        stdout: (text) => {this.stdOut$.next(text)},
-        stderr: (text) => {this.stdErr$.next(text)}
+        stdout: (text) => {
+          this.stdOut$.next(text)
+        },
+        stderr: (text) => {
+          this.stdErr$.next(text)
+        }
       }).then(pyodide => {
         // restore define to original value
         anyWindow.define = define;
@@ -55,18 +55,13 @@ export class PyodideService {
     );
   }
 
-  @PythonCallable
-  packages(): string[] {
-    return PyodideService.MICROPIP_LIBS;
-  }
-
   // TODO: There is another function named loadPackagesFromImport which loads all packages found in a given code snippet
   // This might be helpful for us?
   // see https://pyodide.org/en/stable/usage/api/js-api.html
   runCode(code: string): Observable<any> {
     return this.pyodide.pipe(switchMap(pyodide => {
       pyodide.globals.set('editor_input', code);
-      return defer(() => concat(from(pyodide.runPythonAsync(this.addToSysPath())), from(pyodide.runPythonAsync(code))))
+      return defer(() => concat(from(pyodide.runPythonAsync(this.addToSysPath())), from(pyodide.runPythonAsync('await run_code()'))))
         .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
     }));
   }
