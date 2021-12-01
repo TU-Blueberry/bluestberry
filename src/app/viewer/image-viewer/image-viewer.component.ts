@@ -25,9 +25,7 @@ export class ImageViewerComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(this.fileTabDirective)
     this.fileTabDirective.dataChanges.subscribe(data => {
-      console.log('data changed');
       this.imagePath = this.domSanitizer.bypassSecurityTrustUrl(
         URL.createObjectURL(
           new Blob([data.content], { type: 'image/png' })
