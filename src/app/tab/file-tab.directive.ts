@@ -3,7 +3,7 @@ import {Tab} from 'src/app/tab/model/tab.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
 import {filter, map, switchMap} from 'rxjs/operators';
-import {ReplaySubject, Subject} from 'rxjs';
+import {EMPTY, Observable, ReplaySubject, Subject} from 'rxjs';
 
 @Directive({
     selector: '[appFileTab]',
@@ -52,5 +52,13 @@ export class FileTabDirective implements OnInit {
             this.tab!.data.content = content;
             this.dataChanges.next(this.tab!.data);
         });
+    }
+
+    saveCurrentFile(content: Uint8Array): Observable<void> {
+      if (!this.tab?.data?.path) {
+        console.warn("Tried to save file without path");
+        return EMPTY;
+      }
+      return this.filesystemService.writeToFile(this.tab?.data?.path, content);
     }
 }

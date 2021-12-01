@@ -4,6 +4,8 @@ import { EditorComponent } from 'ngx-monaco-editor'
 import { editor } from 'monaco-editor'
 import ICodeEditor = editor.ICodeEditor
 import {FileTabDirective} from 'src/app/tab/file-tab.directive';
+import {Subject} from 'rxjs';
+import {concatMap, debounceTime, switchMap, tap} from 'rxjs/operators';
 
 @Component({
   selector: 'app-code-viewer',
@@ -128,22 +130,32 @@ def main():
 
 
 # comment out the following line for own classifier
-# js.enableManual()
-# js.start()
-# js.stop()
-# js.sendManualBerry("1,1,THIS IS THE FILEPATH")
-# js.sendManualBerry("0,0,THIS IS THE FILEPATH")
-# js.sendManualBerry("1,0,THIS IS THE FILEPATH")
-# js.sendManualBerry("0,1,THIS IS THE FILEPATH")
+
+#js.enableManual()
+#js.start()
+#js.stop()
+#js.sendManualBerry("1,1,THIS IS THE FILEPATH")
+#js.sendManualBerry("0,0,THIS IS THE FILEPATH")
+#js.sendManualBerry("1,0,THIS IS THE FILEPATH")
+#js.sendManualBerry("0,1,THIS IS THE FILEPATH")
 
 main()
 `
 
+  saveSubject = new Subject<void>();
   constructor(private pyodideService: PyodideService, private fileTabDirective: FileTabDirective) {}
 
   ngOnInit(): void {
     this.fileTabDirective.dataChanges.subscribe(data => {
         this.code = new TextDecoder().decode(data.content);
+    });
+
+    this.saveSubject.pipe(
+      debounceTime(1000),
+      tap(() => console.log('save file observable')),
+      concatMap(() => this.fileTabDirective.saveCurrentFile(new TextEncoder().encode(this.code))),
+    ).subscribe(() => {
+      console.log("saved file");
     });
   }
 
@@ -161,5 +173,9 @@ main()
 
   redo(): void {
     this.editor?.trigger(null, 'redo', '')
+  }
+
+  save(): void {
+    this.saveSubject.next();
   }
 }
