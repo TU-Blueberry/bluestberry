@@ -46,7 +46,6 @@ export class PyodideService {
         return pyodide;
       });
     }).pipe(
-      shareReplay(1),
      switchMap(pyodide => forkJoin(
         PyodideService.DEFAULT_LIBS.map(lib => from(pyodide.loadPackage(lib)))
       ).pipe(map(() => pyodide))),

@@ -147,7 +147,9 @@ main()
 
   ngOnInit(): void {
     this.fileTabDirective.dataChanges.subscribe(data => {
+      if(data) {
         this.code = new TextDecoder().decode(data.content);
+      }
     });
 
     this.saveSubject.pipe(
@@ -160,15 +162,15 @@ main()
   }
 
   executeCode(): void {
-    this.pyodideService.runCode(this.code).subscribe()
+    this.pyodideService.runCode(this.code).subscribe();
   }
 
   editorInit(editor: any) {
-    this.editor = editor
+    this.editor = editor;
   }
 
   undo(): void {
-    this.editor?.trigger(null, 'undo', '')
+    this.editor?.trigger(null, 'undo', '');
   }
 
   redo(): void {
