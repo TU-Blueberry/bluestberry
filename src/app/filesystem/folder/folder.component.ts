@@ -1,10 +1,11 @@
 import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Subscription } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { forkJoin, of, Subscription } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FileComponent } from '../file/file.component';
 import { FilesystemService } from '../filesystem.service';
+import { TreeNode } from '../model/tree-node';
 
 @Component({
   selector: 'app-folder',
@@ -12,190 +13,114 @@ import { FilesystemService } from '../filesystem.service';
   styleUrls: ['./folder.component.scss']
 })
 export class FolderComponent implements OnInit, OnDestroy {
+  files: Map<string, Array<ComponentRef<FileComponent>>> = new Map(); 
+  folders: Map<string, Array<ComponentRef<FolderComponent>>> = new Map();
   folderFactory: ComponentFactory<FolderComponent>;
   fileFactory: ComponentFactory<FileComponent>;
-  showSubfolders = false;
-  hasSubfolders = false;
-  isActive = false;
-  isRenaming = false;
-  allSubfolders: Map<string, Array<ComponentRef<FolderComponent>>> = new Map();
-  allFiles: Map<string, Array<ComponentRef<FileComponent>>> = new Map(); 
-  deleteSubscription: Subscription;
-  moveSubscription: Subscription;
-  writeSubscription: Subscription;
-  activeElementChangeSubscription: Subscription;
-  afterCodeExecutionSubscription: Subscription;
-  newNodeByUserSubscription: Subscription;
   tentativeNode?: ComponentRef<FolderComponent> | ComponentRef<FileComponent>;
   tentativeNodeSubscription?: Subscription;
 
-  @Input('depth') depth: number = 0;
-  @Input('path') path: string = '';
-  @Input('parentPath') parentPath: string = '';
-  @Input('ref') ref?: FSNode;
-  @Input('rootname') rootname?: string;
+  showSubfolders = false;
+  isRenaming = false;
+
+  @Input('node') _node!: TreeNode; 
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
   @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef;
   @ViewChild('files', { read: ViewContainerRef, static: true }) filesRef!: ViewContainerRef;
-  constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, private ev: FilesystemEventService, private uiEv: UiEventsService) {
+  constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private ev: FilesystemEventService, private componentFactoryResolver: ComponentFactoryResolver) {
     this.folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     this.fileFactory = this.componentFactoryResolver.resolveComponentFactory(FileComponent);
-
-    this.deleteSubscription = this.ev.onDeletePath.subscribe(this.onDelete.bind(this));
-    this.moveSubscription = this.ev.onMovePath.subscribe(this.onPathMove.bind(this));
-    this.writeSubscription = this.ev.onWriteToFile.subscribe(this.onWriteToFile.bind(this));
-    this.afterCodeExecutionSubscription = ev.afterCodeExecution.subscribe(() => this.checkForNewFolders());
-    this.newNodeByUserSubscription = ev.onNewNodeByUser.subscribe(this.onNewNodeByUser.bind(this));
-
-    this.activeElementChangeSubscription = this.uiEv.onActiveElementChange.subscribe(newActiveElementPath => {
-      this.isActive = this.path === newActiveElementPath;
-    });
   }
 
-  onDelete(path: string): void {
-    if (this.isDirectChild(path)) {
-      this.deleteSubcomponent(path);
+  ngOnInit(): void {
+    if(this._node && !this._node.isTentativeNode) {    
+      this.addListeners();
+      const [folders, files] = this.fsService.scan(this._node.path, this._node.depth, true);
+      folders.forEach(folder => this.createSubcomponent(false, `${this._node.path}/${folder.name}`,folder));
+      files.forEach(file => this.createSubcomponent(true, `${this._node.path}/${file.name}`, file));
+    } 
+
+    if (this._node.isRoot) {
+      this.showSubfolders = true;
+    }
+
+    if (this._node.isTentativeNode) {
+      this.isRenaming = true;
     }
   }
 
-  // covers newly created files
-  onWriteToFile(params: {path: string, bytesWritten: number}) {
-    if (this.isDirectChild(params.path) && !this.allFiles.has(params.path)) {
-      const node = this.fsService.getNodeByPath(params.path);
-
-      if (node) {
-        this.createSubcomponent(true, params.path, node);
-      }
-    }
-  }
-
-  /** New node was just created by the user. To avoid inconsistent states, the temporary (tentative) node is deleted and a fresh
-   * node with correct references etc. is inserted
-   */
-  onNewNodeByUser(params: {path: string, isFile: boolean}): void {
-    if (this.isDirectChild(params.path)) {
-      this.tentativeNodeDismissal(params.isFile);
-
-      // only necessary for dirs, as nodes are already covered by "onWriteToFile" callback
-      // would be obsolete if emscripten were to send onMakeDirectory vevnts
-      if (!params.isFile) {
-        const newNode = this.fsService.getNodeByPath(params.path);
-  
-        if (!newNode) {
-          console.error("Error, new node is undefined")
-          return;
-        }
-        this.createSubcomponent(params.isFile, params.path, newNode);
-      }
-
-      this.uiEv.changeActiveElement(params.path);
-      
-      if (this.ref) {
-        Object.keys(this.ref.contents).length > 0 ? this.hasSubfolders = true : this.hasSubfolders = false;
-      }
-    }
+  private addListeners(): void {
+    this._node.onDelete().subscribe(path => this.deleteSubcomponent(path));
+    this._node.addNewFilesListener(this.files).subscribe(params => this.createSubcomponent(true, params.path, params.node));
+    this._node.addAfterCodeExecutionListener().subscribe(() => this.checkForNewFolders());
+    this._node.pathMoveOldPath().subscribe(params => this.deleteSubcomponent(params.oldPath));
+    this._node.pathMoveNewPath().subscribe(params => this.createSubcomponent(params.isFile, params.newPath, params.node));
+    this._node.onNewNodeByUser().subscribe(params => this.onNewNodeByUser(params));
   }
 
   // sadly, emscripten only uses "onMakeDirectory" callback if it was compiled in debug mode, which pyodide isn't
   // therefore, we need to check for new folders manually after every execution of code
-  checkForNewFolders(): void {
-    const [subfolders, _] = this.fsService.scan(this.path, this.depth, false);
-    
-    subfolders.forEach((node, index) => {
-      const path = `${this.path}/${node.name}`;
+  private checkForNewFolders() {
+    this._node.getSubfolders()
+      .filter(folder => !this.folders.has(folder.path))
+      .forEach(folder => this.createSubcomponent(false, folder.path, folder.node));
 
-      if (!this.allSubfolders.has(path)) {
-        this.createSubcomponent(false, path, node);
-      }
-    });
+    if (this._node.isRoot) {
+      this._node.checkPermissions(); // set permissions after every execution
+    }
   }
 
-  // covers renaming and moving of files/folders
-  onPathMove(params: { oldPath: string, newPath: string }): void {
-    if (this.isDirectChild(params.newPath)) {
-      const newNode = this.fsService.getNodeByPath(params.newPath);
-      const isFile = this.fsService.isFile(params.newPath);
+  /** New node was just created by the user. To avoid inconsistent states, the temporary (tentative) node is deleted.
+   * For folders, a fresh node is inserted directly. New files are already covered by "onWriteToFile" callback */
+  onNewNodeByUser(params: {path: string, isFile: boolean}): void {
+    this.tentativeNodeDismissal(params.isFile);
+
+    if (!params.isFile ) {
+      const newNode = this.fsService.getNodeByPath(params.path);
 
       if (newNode) {
-        this.createSubcomponent(isFile, params.newPath, newNode);
-      } else {
-        // TODO: Error
+        this.createSubcomponent(params.isFile, params.path, newNode);
+        this.uiEv.changeActiveElement(params.path);
       }
     }
-
-    if (this.isDirectChild(params.oldPath)) {
-      this.deleteSubcomponent(params.oldPath);
-    }
-  }
-
-  // path of a direct child is identical to our path + /<something> at the end
-  isDirectChild(pathToCheck: string): boolean {
-    const splitPath = pathToCheck.split("/");
-
-    if (splitPath.length > 1) {
-      splitPath.splice(splitPath.length - 1, 1);
-      return splitPath.join("/") === this.path;
-    } else {
-      return pathToCheck === this.path;
-    }
-  }
-
-  ngOnInit(): void {
-    // special case: root folder shall always be expanded
-    if (this.rootname) {
-      this.showSubfolders = true;
-    }
-
-    if (this.ref) {
-      Object.keys(this.ref.contents).length > 0 ? this.hasSubfolders = true : this.hasSubfolders = false;
-      this.createInitial();
-    }
-  }
+  } 
 
   deleteFolder(ev: Event): void {
     ev.preventDefault();
     ev.stopPropagation();
-    this.fsService.deleteFolder(this.path);
-    this.fsService.sync(false).subscribe();
+
+    if (this._node.path) {
+      this.fsService.deleteFolder(this._node.path);
+      this.fsService.sync(false).subscribe();
+    }
   }
 
-  createSubcomponent(isFile: boolean, path?: string, node?: FSNode): void {  
-    let nodeComponentRef;
-
-    if (isFile) {
-      nodeComponentRef = this.filesRef.createComponent(this.fileFactory);
-
-      if (path) {
-        const currentContent = this.allFiles.get(path) || [];
-        this.allFiles.set(path, [...currentContent, nodeComponentRef]);
-      } else {
-        this.tentativeNodeSubscription = nodeComponentRef.instance.onDeleteRequested.subscribe(isFile => this.tentativeNodeDismissal(isFile));
-        this.tentativeNode = nodeComponentRef;
-      }
-    } else {
-      nodeComponentRef = this.foldersRef.createComponent(this.folderFactory);
-
-      if (path) {
-        const currentContent = this.allSubfolders.get(path) || [];
-        this.allSubfolders.set(path, [...currentContent, nodeComponentRef]);
-      } else {
-        this.tentativeNodeSubscription = nodeComponentRef.instance.onDeleteRequested.subscribe(isFile => this.tentativeNodeDismissal(isFile));
-        this.tentativeNode = nodeComponentRef;
-      }
+  createSubcomponent(isFile: boolean, path?: string, node?: FSNode): void { 
+    const nodeComponentRef = isFile ? this.filesRef.createComponent(this.fileFactory) : this.foldersRef.createComponent(this.folderFactory);  
+    if (isFile && path) {
+      const currentContent = this.files.get(path) || [];
+      this.files.set(path, [...currentContent, <ComponentRef<FileComponent>>nodeComponentRef]);
+    }
+    
+    if (!isFile && path) {
+      const currentContent = this.folders.get(path) || [];
+      this.folders.set(path, [...currentContent, <ComponentRef<FolderComponent>>nodeComponentRef]);
     }
 
-    nodeComponentRef.instance.depth = this.depth + 1;
-    nodeComponentRef.instance.path = path || '';
-    nodeComponentRef.instance.ref = node;
-    nodeComponentRef.instance.parentPath = this.path;
-
-    if (!path && ! node) {
-      nodeComponentRef.instance.isRenaming = true;
+    if (!path) {
+      this.tentativeNodeSubscription = nodeComponentRef.instance.onDeleteRequested.subscribe(isFile => this.tentativeNodeDismissal(isFile));
+      this.tentativeNode = nodeComponentRef;
     }
+    
+    if (this._node) {
+      const treeNode = path ? this._node.generateTreeNode(this._node.depth + 1, path, node) : this._node.generateTreeNode(this._node.depth + 1);
+      // treeNode.parentPath = this._node.path;
+      nodeComponentRef.instance._node = treeNode;
+    }     
   }
 
   tentativeNodeDismissal(isFile: boolean): void {
-    if (this.tentativeNode) {
+   if (this.tentativeNode && this.filesRef && this.foldersRef) {
       const ref = isFile ? this.filesRef : this.foldersRef;
       ref.remove(ref.indexOf(this.tentativeNode.hostView));
       this.tentativeNode = undefined;
@@ -205,8 +130,8 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   deleteSubcomponent(path: string): void {
-    const isFile = this.allFiles.has(path) ? true : (this.allSubfolders.has(path) ? false : undefined); 
-    const allElements = isFile ? this.allFiles : this.allSubfolders;
+    const isFile = this.files.has(path) ? true : (this.folders.has(path) ? false : undefined); 
+    const allElements = isFile ? this.files : this.folders;
     const ref = isFile ? this.filesRef : this.foldersRef;
     const elements = allElements.get(path);
   
@@ -221,16 +146,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     params.ev.preventDefault();
     this.showSubfolders = true;
     this.createSubcomponent(params.newFile);
-  }
-
-  // TODO: Catch errors
-  /** Creates components for new subfolders/files and updates existing ones */
-  createInitial(): void {
-    if (this.path) {
-      const [subfolders, filesInFolder] = this.fsService.scan(this.path, this.depth, true);
-      subfolders.forEach(subfolder => this.createSubcomponent(false, `${this.path}/${subfolder.name}`, subfolder));
-      filesInFolder.forEach(file => this.createSubcomponent(true, `${this.path}/${file.name}`, file));
-    }
+    this.setActive();
   }
 
   toggleSubfolders(ev: Event): void {
@@ -239,10 +155,13 @@ export class FolderComponent implements OnInit, OnDestroy {
     }
 
     this.showSubfolders = !this.showSubfolders;
+    this.setActive();
+  }
 
-    if (!this.isActive) {
-      this.isActive = !this.isActive;
-      this.uiEv.changeActiveElement(this.path);
+  setActive(): void {
+    if (this._node && !this._node.isActive) {
+      this._node.isActive = !this._node.isActive;
+      this.uiEv.changeActiveElement(this._node.path);
     } 
   }
 
@@ -253,26 +172,21 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this.foldersRef.clear();
-    this.filesRef.clear();
-    this.deleteSubscription.unsubscribe();
-    this.moveSubscription.unsubscribe();
-    this.activeElementChangeSubscription.unsubscribe();
-    this.writeSubscription.unsubscribe();
-    this.afterCodeExecutionSubscription.unsubscribe();
-    this.newNodeByUserSubscription.unsubscribe();
+    this._node.destroy();
     this.tentativeNodeSubscription?.unsubscribe();
+    this.filesRef.clear();
+    this.foldersRef.clear();
   }
 
   changeName(params: {newName: string, isFile: boolean}): void {
     this.isRenaming = false;
 
-    if (this.ref) {
-      this.fsService.rename(`${this.parentPath}/${this.ref.name}`, `${this.parentPath}/${params.newName}`).subscribe();
+    if (!this._node.isTentativeNode) {
+      this.fsService.rename(`${this._node.parentPath}/${this._node.name}`, `${this._node.parentPath}/${params.newName}`).subscribe();
     } else {
       if (!params.isFile) {
-        this.fsService.createFolder(`${this.parentPath}/${params.newName}`).subscribe(() => {}, err => console.error(err), () => {
-          this.ev.createNewNodeByUser(`${this.parentPath}/${params.newName}`, params.isFile);
+        this.fsService.createFolder(`${this._node.parentPath}/${params.newName}`).subscribe(() => {}, err => console.error(err), () => {
+          this.ev.createNewNodeByUser(`${this._node.parentPath}/${params.newName}`, params.isFile);
         });
       }
     }
@@ -283,27 +197,15 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.onDeleteRequested.emit(false);
   }
 
-  filesChange(ev: Event): void {
-    ev.preventDefault();
-    ev.stopPropagation();
-
-    const fileList = (ev.target as HTMLInputElement)?.files;
-
-    if (fileList) {
-      // TODO: Vielleicht kann man die errors irgendwie aggregieren, sodass man nach dem import eine anzeige kriegt, welche Dateien erfolgreich importiert werden
-      // konnten und welche nicht (z.B. weil sie schon existieren)
-      concat(...Array.from(fileList).map(file => this.creatFileFromBuffer(file))).subscribe(() => {}, 
-      err => console.error(err), () =>  console.log("import complete!"));      
-    } else {
-      // TODO: Error
-    }
+  onNewFile(files: {name: string, convertedFile: Uint8Array}[]) {
+    forkJoin(files.map(file => this.fsService.createFile(`${this._node.path}/${file.name}`, file.convertedFile)))
+      .pipe(catchError(error => of(error)))
+      .subscribe(
+        () => {}, 
+        (err) => console.error(err), 
+        () => {
+          this.setActive();
+          this.showSubfolders = true;
+        });
   }
-
-  creatFileFromBuffer(file: File) {
-    return from(file.arrayBuffer()).pipe(
-      map(buffer => new Uint8Array(buffer)), 
-      switchMap(uintArr => this.fsService.createFile(`${this.path}/${file.name}`, new Uint8Array(uintArr)))
-    );
-  }
-
 }

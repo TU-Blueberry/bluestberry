@@ -1,8 +1,8 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
-import { isSystemDirectory } from 'src/app/filesystem/shared/system_folder'; 
 import { FileType } from 'src/app/shared/filetypes.enum';
+import { ConfigObject } from '../model/config';
 
 @Injectable({
   providedIn: 'root'
@@ -21,9 +21,8 @@ export class FilesystemEventService {
   onMakeSymlink: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   afterCodeExecution: EventEmitter<void> = new EventEmitter();
   onNewNodeByUser: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
+  onOpenLesson: EventEmitter<{openLeft: string[], openRight: string[]}> = new EventEmitter();
   
-  // TODO: Kann sein, dass ich alles rund um path noch in file/directory aufschlüsseln muss
-  // TODO: isSystemDirectory einheitlich regeln (d.h. entweder hier oder in den aufrufenden Methoden abfangen)
   constructor(private fsService: FilesystemService, private py: PyodideService) { 
     fsService.getFS().subscribe(fs => {
       fs.trackingDelegate['willMovePath'] = (_oldPath: string, _newPath: string) => this.willMovePath.emit({oldPath: _oldPath, newPath: _newPath});
@@ -32,7 +31,7 @@ export class FilesystemEventService {
       fs.trackingDelegate['onMovePath'] = (_oldPath: string, _newPath: string) => this.onMovePath.emit({oldPath: _oldPath, newPath: _newPath});
       
       fs.trackingDelegate['onOpenFile'] = (_path: string, _flags: any) => {
-        if (!isSystemDirectory(_path)) {
+        if (!this.fsService.isSystemDirectory(_path)) {
           this.onOpenFile.emit({path: _path, byUser: false});
         }
       }
@@ -43,8 +42,12 @@ export class FilesystemEventService {
     py.getAfterExecution().subscribe(() => this.afterCodeExecution.emit());
   }
 
+  onLessonOpened(config: ConfigObject) {
+    this.onOpenLesson.emit({openLeft: config.openLeft, openRight: config.openRight});
+  }
+
   onUserOpenFile(_path: string, node: FSNode) {
-    if (!isSystemDirectory(_path)) {
+    if (!this.fsService.isSystemDirectory(_path)) {
       const content = node.contents instanceof Uint8Array ? node.contents : undefined;
         const matches = RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z]{2,5}$/, "i").exec(node.name);
         let fileType: FileType | undefined;

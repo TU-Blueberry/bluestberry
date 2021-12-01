@@ -7,6 +7,9 @@ import { switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
 import { LessonManagementService } from '../lesson-management/lesson-management.service';
+import { TreeNode } from '../model/tree-node';
+import { UiEventsService } from 'src/app/ui-events.service';
+import { FilesystemEventService } from '../events/filesystem-event.service';
 
 @Component({
   selector: 'app-filetree',
@@ -23,43 +26,36 @@ export class FiletreeComponent implements OnDestroy{
   selectedFile?: File;
   userResult$: Subject<boolean> = new Subject();
   lastCheck?: Subscription;
-  test: any;
+
+  readonly SELECTED_LESSON = "sortierroboter"
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
   constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
-    private zipService: ZipService, private mgmtService: LessonManagementService ) {
+    private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService) {
 
     // TODO: error handling
-    concat(this.pys.pyodide, this.mgmtService.openLessonByName('sortierroboter'))
+    concat(this.pys.pyodide, this.mgmtService.openLessonByName(this.SELECTED_LESSON))
       .subscribe(
-        () => { },
+        () => {},
         err => { },
-        () => { 
-          this.kickstartTreeGeneration();
-        });
+        () => this.kickstartTreeGeneration());
   }
 
-  // TODO: Remove hardcoded stuff
-  kickstartTreeGeneration(): void {
+  kickstartTreeGeneration() {
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
-    const root = this.fsService.getTopLevelOfLesson("/sortierroboter");
+    const root = this.fsService.getTopLevelOfLesson(`/${this.SELECTED_LESSON}`);
     const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
-    folderComp.depth = 0;
-    folderComp.path = "/sortierroboter";
-    folderComp.ref = root;
-    folderComp.rootname = "Sortierroboter";
-    folderComp.parentPath = "/";
+    const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
+    baseNode.path = "/";
+    folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, root, "Sortierroboter");
     this.rootComponent = folderComp;
   }
 
-  // TODO: Soll man mehr als eine Lektion gleichzeitig offen haben können?
-  // Falls ja müsste es beim Import noch eine Flag wie "nach dem importieren öffnen" geben (ngModel)
-
-  // TODO: Vor dem Import alle Tabs der alten Lektion schließen, changes discarden
-  // Nach dem Import: openLeft und openRight der neuen Lektion aufrufen
-
   // TODO: Dateien laden bugg bei FF irgendwie
   // TODO: Catch error
+
+  // TODO: Config aus neuem Mountpoint laden und reinpacken
+  // Gleiches gilt für external dateien
   export(name: string): void {
     this.zipService.export(name).subscribe()
   }
@@ -67,6 +63,8 @@ export class FiletreeComponent implements OnDestroy{
   finishImport(): void {
     this.userResult$.next(true);
   }
+
+  // TODO: Regular flow should be similar to this!
 
   // TODO: Additionally check whether zip is completely empty or only consists of config.json
   unpackCheckAndPossiblyImport(file: File) {

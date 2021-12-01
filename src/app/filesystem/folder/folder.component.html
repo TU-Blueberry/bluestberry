@@ -1,41 +1,41 @@
-<div class="folder" [style.padding-left.px]="depth * 10" [class.root-folder]="rootname" [class.active]="isActive" (click)="toggleSubfolders($event)">
+  <div class="folder" [style.padding-left.px]="10 * _node!.depth" [class.root-folder]="_node?.isRoot" [class.active]="_node?.isActive" (click)="toggleSubfolders($event)">
     <div class="folder-heading">
       <div class="folder-icon">
-        <svg class="arrow" *ngIf="!showSubfolders && this.ref && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+        <svg class="arrow" *ngIf="!showSubfolders && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
           aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
           stroke-linejoin="miter" fill="none">
           <title id="chevronRightIconTitle">Ausklappen</title>
           <polyline points="10 6 16 12 10 18 10 18" />
         </svg>
-        <svg class="arrow" *ngIf="showSubfolders && this.ref && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-         aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
-         stroke-linejoin="miter" fill="none"> 
-         <title id="chevronDownIconTitle">Einklappen</title>
+        <svg class="arrow" *ngIf="showSubfolders && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+          aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
+          stroke-linejoin="miter" fill="none"> 
+          <title id="chevronDownIconTitle">Einklappen</title>
           <polyline points="6 10 12 16 18 10"/> 
         </svg>
       </div>
       <div class="folder-icon">
-        <svg class="actual-folder" [class.actual-folder-active]="isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="folderIconTitle" 
+        <svg class="actual-folder" [class.actual-folder-active]="_node?.isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="folderIconTitle" 
             fill="currentColor"> <title id="folderIconTitle">Ordner</title>
-             <path d="M3 5h6l1 2h11v12H3z"/> </svg>
+              <path d="M3 5h6l1 2h11v12H3z"/> </svg>
       </div>
       <div *ngIf="!isRenaming">
-        <div class="folder-text" *ngIf="!rootname">{{ref?.name}}</div>
-        <div class="folder-text" *ngIf="rootname">{{rootname}}</div>
+        <div class="folder-text">{{_node?.name}}</div>
       </div>
       <div *ngIf="isRenaming">
-          <app-user-input [parentPath]="this.parentPath" [depth]="this.depth" [isFile]="false" [editMode]="true" 
-          [currentName]="this.ref?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
+          <app-user-input [parentPath]="_node?.parentPath" [depth]="_node?.depth" [isFile]="false" [editMode]="true" 
+          [currentName]="_node?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
       </div>
     </div>
-    <div *ngIf="ref && !isRenaming" class="common-actions">
-      <app-common-actions [parentPath]="this.parentPath" [isFile]="false"
-      (createNewFromUI)="this.createNewFromUI($event)" (delete)="this.deleteFolder($event)" (startRenaming)="this.startRenaming($event)" (selectedFiles)="this.filesChange($event)"></app-common-actions>
+    <div *ngIf="!isRenaming" class="common-actions">
+      <app-common-actions [isRoot]="_node?.isRoot" [isFile]="false"
+      (createNewFromUI)="this.createNewFromUI($event)" (delete)="this.deleteFolder($event)" 
+      (startRenaming)="this.startRenaming($event)" (selectedFiles)="this.onNewFile($event)" ></app-common-actions>
     </div>
 </div>
 
 <div [class.invisible]="!showSubfolders">
-    <div *ngIf="!hasSubfolders && ref && !tentativeNode">Leerer Ordner</div>
+    <div *ngIf="_node.isEmptyNode && !_node.isTentativeNode">Leerer Ordner</div>
     <div #subfolders></div>
-    <div #files></div>    
-</div>
+    <div #files></div>      
+</div>  
