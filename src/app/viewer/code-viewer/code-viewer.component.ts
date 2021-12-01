@@ -23,7 +23,6 @@ export class CodeViewerComponent implements OnInit {
     },
   }
   code = `import os
-import js
 
 import numpy as np
 import pandas as pd
@@ -31,6 +30,9 @@ import plotly.graph_objects as go
 from skimage import io
 from sklearn import metrics
 from sklearn.dummy import DummyClassifier
+
+import berrytemplates as bt
+from berrysort import TestDataLoader
 
 path = "sortierroboter/BlueberryData/"
 
@@ -77,19 +79,6 @@ def print_metrics(y, predictions, set_name="test"):
     print("\\n")
 
 
-def send_to_unity(labels, predictions):
-    # do not touch this function
-    str_labels = np.char.mod("%d", labels).tolist()
-    str_labels = ",".join(str_labels)
-    print(str_labels)
-    js.sendTraits(str_labels)
-
-    str_predictions = np.char.mod("%d", predictions).tolist()
-    str_predictions = ",".join(str_predictions)
-    print(str_predictions)
-    js.sendClassification(str_predictions)
-
-
 def plot_results(predictions):
     # plot the number of images classified as 0 (bad)
     count_good = sum(predictions)
@@ -100,15 +89,21 @@ def plot_results(predictions):
     # fig.show()
 
 
+def predict_pipeline(X_test, model):
+    X_test = extract_features(X_test)
+    return model.predict(X_test)
+
+
 def main():
+    # required line to work with the test data
+    tdl = TestDataLoader()
     # load images
     X_train, y_train = load_images(path + "TrainingData/")
-    X_test, y_test = load_images(path + "TestData/")
     print("finished loading data")
     print("\\n")
 
     # extract features from the images
-    X_train, X_test = extract_features(X_train), extract_features(X_test)
+    X_train = extract_features(X_train)
 
     # build model
     model = DummyClassifier(strategy="uniform")
@@ -117,23 +112,32 @@ def main():
     model.fit(X_train, y_train)
 
     # evaluate model
-    predictions = model.predict(X_test)
-    print_metrics(y_test, predictions, "test")
-    plot_results(predictions)
+    predict_func = lambda X_test: predict_pipeline(X_test, model)
 
-    send_to_unity(y_test, predictions)
+    # example for template methods
+    # X_train, y_train = bt.load_images()
+    # X_train = bt.extract_features(X_train)
+    # model = bt.classifier()
+    # model.fit(X_train, y_train)
+    # predict_func = lambda X_test: model.predict(bt.extract_features(X_test))
+    # bt.print_prediction_metrics(predict_func, tdl)
 
-    # comment out the following line for own classifier
-send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))   
-#js.enableManual()
-#js.start()
-#js.stop()
-#js.sendManualBerry("1,1,THIS IS THE FILEPATH")
-#js.sendManualBerry("0,0,THIS IS THE FILEPATH")
-#js.sendManualBerry("1,0,THIS IS THE FILEPATH")
-#js.sendManualBerry("0,1,THIS IS THE FILEPATH")
+    tdl.send_to_unity(predict_func)
+    acc = tdl.evaluate_metric(predict_func)
+    print(acc)
 
-#main()`
+
+# comment out the following line for own classifier
+# js.enableManual()
+# js.start()
+# js.stop()
+# js.sendManualBerry("1,1,THIS IS THE FILEPATH")
+# js.sendManualBerry("0,0,THIS IS THE FILEPATH")
+# js.sendManualBerry("1,0,THIS IS THE FILEPATH")
+# js.sendManualBerry("0,1,THIS IS THE FILEPATH")
+
+main()
+`
 
   constructor(private pyodideService: PyodideService, private fileTabDirective: FileTabDirective) {}
 
