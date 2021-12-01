@@ -64,8 +64,8 @@ export class PyodideService {
   // This might be helpful for us?
   // see https://pyodide.org/en/stable/usage/api/js-api.html
   runCode(code: string): Observable<any> {
-    this.addToSysPath()
     return this.pyodide.pipe(switchMap(pyodide => {
+      pyodide.globals.set('editor_input', code);
       return defer(() => concat(from(pyodide.runPythonAsync(this.addToSysPath())), from(pyodide.runPythonAsync(code))))
         .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
     }));
@@ -76,6 +76,12 @@ export class PyodideService {
     return this.pyodide.pipe(map(pyodide => {
       const strings = pyodide.globals.get(key)?.toJs();
       return strings !== undefined ? strings : [];
+    }));
+  }
+
+  setGlobal(key:string, value: any): Observable<void> {
+    return this.pyodide.pipe(map(pyodide => {
+      pyodide.globals.set(key, value);
     }));
   }
 
