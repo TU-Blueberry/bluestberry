@@ -2,10 +2,10 @@
 import { ComponentRef } from "@angular/core";
 import { forkJoin, Subscription } from "rxjs";
 import { filter, map, switchMap, tap } from "rxjs/operators";
-import { UiEventsService } from "../ui-events.service";
-import { FilesystemEventService } from "./events/filesystem-event.service";
-import { FileComponent } from "./file/file.component";
-import { FilesystemService } from "./filesystem.service";
+import { UiEventsService } from "../../ui-events.service";
+import { FilesystemEventService } from "../events/filesystem-event.service";
+import { FileComponent } from "../file/file.component";
+import { FilesystemService } from "../filesystem.service";
 
 export class TreeNode {
     private _ref?: FSNode;
@@ -35,6 +35,10 @@ export class TreeNode {
         const [folders, files] = this.fs.scan(this._path, this._depth, true);
         this._isEmptyNode = folders.length === 0 && files.length === 0;
         return [folders, files];
+    }
+
+    public checkPermissions() {
+        this.fs.checkPermissions(this._path, false);
     }
 
     private isDirectChild(pathToCheck: string): boolean {

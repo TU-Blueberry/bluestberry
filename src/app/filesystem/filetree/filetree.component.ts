@@ -7,7 +7,7 @@ import { switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
 import { LessonManagementService } from '../lesson-management/lesson-management.service';
-import { TreeNode } from '../tree-node';
+import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 
@@ -36,7 +36,7 @@ export class FiletreeComponent implements OnDestroy{
     // TODO: error handling
     concat(this.pys.pyodide, this.mgmtService.openLessonByName(this.SELECTED_LESSON))
       .subscribe(
-        () => { },
+        () => {},
         err => { },
         () => this.kickstartTreeGeneration());
   }
@@ -48,13 +48,14 @@ export class FiletreeComponent implements OnDestroy{
     const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
     baseNode.path = "/";
     folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, root, "Sortierroboter");
-
-    console.log("ROOT NODE ", folderComp._node);
     this.rootComponent = folderComp;
   }
 
   // TODO: Dateien laden bugg bei FF irgendwie
   // TODO: Catch error
+
+  // TODO: Config aus neuem Mountpoint laden und reinpacken
+  // Gleiches gilt für external dateien
   export(name: string): void {
     this.zipService.export(name).subscribe()
   }
@@ -62,6 +63,8 @@ export class FiletreeComponent implements OnDestroy{
   finishImport(): void {
     this.userResult$.next(true);
   }
+
+  // TODO: Regular flow should be similar to this!
 
   // TODO: Additionally check whether zip is completely empty or only consists of config.json
   unpackCheckAndPossiblyImport(file: File) {

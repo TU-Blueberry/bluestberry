@@ -4,7 +4,7 @@ import { JSZipObject } from 'jszip';
 import { from, Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { FilesystemService } from '../filesystem.service';
-import { ConfigObject } from '../shared/configObject';
+import { ConfigObject } from '../model/config';
 import { saveAs } from 'file-saver';
 
 @Injectable({

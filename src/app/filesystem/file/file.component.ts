@@ -2,7 +2,7 @@ import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FilesystemService } from '../filesystem.service';
-import { TreeNode } from '../tree-node';
+import { TreeNode } from '../model/tree-node';
 
 @Component({
   selector: 'app-file',

@@ -1,7 +1,7 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { Location } from '@angular/common';
 import initCode from '!raw-loader!../../assets/util/init.py';
-import {BehaviorSubject, defer, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
+import {BehaviorSubject, concat, defer, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
 import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 import {PythonCallable} from 'src/app/python-callable/python-callable.decorator';
 
@@ -19,6 +19,7 @@ export class PyodideService {
   private stdOut$ = new ReplaySubject<string>(1000);
   private stdErr$ = new ReplaySubject<string>(1000);
   private afterExecution$ = new EventEmitter<void>();
+  private _modulePaths: string[] = [];
   pyodide = this.initPyodide();
 
   // Overwrite stderr and stdout. Sources:
@@ -63,8 +64,9 @@ export class PyodideService {
   // This might be helpful for us?
   // see https://pyodide.org/en/stable/usage/api/js-api.html
   runCode(code: string): Observable<any> {
+    this.addToSysPath()
     return this.pyodide.pipe(switchMap(pyodide => {
-      return defer(() => from(pyodide.runPythonAsync(code)))
+      return defer(() => concat(from(pyodide.runPythonAsync(this.addToSysPath())), from(pyodide.runPythonAsync(code))))
         .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
     }));
   }
@@ -99,5 +101,24 @@ export class PyodideService {
 
   getAfterExecution(): EventEmitter<void> {
     return this.afterExecution$;
+  }
+
+  set modulePaths(paths: string[]) {
+    this._modulePaths = paths;
+  }
+
+  private addToSysPath(): string {
+    let glueCode = '';
+
+    for (const module of this._modulePaths) {
+      glueCode += `
+import sys
+
+if "${module}" not in sys.path:
+    sys.path.append("${module}")
+      `
+    }
+
+    return glueCode;
   }
 }

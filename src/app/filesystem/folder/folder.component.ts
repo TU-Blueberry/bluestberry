@@ -1,11 +1,11 @@
-import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FileComponent } from '../file/file.component';
 import { FilesystemService } from '../filesystem.service';
-import { TreeNode } from '../tree-node';
+import { TreeNode } from '../model/tree-node';
 
 @Component({
   selector: 'app-folder',
@@ -17,12 +17,11 @@ export class FolderComponent implements OnInit, OnDestroy {
   folders: Map<string, Array<ComponentRef<FolderComponent>>> = new Map();
   folderFactory: ComponentFactory<FolderComponent>;
   fileFactory: ComponentFactory<FileComponent>;
+  tentativeNode?: ComponentRef<FolderComponent> | ComponentRef<FileComponent>;
+  tentativeNodeSubscription?: Subscription;
 
   showSubfolders = false;
   isRenaming = false;
-
-  tentativeNode?: ComponentRef<FolderComponent> | ComponentRef<FileComponent>;
-  tentativeNodeSubscription?: Subscription;
 
   @Input('node') _node!: TreeNode; 
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
@@ -34,11 +33,8 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    this.createInitial();
-  }
-
-  createInitial(): void {
-    if(this._node && !this._node.isTentativeNode) {      this.addListeners();
+    if(this._node && !this._node.isTentativeNode) {    
+      this.addListeners();
       const [folders, files] = this.fsService.scan(this._node.path, this._node.depth, true);
       folders.forEach(folder => this.createSubcomponent(false, `${this._node.path}/${folder.name}`,folder));
       files.forEach(file => this.createSubcomponent(true, `${this._node.path}/${file.name}`, file));
@@ -68,6 +64,10 @@ export class FolderComponent implements OnInit, OnDestroy {
     this._node.getSubfolders()
       .filter(folder => !this.folders.has(folder.path))
       .forEach(folder => this.createSubcomponent(false, folder.path, folder.node));
+
+    if (this._node.isRoot) {
+      this._node.checkPermissions(); // set permissions after every execution
+    }
   }
 
   /** New node was just created by the user. To avoid inconsistent states, the temporary (tentative) node is deleted.

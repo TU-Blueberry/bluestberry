@@ -1,6 +1,5 @@
 import { AfterViewInit, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild } from '@angular/core';
 import { FilesystemService } from '../filesystem.service';
-import { isSystemDirectory } from '../shared/system_folder';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors } from '@angular/forms';
 
 @Component({
@@ -35,7 +34,7 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
    }
 
   ngOnInit(): void {
-    if (this.parentPath && this.depth && this.parentPath !== '' && !isSystemDirectory(this.parentPath) && this.depth >= 0) {
+    if (this.parentPath && this.depth && this.parentPath !== '' && this.depth >= 0) {
       const [folders, files] = this.fsService.scan(this.parentPath, this.depth, this.isFile);
       this.folderContent = this.isFile ? files : folders;
     }

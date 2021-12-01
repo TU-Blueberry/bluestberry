@@ -1,22 +1,25 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
-import { Observable, concat, forkJoin } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { Observable, concat, forkJoin, of } from 'rxjs';
+import { ignoreElements, map, switchMap } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
-import { ConfigObject } from './shared/configObject';
-import { isSystemDirectory } from './shared/system_folder';
-import { Location } from '@angular/common';
+import { ConfigObject } from './model/config';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FilesystemService {
+  readonly SYSTEM_FOLDERS = new Set(['/dev', '/home', '/lib', '/proc', '/tmp', '/bin']);
+  HIDDEN_PATHS = new Set<string>();
+  EXTERNAL_PATHS = new Set<string>();
+  READONLY_PATHS = new Set<string>();
+  MODULE_PATHS = new Set<string>();
+
   PyFS?: typeof FS & MissingInEmscripten;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
 
-  constructor(private http: HttpClient, private pyService: PyodideService, private location: Location) {
+  constructor(private pyService: PyodideService) {
     this.pyService.pyodide.subscribe(py => {
       this.PyFS = py.FS;
 
@@ -31,6 +34,46 @@ export class FilesystemService {
 
   getFS() {
     return this.fsSubject;
+  }
+
+  storeConfig(config: ConfigObject): Observable<any> {
+    const storeConfigObserv = new Observable(subscriber => {
+      try {
+          this.PyFS?.mkdir(`/configs/${config.name}`);
+          this.PyFS?.writeFile(`/configs/${config.name}/config.json`, JSON.stringify(config));
+          subscriber.complete();
+        }
+      catch (err) {
+      console.error(err);
+      subscriber.error(err);
+      }
+    });
+
+    return concat(this.mountAndSync("configs"), concat(storeConfigObserv, this.unmountAndSync("configs")));
+  }
+
+  // TODO: Glaube config wird aktuell noch in normales Verzeichnis geschrieben
+  // Müsste geändert werden, sodass in external config geschrieben
+  getConfig(lessonName: string) {
+    const getConfigObservable = new Observable<ConfigObject>(subscriber => {
+
+      try {
+        const config = this.PyFS?.readFile(`/configs/${lessonName}/config.json`);
+        
+        if (config) {
+          const convertedConfig = <ConfigObject>JSON.parse(new TextDecoder().decode(config));       
+          subscriber.next(convertedConfig); 
+          subscriber.complete()
+        } else {
+          subscriber.error("No config found!")
+        } 
+    } catch (err) {
+      subscriber.error("Error retrieving config!")
+    }})
+
+    return this.mountAndSync("configs")
+      .pipe(switchMap(_ => getConfigObservable))
+      .pipe(switchMap(config => concat(this.unmountAndSync("configs").pipe(ignoreElements()), of(config))))
   }
 
   /** Lesson exists, if the corresponding dir either already exists OR if we can create the
@@ -71,7 +114,7 @@ export class FilesystemService {
         this.deleteFolder(path);
       }
 
-      concat(this.unmountAndSync(path), this.mountAndSync(config.name), this.storeLesson(zip, config.name))
+      concat(this.unmountAndSync(path), this.mountAndSync(config.name), this.storeLesson(zip, config.name), this.sync(false))
       .subscribe(
         () => {},
         err => subscriber.error(err),
@@ -84,10 +127,10 @@ export class FilesystemService {
   // TODO: Ggf. sycnfs durch sync() ersetzen
   mountAndSync(name: string): Observable<string> {
     return new Observable(subscriber => {
+      console.log(`%cMount and sync ${name}`, "color: green")
+
       try {
         const fullPath = `/${name}`;
-        console.log("fullpath in mountandsync ", fullPath)
-
         const node = this.PyFS?.analyzePath(fullPath, false);
 
         if (!node?.exists) {
@@ -107,7 +150,90 @@ export class FilesystemService {
     });
   }
 
+  // loops over whole mountpoint and verifies that all modules, readonly and hidden paths have readonly permissions
+  // additionally verifies that no external path is present (or deletes it if found)
+
+  // TODO: Refactor so that mergedPaths is already passed as parameter
+  checkPermissions(mountpoint: string, onlyCheckExternalPermissions: boolean): void {
+   
+
+    const mergedPaths = new Set([...this.HIDDEN_PATHS, ...this.READONLY_PATHS, ...this.MODULE_PATHS]);
+
+    this.testCurrentPath(mountpoint, mergedPaths);
+
+    // muss es halt wieder rekursiv machen nech
+    // for all folders, subfolders and files
+    //    if abstractCheck(mergedPaths) === true: check if permissions are set
+    //        if yes: continue
+    //        if no: set permission to readonly (rx)
+
+    //    if is external path: delete
+    //    (kann dafür auch abstractCheck nutzen; new Set('/external/' + lessonName))
+  }
+
+  mountExternal(): void {
+    // TODO: Mount, call checkPermissions for extenral mountpoint
+  }
+
+  private testCurrentPath(currentPath: string, mergedPaths: Set<string>) {
+
+    if (!this.isEmpty(currentPath)) {
+      const node =  this.getNodeByPath(currentPath);
+
+      if (node) {
+        if (!(node.contents instanceof Uint8Array)) {
+          const entries = node.contents;
+
+          for (const entry in entries) {
+            this.testCurrentPath(`${currentPath}/${entry}`, mergedPaths);
+          }
+        }
+
+        // check if current node (may be folder or file) needs special permissions
+        this.abstractCheck(mergedPaths, currentPath) ? this.setPermissionsReadExecute(currentPath) : {};
+      }
+    }
+  }
+
+
+  private setPermissionsReadExecute(path: string) {
+    try {
+      this.PyFS?.chmod(path, 0o500);
+    } catch(err) {
+      console.error(err);
+    }
+  }
+
+  // TODO:
+  // Die external sachen liegen dann im mountpoint /external/<lessonName>
+  // Müssen beim Import da reingeschoben werden und beim export wieder rausgeholt werden
+  // Muss beim mounten vorsorligh alle permission einfach setzen
+  private abstractCheck(paths: Set<string>, path: string): boolean {
+    for (const forbiddenPath of paths) {
+      if (path.startsWith(forbiddenPath)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  public isSystemDirectory(path: string): boolean {
+    return this.abstractCheck(this.SYSTEM_FOLDERS, path);
+  }
+
+  public isHiddenPath(path: string): boolean {
+    const res =  this.abstractCheck(this.HIDDEN_PATHS, path);
+    return res;
+  }
+
+  public isModulePath(path: string): boolean {
+    return this.abstractCheck(this.MODULE_PATHS, path);
+  }
+
   unmountAndSync(name: string): Observable<string> {
+    console.log(`%c UNMOUNT AND SYNC ${name}"`, "color: blue");
+
     return new Observable(subscriber => {
       try {
         const fullPath = `/${name}`;
@@ -136,11 +262,13 @@ export class FilesystemService {
     return new Observable(subscriber => {
       let stream = unzippedLesson.file(file)?.internalStream("arraybuffer");
       stream?.on("error", () => subscriber.error('Error reading zip'));
-      stream?.on("end", () => console.log("END"));
+      stream?.on("end", () => {});
 
       stream?.accumulate().then(accumulated => {
         try {
-          this.PyFS?.writeFile(`${name}/${file}`, new Uint8Array(accumulated));
+          if (file !== "config.json") {
+            this.PyFS?.writeFile(`${name}/${file}`, new Uint8Array(accumulated));
+          }      
           subscriber.next(accumulated);
           subscriber.complete();
         } catch (err) {
@@ -190,9 +318,7 @@ export class FilesystemService {
     }
   }
 
-  // TODO: Add other restrictions to scan (hidden files/folders etc.)
-
-  /* Returns all subfolders and - if requested - files of the given path as seperate arrays */
+  /* Returns all non-hidden and non-module subfolders and - if requested - files of the given path as seperate arrays */
   scan(path: string, depth: number, includeFiles: boolean) {
     const node = this.getNodeByPath(path);
     
@@ -207,10 +333,12 @@ export class FilesystemService {
     const subfolders: FSNode[] = [];
     const filesInFolder: FSNode[] = [];
 
-    Object.entries(entries).forEach(([_, value], key) =>  {
+    Object.entries(entries)
+      .filter(([_, value], key) => !this.isHiddenPath(`${path}/${value.name}`) && !this.isModulePath(`${path}/${value.name}`))
+      .forEach(([_, value], key) =>  {
       const currentPath = `${path}/${value.name}`;
 
-      if (!isSystemDirectory(currentPath) && this.isDirectory(currentPath)) {
+      if (!this.isSystemDirectory(currentPath) && this.isDirectory(currentPath)) {
         subfolders.push(value);
       }
 
@@ -240,13 +368,13 @@ export class FilesystemService {
               // TODO: Error
             }
           } else {
-            if (!isSystemDirectory(`${path}${entry}`)) {
+            if (!this.isSystemDirectory(`${path}${entry}`)) {
               this.fillZip(`${path}${entry}/`, zip, lessonName);
             }
           }
         }
       } else {
-        if (!isSystemDirectory(path)) {
+        if (!this.isSystemDirectory(path)) {
           const noPrefix = path.replace(`/${lessonName}`, '');
           zip.folder(noPrefix); // also export empty folders (without prefix)
         }
@@ -263,7 +391,7 @@ export class FilesystemService {
         const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
 
         for (const entry in entries) {
-          if (!isSystemDirectory(`${path}${entry}`)) { // TODO: Test
+          if (!this.isSystemDirectory(`${path}${entry}`) && !this.isHiddenPath(`${path}${entry}`) && !this.isModulePath(`${path}${entry}`)) {
             if (this.isDirectory(`${path}${entry}`)) {
               console.log("-".repeat(startDepth + offsetPerLevel) + ` ${entry}`);
               this.printRecursively(`${path}${entry}/`, startDepth + offsetPerLevel, offsetPerLevel);
@@ -289,7 +417,7 @@ export class FilesystemService {
     });
 
     const folderObs = new Observable(subscriber => {
-      if (isSystemDirectory(name)) { // TODO: Test!
+      if (this.isSystemDirectory(name)) {
         subscriber.error("Invalid lesson name (system directory)")
       }
 
@@ -305,7 +433,7 @@ export class FilesystemService {
 
     const fileObservables: any[] = [];
     files.forEach(file => fileObservables.push(this.createFileFromZip(unzippedLesson, file, name)));
-    return concat(folderObs, forkJoin(fileObservables));
+    return concat(folderObs, forkJoin(fileObservables), this.sync(false));
   }
 
   /**
@@ -433,7 +561,6 @@ export class FilesystemService {
     const writing = new Observable(subscriber => {
       try {
         this.PyFS?.writeFile(path, content);
-        console.log("file written, complete now")
         subscriber.complete();
       } catch (e) {
         subscriber.error("Error while writing to file");
