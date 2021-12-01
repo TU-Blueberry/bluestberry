@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {Tab} from 'src/app/tab/model/tab.model';
-import {TabEventService} from 'src/app/tab/tab-event.service';
+import {TabManagementService} from 'src/app/tab/tab-management.service';
 import {filter} from 'rxjs/operators';
 
 @Component({
@@ -55,7 +55,7 @@ export class TabGroupComponent implements AfterViewInit {
     return this._activeTab;
   }
 
-  constructor(private tabEventService: TabEventService) {
+  constructor(private tabEventService: TabManagementService) {
   }
 
   ngAfterViewInit(): void {
@@ -65,9 +65,14 @@ export class TabGroupComponent implements AfterViewInit {
     this.tabEventService.openTab$.pipe(
       filter(tab => !!this.templates?.find(template => template.type === tab.type)),
     ).subscribe(tab => {
-      this.dataSource.push(tab);
-      this.dataSourceChange.emit(this.dataSource);
-      this.activeTab = tab;
+      const existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+      if (!existingTab) {
+        this.dataSource.push(tab);
+        this.dataSourceChange.emit(this.dataSource);
+        this.activeTab = tab;
+      } else {
+        this.activeTab = existingTab;
+      }
     })
   }
 

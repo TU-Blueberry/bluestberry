@@ -19,7 +19,6 @@ export class FileTabDirective implements OnInit {
     }
 
     set tab(value: Tab | undefined) {
-        console.log("tab was set to ", value);
         if (!value) {
             return;
         }
@@ -35,18 +34,18 @@ export class FileTabDirective implements OnInit {
 
     ngOnInit(): void {
         this.filesystemEventService.onDeletePath.pipe(
-            filter(path => this.tab?.data.path.startsWith(path))
+            filter(path => this.tab?.data?.path.startsWith(path))
         ).subscribe(() => this.close.next());
 
         this.filesystemEventService.onMovePath.pipe(
-            filter(event => this.tab?.data.path === event.oldPath)
+            filter(event => this.tab?.data?.path?.startsWith(event.oldPath))
         ).subscribe(event => {
-            this.tab!.data.path = event.newPath;
+            this.tab!.data.path.replace(event.oldPath, event.newPath);
             this.tab!.title = event.newPath.split('/').pop() || event.newPath;
         });
 
         this.filesystemEventService.onWriteToFile.pipe(
-            filter(event => this.tab?.data.path === event.path),
+            filter(event => this.tab?.data?.path === event.path),
             switchMap(event => this.filesystemService.getFileContent(event.path, 'binary')),
             map(content => content as Uint8Array),
         ).subscribe(content => {

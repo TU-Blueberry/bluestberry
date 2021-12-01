@@ -9,7 +9,7 @@ import {FileType} from 'src/app/shared/filetypes.enum';
 @Injectable({
   providedIn: 'root'
 })
-export class TabEventService {
+export class TabManagementService {
   private _openTab = new Subject<Tab>();
 
   get openTab$() {
