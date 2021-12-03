@@ -2,21 +2,21 @@
   <as-split-area *ngIf="filetreeVisible" [order]="0" [minSize]="10" [size]="15" [maxSize]="30">
     <app-filetree></app-filetree>
   </as-split-area>
-  <as-split-area [order]="1" [minSize]="10" [size]="42.5" [size]="42.5">
+  <as-split-area [order]="1" [minSize]="10" [size]="42.5">
     <as-split direction="vertical" [gutterSize]="4">
-      <as-split-area>
+      <as-split-area [order]="0" [minSize]="20">
         <app-tab-group [dataSource]="[{type: 'CODE', title: 'code', icon: 'hero-document-text'}]">
           <ng-container *appTabTemplate="let tab = tab; let close = close; type: 'CODE'">
             <app-code-viewer class="code-wrapper" [appFileTab]="tab" (close)="close()"></app-code-viewer>
           </ng-container>
         </app-tab-group>
       </as-split-area>
-      <as-split-area>
+      <as-split-area [order]="1" [minSize]="34">
         <app-terminal-viewer></app-terminal-viewer>
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area [order]="2" [minSize]="10" [size]="42.5" [size]="42.5">
+  <as-split-area [order]="2" [minSize]="10" [size]="42.5">
     <app-tab-group [dataSource]="[{type: 'UNITY', title: 'Unity'}]">
       <app-unity-viewer *appTabTemplate="let data = data; type: 'UNITY'">
       </app-unity-viewer>
