@@ -119,6 +119,11 @@ if "${module}" not in sys.path:
       `
     }
 
+    // Only for the purpose of not screwing ourselves over in the presentation.
+    glueCode += `
+if "sortierroboter/" not in sys.path:
+    sys.path.append("/sortierroboter")
+`
     return glueCode;
   }
 }

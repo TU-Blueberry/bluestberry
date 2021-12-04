@@ -36,7 +36,8 @@ from sklearn.dummy import DummyClassifier
 import berrytemplates as bt
 from berrysort import TestDataLoader
 
-path = "sortierroboter/BlueberryData/"
+# Der Pfad zu den Trainingsdaten
+path = "sortierroboter/BlueberryData/TrainingData/"
 
 
 def load_images(path):
@@ -100,7 +101,7 @@ def main():
     # required line to work with the test data
     tdl = TestDataLoader()
     # load images
-    X_train, y_train = load_images(path + "TrainingData/")
+    X_train, y_train = load_images(path)
     print("finished loading data")
     print("\\n")
 
@@ -116,7 +117,7 @@ def main():
     # evaluate model
     predict_func = lambda X_test: predict_pipeline(X_test, model)
 
-    # example for template methods
+    # examples for template methods
     # X_train, y_train = bt.load_images()
     # X_train = bt.extract_features(X_train)
     # model = bt.classifier()
@@ -128,16 +129,6 @@ def main():
     acc = tdl.evaluate_metric(predict_func)
     print(acc)
 
-
-# comment out the following line for own classifier
-
-#js.enableManual()
-#js.start()
-#js.stop()
-#js.sendManualBerry("1,1,THIS IS THE FILEPATH")
-#js.sendManualBerry("0,0,THIS IS THE FILEPATH")
-#js.sendManualBerry("1,0,THIS IS THE FILEPATH")
-#js.sendManualBerry("0,1,THIS IS THE FILEPATH")
 
 main()
 `
