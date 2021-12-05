@@ -7,7 +7,7 @@ import { ConfigObject } from '../model/config';
 @Injectable({
   providedIn: 'root'
 })
-export class FilesystemEventService { 
+export class FilesystemEventService {
   willMovePath: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   onMovePath: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   willDeletePath: EventEmitter<string> = new EventEmitter();
@@ -22,16 +22,16 @@ export class FilesystemEventService {
   afterCodeExecution: EventEmitter<void> = new EventEmitter();
   onNewNodeByUser: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
   onNewNodeByUserSynced: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
-  onOpenLesson: EventEmitter<{openLeft: string[], openRight: string[]}> = new EventEmitter();
+  onOpenLesson: EventEmitter<{open: {path: string, on: string}[]}> = new EventEmitter();
   onFailedCreationFromUi: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
-  
-  constructor(private fsService: FilesystemService, private py: PyodideService) { 
+
+  constructor(private fsService: FilesystemService, private py: PyodideService) {
     fsService.getFS().subscribe(fs => {
       fs.trackingDelegate['willMovePath'] = (_oldPath: string, _newPath: string) => this.willMovePath.emit({oldPath: _oldPath, newPath: _newPath});
       fs.trackingDelegate['willDeletePath'] = (_path: string) => this.willDeletePath.emit(_path);
       fs.trackingDelegate['onDeletePath'] = (_path: string) => this.onDeletePath.emit(_path);
       fs.trackingDelegate['onMovePath'] = (_oldPath: string, _newPath: string) => this.onMovePath.emit({oldPath: _oldPath, newPath: _newPath});
-      
+
       fs.trackingDelegate['onOpenFile'] = (_path: string, _flags: any) => {
         if (!this.fsService.isSystemDirectory(_path)) {
           this.onOpenFile.emit({path: _path, byUser: false});
@@ -45,33 +45,20 @@ export class FilesystemEventService {
   }
 
   onLessonOpened(config: ConfigObject) {
-    this.onOpenLesson.emit({openLeft: config.openLeft, openRight: config.openRight});
+    this.onOpenLesson.emit({open: config.open.map(({path, on}) => ({path: `${config.name}/${path}`, on}))});
   }
 
   onUserOpenFile(_path: string, node: FSNode) {
     if (!this.fsService.isSystemDirectory(_path)) {
       const content = node.contents instanceof Uint8Array ? node.contents : undefined;
-        const matches = RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z]{2,5}$/, "i").exec(node.name);
-        let fileType: FileType | undefined;
-
-        if (!matches || matches.length === 0) {
-          fileType = FileType.OTHER;
-        } else {
-          const extension = matches[matches.length - 1].split(".");
-          const trimmedExtension = extension[extension.length - 1];
-          fileType = FileType[trimmedExtension.toUpperCase() as keyof typeof FileType];
-          fileType = fileType === undefined ? FileType.OTHER : fileType;
-        }
-
+      const fileType = this.fsService.getFileType(_path);
       this.onOpenFile.emit({path: _path, byUser: true, fileContent: content, type: fileType});
     }
   }
 
   createNewNodeByUser(path: string, isFile: boolean): void {
     this.onNewNodeByUser.emit({path: path, isFile: isFile});
-  }
-
-  updateSyncStatusOfTentative(path: string, isFile: boolean): void {
+  }updateSyncStatusOfTentative(path: string, isFile: boolean): void {
     this.onNewNodeByUserSynced.emit({path: path, isFile: isFile});
   }
 

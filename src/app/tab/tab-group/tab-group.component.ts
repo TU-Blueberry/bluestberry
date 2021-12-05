@@ -34,6 +34,9 @@ export class TabGroupComponent implements AfterViewInit {
   @Output()
   dataSourceChange = new EventEmitter<Tab[]>();
 
+  @Input()
+  id = '';
+
   _activeTab?: Tab;
   set activeTab(value) {
     this._activeTab = value;
@@ -64,6 +67,7 @@ export class TabGroupComponent implements AfterViewInit {
     });
     this.tabEventService.openTab$.pipe(
       filter(tab => !!this.templates?.find(template => template.type === tab.type)),
+      filter(tab => tab.groupId === this.id),
     ).subscribe(tab => {
       const existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
       if (!existingTab) {

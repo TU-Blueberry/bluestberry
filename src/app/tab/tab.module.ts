@@ -5,8 +5,6 @@ import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {NgIconsModule} from '@ng-icons/core';
 import {FileTabDirective} from 'src/app/tab/file-tab.directive';
 
-
-
 @NgModule({
   declarations: [
     TabGroupComponent,
@@ -18,9 +16,9 @@ import {FileTabDirective} from 'src/app/tab/file-tab.directive';
     TabTemplateDirective,
     FileTabDirective,
   ],
-  imports: [
-    CommonModule,
-    NgIconsModule
-  ]
+    imports: [
+        CommonModule,
+        NgIconsModule,
+    ]
 })
 export class TabModule { }

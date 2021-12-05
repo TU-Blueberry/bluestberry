@@ -1,31 +1,62 @@
  import {Injectable} from '@angular/core';
-import {Subject} from 'rxjs';
-import {Tab} from 'src/app/tab/model/tab.model';
-import {filter, map} from 'rxjs/operators';
+import {concat, merge, Observable, of, Subject} from 'rxjs';
+import {filter, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
 import {FileType} from 'src/app/shared/filetypes.enum';
+import {OpenTabEvent} from 'src/app/tab/model/open-tab-event';
+import {FilesystemService} from 'src/app/filesystem/filesystem.service';
+
 
 @Injectable({
   providedIn: 'root'
 })
 export class TabManagementService {
-  private _openTab = new Subject<Tab>();
+  private _openTab = new Subject<OpenTabEvent>();
 
   get openTab$() {
     return this._openTab.asObservable();
   }
 
-  constructor(private filesystemEventService: FilesystemEventService) {
-    filesystemEventService.onOpenFile.pipe(
+  constructor(
+    private filesystemEventService: FilesystemEventService,
+    private filesystemService: FilesystemService
+  ) {
+    const lesson$ = filesystemEventService.onOpenLesson.pipe(
+        switchMap(({open}) => concat(...open.map(file => {
+          if (file.path.toLowerCase().endsWith('unity')) {
+            return of({
+              groupId: file.on,
+              icon: 'hero-chip',
+              title: 'Simulation',
+              type: 'UNITY' as TabType,
+            });
+          }
+          return this.createOpenTabEvent(file.path).pipe(map(ote => ({...ote, groupId: file.on})))
+        })
+        )
+      )
+    );
+
+    const userOpenEvent$ = filesystemEventService.onOpenFile.pipe(
       filter(e => e.byUser),
-      map(e => ({
-        title: e.path.split('/').pop() || e.path,
-        icon: this.mapTypeToIcon(e.type),
-        type: this.mapFileTypeToTabType(e.type),
-        data: { path: e.path, content: e.fileContent },
-      })),
-    ).subscribe(t => this._openTab.next(t));
+      switchMap(e => this.createOpenTabEvent(e.path, e.type, e.fileContent)),
+    );
+
+    merge(lesson$, userOpenEvent$).subscribe(t => this._openTab.next(t));
+  }
+
+  createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
+    const fileType = type || this.filesystemService.getFileType(path);
+    return (
+      fileContent ? of(fileContent) : this.filesystemService.getFileContent(path, 'binary')
+    ).pipe(map((fileContent) => ({
+      title: path.split('/').pop() || path,
+      groupId: this.mapFileTypeToTabGroup(fileType),
+      icon: this.mapTypeToIcon(fileType),
+      type: this.mapFileTypeToTabType(fileType),
+      data: { path: path, content: fileContent },
+    })));
   }
 
   mapTypeToIcon(fileType?: FileType): string {
@@ -63,6 +94,24 @@ export class TabManagementService {
         return 'MARKDOWN'
       default:
         return 'CODE';
+    }
+  }
+
+  private mapFileTypeToTabGroup(fileType?: FileType): string {
+    switch (fileType) {
+      case FileType.PY:
+      case FileType.MD:
+      case FileType.JSON:
+      case FileType.TEX:
+      case FileType.CSV:
+        return 'left';
+      case FileType.BMP:
+      case FileType.JPEG:
+      case FileType.JPG:
+      case FileType.PNG:
+        return 'right';
+      default:
+        return 'left';
     }
   }
 }

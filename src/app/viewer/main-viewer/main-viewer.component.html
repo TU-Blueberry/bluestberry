@@ -12,21 +12,7 @@
   <as-split-area [order]="1" [minSize]="10" [size]="42.5">
     <as-split direction="vertical" [gutterSize]="4">
       <as-split-area [order]="0" [minSize]="20">
-        <app-tab-group
-          [dataSource]="[
-            { type: 'CODE', title: 'code', icon: 'hero-document-text' }
-          ]"
-        >
-          <ng-container
-            *appTabTemplate="let tab = tab; let close = close; type: 'CODE'"
-          >
-            <app-code-viewer
-              class="code-wrapper"
-              [appFileTab]="tab"
-              (close)="close()"
-            ></app-code-viewer>
-          </ng-container>
-        </app-tab-group>
+        <app-tab-group-facade id="left"></app-tab-group-facade>
       </as-split-area>
       <as-split-area [order]="1" [minSize]="34">
         <app-terminal-viewer></app-terminal-viewer>
@@ -34,18 +20,7 @@
     </as-split>
   </as-split-area>
   <as-split-area [order]="2" [minSize]="10" [size]="42.5">
-    <app-tab-group [dataSource]="[{ type: 'UNITY', title: 'Unity'}, { type: 'HINT', title: 'Hinweise'}]">
-      <unity *appTabTemplate="let data = data; type: 'UNITY'"></unity>
-      <app-hint-viewer *appTabTemplate="let data = data; type: 'HINT'"></app-hint-viewer>
-      <div *appTabTemplate="let tab = tab; let close = close; type: 'IMAGE'">
-        <app-image-viewer
-          [appFileTab]="tab"
-          (close)="close()"
-        ></app-image-viewer>
-      </div>
-      <div *appTabTemplate="let tab = tab; let close = close; type: 'MARKDOWN'">
-        <app-markdown-viewer [appFileTab]="tab" (close)="close()"></app-markdown-viewer>
-      </div>
-    </app-tab-group>
+    <app-tab-group-facade id="right"></app-tab-group-facade>
+    <app-hint-viewer></app-hint-viewer>
   </as-split-area>
 </as-split>

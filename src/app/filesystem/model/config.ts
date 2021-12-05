@@ -1,6 +1,5 @@
 export interface ConfigObject {
-    openLeft: string[];
-    openRight: string[];
+    open: { path: string, on: string}[];
     name: string;
     unityEntryPoint: string;
     encrypted: string[]; // paths which will be encrypted upon export (config.json is always encrypted)

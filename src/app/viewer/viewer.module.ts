@@ -16,6 +16,7 @@ import { FilesystemModule } from '../filesystem/filesystem.module'
 import { MarkdownViewerComponent } from "./markdown-viewer/markdown-viewer.component";
 import { MarkdownModule } from "ngx-markdown";
 import { TabModule } from 'src/app/tab/tab.module';
+import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group-facade.component';
 
 /**
  * Module used for all the Viewer-Components.
@@ -40,6 +41,7 @@ import { TabModule } from 'src/app/tab/tab.module';
     MainViewerComponent,
     HintViewerComponent,
     MarkdownViewerComponent,
+    TabGroupFacadeComponent,
   ],
   imports: [
     CommonModule,
