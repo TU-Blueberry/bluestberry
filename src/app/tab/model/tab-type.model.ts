@@ -1,1 +1,1 @@
-export type TabType = 'CODE' | 'UNITY' | 'IMAGE';
+export type TabType = 'CODE' | 'UNITY' | 'IMAGE' | 'HINT';
