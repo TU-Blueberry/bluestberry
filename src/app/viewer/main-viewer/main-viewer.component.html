@@ -33,8 +33,9 @@
     </as-split>
   </as-split-area>
   <as-split-area [order]="2" [minSize]="10" [size]="42.5">
-    <app-tab-group [dataSource]="[{ type: 'UNITY', title: 'Unity' }]">
-      <unity *appTabTemplate="let data = data; type: 'UNITY'"> </unity>
+    <app-tab-group [dataSource]="[{ type: 'UNITY', title: 'Unity'}, { type: 'HINT', title: 'Hinweise'}]">
+      <unity *appTabTemplate="let data = data; type: 'UNITY'"></unity>
+      <app-hint-viewer *appTabTemplate="let data = data; type: 'HINT'"></app-hint-viewer>
       <div *appTabTemplate="let tab = tab; let close = close; type: 'IMAGE'">
         <app-image-viewer
           [appFileTab]="tab"
@@ -42,7 +43,5 @@
         ></app-image-viewer>
       </div>
     </app-tab-group>
-    
-
   </as-split-area>
 </as-split>

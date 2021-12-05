@@ -9,18 +9,17 @@
 - demo1:
     question_id: 6001
     following_answer_id: 6601
-    content: Demo image
+    content: Demo Build
 
 - demoanswer1:
     answer_id: 6601
     question_options: []
-    content: "Hier ist eine leckere Blaubeere:  img<assets/bad_berry.JPG/> "
+    content: "Hier ist eine Blaubeere:  img<assets/bad_berry.JPG/> "
     
 - demo2:
     question_id: 6002
     following_answer_id: 6602
-    content: Demo links
-
+    content: Demo Links
     
 - demoanswer2:
     answer_id: 6602
@@ -30,7 +29,7 @@
 - demo3:
     question_id: 6003
     following_answer_id: 6603
-    content: Demo code block
+    content: Demo code block (funktioniert noch nicht)
 
 - demoanswer3:
     answer_id: 6603
@@ -57,12 +56,12 @@
 - demo5:
     question_id: 6005
     following_answer_id: 6605
-    content: Demo markdown 
+    content: Demo code inline 
 
 - demoanswer5:
     answer_id: 6605
     question_options: []
-    content: "Printe etwas codeinline< print('hi') /> so" 
+    content: "Printe etwas mit codeinline< print('hi') /> " 
 
 
 - item1:

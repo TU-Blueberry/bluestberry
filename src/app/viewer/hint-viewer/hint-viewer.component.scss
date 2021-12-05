@@ -5,16 +5,16 @@
     height: 100%;
 }
 
-.hint-overlay-bar {
+.hint-footer-bar {
     position: absolute;
     bottom: 10px;
 }
 
 .undo-button {
-    width: 24px;
+    width: 48px;
     height: 24px;
-    margin: 10px;   
-    text-align: center;
+    margin: 5px;   
+    align-items: center;
 }
 
 .hint-dialogue > * {
@@ -25,7 +25,6 @@
     border-radius: 5px;
 
     max-width: 70%;
-
 }
 
 .markdown > p {
