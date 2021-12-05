@@ -128,14 +128,6 @@ def main():
     acc = tdl.evaluate_metric(predict_func)
     print(acc)
 
-
-# comment out the following line for own classifier
-#import js
-#js.reset();
-#js.initialPresentation()
-#js.sendManualBerry("1,1,sortierroboter/BlueberryData/TestData/good_61.JPG")
-
-
 main()
 `
 
