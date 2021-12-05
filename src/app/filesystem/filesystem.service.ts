@@ -136,9 +136,12 @@ export class FilesystemService {
         if (!node?.exists) {
           this.PyFS?.mkdir(fullPath);
           this.PyFS?.mount(this.PyFS?.filesystems.IDBFS, {}, fullPath);
-          this.PyFS?.syncfs(true, err => {
-            err ? subscriber.error(err) : (subscriber.next(fullPath), subscriber.complete());
-          });
+          setTimeout(() => {
+            this.PyFS?.syncfs(true, err => { // (subscriber.error(err), console.error(err))
+              subscriber.next(fullPath); subscriber.complete();
+            });
+          }, 500)
+ 
         } else {
           subscriber.next(fullPath);
           subscriber.complete(); // path is already mounted
