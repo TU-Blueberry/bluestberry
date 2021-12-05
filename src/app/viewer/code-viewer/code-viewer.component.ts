@@ -1,11 +1,11 @@
-import {Component, Input, OnInit} from '@angular/core'
+import { Component, Input, OnInit } from '@angular/core'
 import { PyodideService } from 'src/app/pyodide/pyodide.service'
 import { EditorComponent } from 'ngx-monaco-editor'
 import { editor } from 'monaco-editor'
 import ICodeEditor = editor.ICodeEditor
-import {FileTabDirective} from 'src/app/tab/file-tab.directive';
-import {Subject} from 'rxjs';
-import {concatMap, debounceTime, switchMap, tap} from 'rxjs/operators';
+import { FileTabDirective } from 'src/app/tab/file-tab.directive'
+import { Subject } from 'rxjs'
+import { concatMap, debounceTime, switchMap, tap } from 'rxjs/operators'
 
 @Component({
   selector: 'app-code-viewer',
@@ -13,7 +13,6 @@ import {concatMap, debounceTime, switchMap, tap} from 'rxjs/operators';
   styleUrls: ['./code-viewer.component.scss'],
 })
 export class CodeViewerComponent implements OnInit {
-
   private editor!: ICodeEditor
   editorOptions = {
     theme: 'vs-dark',
@@ -130,38 +129,54 @@ def main():
     print(acc)
 
 
+# comment out the following line for own classifier
+#import js
+#js.reset();
+#js.initialPresentation()
+#js.sendManualBerry("1,1,sortierroboter/BlueberryData/TestData/good_61.JPG")
+
+
 main()
 `
 
-  saveSubject = new Subject<void>();
-  constructor(private pyodideService: PyodideService, private fileTabDirective: FileTabDirective) {}
+  saveSubject = new Subject<void>()
+  constructor(
+    private pyodideService: PyodideService,
+    private fileTabDirective: FileTabDirective
+  ) {}
 
   ngOnInit(): void {
-    this.fileTabDirective.dataChanges.subscribe(data => {
-      if(data) {
-        this.code = new TextDecoder().decode(data.content);
+    this.fileTabDirective.dataChanges.subscribe((data) => {
+      if (data) {
+        this.code = new TextDecoder().decode(data.content)
       }
-    });
+    })
 
-    this.saveSubject.pipe(
-      debounceTime(1000),
-      tap(() => console.log('save file observable')),
-      concatMap(() => this.fileTabDirective.saveCurrentFile(new TextEncoder().encode(this.code))),
-    ).subscribe(() => {
-      console.log("saved file");
-    });
+    this.saveSubject
+      .pipe(
+        debounceTime(1000),
+        tap(() => console.log('save file observable')),
+        concatMap(() =>
+          this.fileTabDirective.saveCurrentFile(
+            new TextEncoder().encode(this.code)
+          )
+        )
+      )
+      .subscribe(() => {
+        console.log('saved file')
+      })
   }
 
   executeCode(): void {
-    this.pyodideService.runCode(this.code).subscribe();
+    this.pyodideService.runCode(this.code).subscribe()
   }
 
   editorInit(editor: any) {
-    this.editor = editor;
+    this.editor = editor
   }
 
   undo(): void {
-    this.editor?.trigger(null, 'undo', '');
+    this.editor?.trigger(null, 'undo', '')
   }
 
   redo(): void {
@@ -169,6 +184,6 @@ main()
   }
 
   save(): void {
-    this.saveSubject.next();
+    this.saveSubject.next()
   }
 }

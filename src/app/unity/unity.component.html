@@ -1,4 +1,4 @@
-<ng-container *ngIf="!isReady">
+<ng-container class="unity-window" *ngIf="!isReady">
   <div class="progress">
     <div
       class="progress-bar"
@@ -12,8 +12,4 @@
   <hr />
 </ng-container>
 
-<div
-  #unityEl
-  id="gameContainer"
-  style="display: block; width: 100%; min-height: 0px; margin: auto"
-></div>
+<div class="unity-window" #unityEl id="gameContainer"></div>
