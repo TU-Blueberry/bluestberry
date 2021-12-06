@@ -1,4 +1,4 @@
-import {Injectable} from '@angular/core';
+ import {Injectable} from '@angular/core';
 import {Subject} from 'rxjs';
 import {Tab} from 'src/app/tab/model/tab.model';
 import {filter, map} from 'rxjs/operators';
@@ -31,7 +31,6 @@ export class TabManagementService {
   mapTypeToIcon(fileType?: FileType): string {
     switch (fileType) {
       case FileType.PY:
-      case FileType.MD:
       case FileType.JSON:
       case FileType.TEX:
       case FileType.CSV:
@@ -41,6 +40,8 @@ export class TabManagementService {
       case FileType.JPG:
       case FileType.PNG:
         return 'hero-photograph';
+      case FileType.MD:
+        return 'hero-book-open';
       default:
         return 'hero-document';
     }
@@ -49,7 +50,6 @@ export class TabManagementService {
   mapFileTypeToTabType(fileType?: FileType): TabType {
     switch (fileType) {
       case FileType.PY:
-      case FileType.MD:
       case FileType.JSON:
       case FileType.TEX:
       case FileType.CSV:
@@ -59,6 +59,8 @@ export class TabManagementService {
       case FileType.JPG:
       case FileType.PNG:
         return 'IMAGE';
+      case FileType.MD:
+        return 'MARKDOWN'
       default:
         return 'CODE';
     }

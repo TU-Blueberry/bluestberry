@@ -1,20 +1,20 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { GlossaryEntryViewerComponent } from './glossary-entry-viewer.component';
+import { MarkdownViewerComponent } from './markdown-viewer.component';
 
 describe('GlossaryEntryViewerComponent', () => {
-  let component: GlossaryEntryViewerComponent;
-  let fixture: ComponentFixture<GlossaryEntryViewerComponent>;
+  let component: MarkdownViewerComponent;
+  let fixture: ComponentFixture<MarkdownViewerComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      declarations: [ GlossaryEntryViewerComponent ]
+      declarations: [ MarkdownViewerComponent ]
     })
     .compileComponents();
   });
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(GlossaryEntryViewerComponent);
+    fixture = TestBed.createComponent(MarkdownViewerComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
