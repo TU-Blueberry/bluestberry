@@ -1,9 +1,9 @@
 import { Component, ComponentFactoryResolver, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Observable, Subject, Subscription } from 'rxjs';
+import { concat, from, Observable, of, Subject, Subscription } from 'rxjs';
 import { PyodideService } from '../../pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
-import { switchMap, tap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
 import { LessonManagementService } from '../lesson-management/lesson-management.service';
@@ -36,19 +36,24 @@ export class FiletreeComponent implements OnDestroy{
     // TODO: error handling
     concat(this.pys.pyodide, this.mgmtService.openLessonByName(this.SELECTED_LESSON))
       .subscribe(
-        () => {},
-        err => { },
+        () => { },
+        err => { console.error(err) },
         () => this.kickstartTreeGeneration());
   }
 
   kickstartTreeGeneration() {
+    console.log("kickstart trtee")
+
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
-    const root = this.fsService.getTopLevelOfLesson(`/${this.SELECTED_LESSON}`);
-    const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
-    const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
-    baseNode.path = "/";
-    folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, root, "Sortierroboter");
-    this.rootComponent = folderComp;
+    const root = this.fsService.getNodeByPath(`/${this.SELECTED_LESSON}`).subscribe((node) => {
+      console.log("Got node: ", node)
+
+      const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
+      const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
+      baseNode.path = "/";
+      folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, "Sortierroboter");
+      this.rootComponent = folderComp;
+    });
   }
 
   // TODO: Dateien laden bugg bei FF irgendwie
@@ -73,7 +78,7 @@ export class FiletreeComponent implements OnDestroy{
       switchMap(buffer => this.zipService.loadZip(buffer)),
       tap(unzipped => this.tempZip = unzipped),
       switchMap(res => this.zipService.getConfigFromStream(res)),
-      switchMap(conf => this.fsService.checkIfLessonDoesntExistYet(conf.name)
+      switchMap(conf => this.fsService.isNewLesson(conf.name)
         .pipe(
             switchMap(isEmpty => { 
               this.conflictDetected = !isEmpty;

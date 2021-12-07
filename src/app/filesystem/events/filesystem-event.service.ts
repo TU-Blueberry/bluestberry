@@ -66,6 +66,7 @@ export class FilesystemEventService {
   }
 
   createNewNodeByUser(path: string, isFile: boolean): void {
+    console.log("%c nEw node by user", "color: blue", path)
     this.onNewNodeByUser.emit({path: path, isFile: isFile});
   } 
 }

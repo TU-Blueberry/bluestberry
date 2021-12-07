@@ -47,7 +47,7 @@ export class FileTabDirective implements OnInit {
 
         this.filesystemEventService.onWriteToFile.pipe(
             filter(event => this.tab?.data.path === event.path),
-            switchMap(event => this.filesystemService.getFileContent(event.path, 'binary')),
+            switchMap(event => this.filesystemService.getFileAsBinary(event.path)),
             map(content => content as Uint8Array),
         ).subscribe(content => {
             this.tab!.data.content = content;

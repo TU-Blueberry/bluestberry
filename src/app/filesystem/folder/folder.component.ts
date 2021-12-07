@@ -1,6 +1,6 @@
 import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { forkJoin, of, Subscription } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, filter } from 'rxjs/operators';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FileComponent } from '../file/file.component';
@@ -35,9 +35,10 @@ export class FolderComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     if(this._node && !this._node.isTentativeNode) {    
       this.addListeners();
-      const [folders, files] = this.fsService.scan(this._node.path, this._node.depth, true);
-      folders.forEach(folder => this.createSubcomponent(false, `${this._node.path}/${folder.name}`,folder));
-      files.forEach(file => this.createSubcomponent(true, `${this._node.path}/${file.name}`, file));
+      this.fsService.scan(this._node.path, this._node.depth, true).subscribe(([folders, files]) => {
+        folders.forEach(folder => this.createSubcomponent(false, `${this._node.path}/${folder.name}`,folder));
+        files.forEach(file => this.createSubcomponent(true, `${this._node.path}/${file.name}`, file));
+      }); 
     } 
 
     if (this._node.isRoot) {
@@ -60,10 +61,14 @@ export class FolderComponent implements OnInit, OnDestroy {
 
   // sadly, emscripten only uses "onMakeDirectory" callback if it was compiled in debug mode, which pyodide isn't
   // therefore, we need to check for new folders manually after every execution of code
+  // we also have no way of knowing if we are even remotely affected (thus all folders have to rescan their children)
+  // need to use catchError here as the node that was just deleted will also attempt to scan its children, thus yielding and error as the path doesn't exist anymore
+  // in that case, we do nothing as this component will be deleted soon regardless
   private checkForNewFolders() {
-    this._node.getSubfolders()
-      .filter(folder => !this.folders.has(folder.path))
-      .forEach(folder => this.createSubcomponent(false, folder.path, folder.node));
+    this._node.getSubfolders().pipe(catchError(() => of([]))).subscribe(folders => {
+        folders.filter(folder => !this.folders.has(folder.path))
+          .forEach(folder => this.createSubcomponent(false, folder.path, folder.node))
+      });
 
     if (this._node.isRoot) {
       this._node.checkPermissions(); // set permissions after every execution
@@ -76,12 +81,10 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.tentativeNodeDismissal(params.isFile);
 
     if (!params.isFile ) {
-      const newNode = this.fsService.getNodeByPath(params.path);
-
-      if (newNode) {
+      this.fsService.getNodeByPath(params.path).subscribe(newNode => {
         this.createSubcomponent(params.isFile, params.path, newNode);
         this.uiEv.changeActiveElement(params.path);
-      }
+      });
     }
   } 
 
@@ -90,8 +93,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     ev.stopPropagation();
 
     if (this._node.path) {
-      this.fsService.deleteFolder(this._node.path);
-      this.fsService.sync(false).subscribe();
+      this.fsService.deleteFolder(this._node.path, true).subscribe();
     }
   }
 
@@ -185,7 +187,7 @@ export class FolderComponent implements OnInit, OnDestroy {
       this.fsService.rename(`${this._node.parentPath}/${this._node.name}`, `${this._node.parentPath}/${params.newName}`).subscribe();
     } else {
       if (!params.isFile) {
-        this.fsService.createFolder(`${this._node.parentPath}/${params.newName}`).subscribe(() => {}, err => console.error(err), () => {
+        this.fsService.createFolder(`${this._node.parentPath}/${params.newName}`, true).subscribe(() => {}, err => console.error(err), () => {
           this.ev.createNewNodeByUser(`${this._node.parentPath}/${params.newName}`, params.isFile);
         });
       }
@@ -198,7 +200,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   onNewFile(files: {name: string, convertedFile: Uint8Array}[]) {
-    forkJoin(files.map(file => this.fsService.createFile(`${this._node.path}/${file.name}`, file.convertedFile)))
+    forkJoin(files.map(file => this.fsService.createFile(`${this._node.path}/${file.name}`, file.convertedFile, true)))
       .pipe(catchError(error => of(error)))
       .subscribe(
         () => {}, 

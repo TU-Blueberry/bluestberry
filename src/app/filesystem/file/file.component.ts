@@ -27,8 +27,7 @@ export class FileComponent implements OnInit {
   deleteFile(ev: Event) {
     ev.stopPropagation();
     ev.preventDefault();
-    this.fsService.deleteFile(this._node?.path);
-    this.fsService.sync(false).subscribe();
+    this.fsService.deleteFile(this._node?.path, true).subscribe();
   }
 
   onDoubleClick(): void {
@@ -54,7 +53,7 @@ export class FileComponent implements OnInit {
     if (!this._node?.isTentativeNode) {
       this.fsService.rename(`${this._node.parentPath}/${this._node.name}`, `${this._node.parentPath}/${params.newName}`).subscribe();
     } else {
-      this.fsService.createFile(`${this._node.parentPath}/${params.newName}`, new Uint8Array()).subscribe(() => {}, (err) => console.error(err), () => {
+      this.fsService.createFile(`${this._node.parentPath}/${params.newName}`, new Uint8Array(), true).subscribe(() => {}, (err) => console.error(err), () => {
         this.ev.createNewNodeByUser(`${this._node.parentPath}/${params.newName}`, params.isFile);
     });
     }

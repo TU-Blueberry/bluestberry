@@ -26,15 +26,12 @@ export class TreeNode {
 
     // ----- Methods provided by this class -----
     public getSubfolders() {
-        const [folders, _] = this.getNodes();
-        return folders.map(folder => ({ path: `${this.path}/${folder.name}`, node: folder }))
+        return this.getNodes().pipe(map(([folders, _]) => folders.map(folder => ({ path: `${this.path}/${folder.name}`, node: folder }))))
     }
     
-    // TODO: Probably switch to observable and use tap
     public getNodes() {
-        const [folders, files] = this.fs.scan(this._path, this._depth, true);
-        this._isEmptyNode = folders.length === 0 && files.length === 0;
-        return [folders, files];
+        return this.fs.scan(this._path, this._depth, true)
+            .pipe(tap(([files, folders]) => this._isEmptyNode = folders.length === 0 && files.length === 0));
     }
 
     public checkPermissions() {
@@ -42,22 +39,23 @@ export class TreeNode {
     }
 
     private isDirectChild(pathToCheck: string): boolean {
-        const splitPath = pathToCheck.split("/");
+       const splitPath = pathToCheck.split("/");
     
         if (splitPath.length > 1) {
           splitPath.splice(splitPath.length - 1, 1);
           return splitPath.join("/") === this._path;
         } else {
           return pathToCheck === this._path;
-        }
+        } 
     }
 
     private updateEmptyStatus() {
         const entries = this._ref?.contents;
 
         if (entries && !(entries instanceof Uint8Array)) {
-            const [folders, files] = this.fs.scanWithoutFetch(entries, this._path, this._depth, true);
-            this._isEmptyNode = folders.length === 0 && files.length === 0;
+            this.fs.scanWithoutFetch(entries, this._path, this._depth, true).subscribe(([folders, files]) => {
+                this._isEmptyNode = folders.length === 0 && files.length === 0;
+            });
         }
 
         if (!entries) {
@@ -86,8 +84,9 @@ export class TreeNode {
     }
 
     public getChildrenAsTreeNodes() {
-       return this.getNodes().map(nodes => nodes
-            .map(node => this.generateTreeNode(this._depth + 1,`${this._path}/${node.name}`, node)));
+       return this.getNodes().pipe(map(([folders, files]) => 
+            [...folders.map(node => this.generateTreeNode(this._depth + 1,`${this._path}/${node.name}`, node)), 
+            ...files.map(node => this.generateTreeNode(this._depth + 1,`${this._path}/${node.name}`, node))]));
     }
 
     public destroy() {
@@ -103,7 +102,7 @@ export class TreeNode {
        return this.ev.onWriteToFile.pipe(
            filter(params => this.isDirectChild(params.path) && !fileMap.has(params.path)), 
            tap(params => this.updateEmptyStatus()),
-           switchMap(params => this.fs.getNodeByPath2(params.path).pipe(
+           switchMap(params => this.fs.getNodeByPath(params.path).pipe(
                 filter(node => node !== undefined),
                 map(node => ({node: node, path: params.path})))
             ))
@@ -120,7 +119,7 @@ export class TreeNode {
     public pathMoveNewPath() {
         return this.ev.onMovePath.pipe(
             filter(params => this.isDirectChild(params.newPath)),
-            switchMap(params => forkJoin([this.fs.getNodeByPath2(params.newPath), this.fs.isFile2(params.newPath)]).pipe(
+            switchMap(params => forkJoin([this.fs.getNodeByPath(params.newPath), this.fs.isFile(params.newPath)]).pipe(
                 filter(([node, isFile]) => node !== undefined),
                 map(([node, isFile]) => ({ node: node, isFile: isFile, newPath: params.newPath}),
                 tap(() => this.updateEmptyStatus()))
@@ -129,7 +128,7 @@ export class TreeNode {
     }
 
     public onNewNodeByUser() {
-        return this.ev.onNewNodeByUser.pipe(filter(params => this.isDirectChild(params.path)), tap(() => this.updateEmptyStatus))
+        return this.ev.onNewNodeByUser.pipe(filter(params => this.isDirectChild(params.path)), tap(() => this.updateEmptyStatus()))
     }
 
     // ----- Getters and setters -----
@@ -143,7 +142,7 @@ export class TreeNode {
 
     public set path(path : string) {
         this._path = path;
-        this._ref = this.fs.getNodeByPath(this._path);
+        this.fs.getNodeByPath(this._path).subscribe(ref => this._ref = ref);
     }
 
     public get path(): string {
