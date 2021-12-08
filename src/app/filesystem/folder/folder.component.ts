@@ -7,6 +7,7 @@ import { FileComponent } from '../file/file.component';
 import { FilesystemService } from '../filesystem.service';
 import { TreeNode } from '../model/tree-node';
 
+
 @Component({
   selector: 'app-folder',
   templateUrl: './folder.component.html',

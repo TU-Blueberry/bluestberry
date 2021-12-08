@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Location } from '@angular/common';
-import { concat, EMPTY, iif } from 'rxjs';
+import { concat, EMPTY, iif, throwError } from 'rxjs';
 import { map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { FilesystemService } from '../filesystem.service';
 import { ZipService } from '../zip/zip.service';
@@ -54,18 +54,18 @@ export class LessonManagementService {
   checkAfterMount(name: string){
     console.log("check after mount!")
 
-      return this.fsService.getConfig(name).pipe(map(config => {  
+      return this.fsService.getConfig(name).pipe(switchMap(config => {  
         if (config) {
           console.log("%c Config found!", "color: green", config)
           this.fsService.HIDDEN_PATHS = new Set(this.filterPaths(name, config.hidden));
           this.fsService.MODULE_PATHS = new Set(this.filterPaths(name, config.modules));
           this.fsService.READONLY_PATHS = new Set(this.filterPaths(name, config.readonly));
           this.fsService.EXTERNAL_PATHS = new Set(this.filterPaths(name, config.external));
-          this.fsService.checkPermissions(`/${name}`, false);
           this.fsEv.onLessonOpened(config);
           this.py.modulePaths = this.filterPaths(name, config.modules);
+          return this.fsService.checkPermissions(`/${name}`, false);
         } else {
-          console.error("No config found!")
+          return throwError("No config found!")
         }
     }));
   }

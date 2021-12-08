@@ -118,7 +118,10 @@ export class FilesystemService {
 
   // TODO: Refactor so that mergedPaths is already passed as parameter
   public checkPermissions(mountpoint: string, onlyCheckExternalPermissions: boolean): Observable<void> {
+    console.log("Checkpermissions for mountpoint " + mountpoint);
+    
     const mergedPaths = new Set([...this.HIDDEN_PATHS, ...this.READONLY_PATHS, ...this.MODULE_PATHS]);
+    console.log(mergedPaths)
     return this.testCurrentPath(mountpoint, mergedPaths);
 
     // muss es halt wieder rekursiv machen nech
@@ -137,39 +140,18 @@ export class FilesystemService {
 
   private testElementsInCurrentFolder(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<void> {
     return this.getEntriesOfFolder(node, currentPath).pipe(
-      switchMap(entries => entries.map(entry => this.testCurrentPath(`${currentPath}/${entry}`, mergedPaths))),
+      switchMap(entries => entries.map(entry => this.testCurrentPath(entry, mergedPaths))),
       mergeAll()
     );
   }
 
-  /**
-   * 
-   *     if (!this.isEmpty(currentPath)) {
-      const node =  this.getNodeByPath(currentPath);
-
-      if (node) {
-        if (!(node.contents instanceof Uint8Array)) {
-          const entries = node.contents;
-
-          for (const entry in entries) {
-            this.testCurrentPath(`${currentPath}/${entry}`, mergedPaths);
-          }
-        }
-
-        // check if current node (may be folder or file) needs special permissions
-        this.abstractCheck(mergedPaths, currentPath) ? this.setPermissionsReadExecute(currentPath) : {};
-      }
-    }
-  }
-   * 
-   */
-
   private testCurrentPath(currentPath: string, mergedPaths: Set<string>): Observable<void> {
     return this.isEmpty(currentPath)
       .pipe(filter(isEmpty => isEmpty === false))
-      .pipe(switchMap(() => this.getNodeByPath(currentPath)
-        .pipe(switchMap(node => node.contents instanceof Uint8Array ? EMPTY : this.testElementsInCurrentFolder(node, currentPath, mergedPaths)))),
-        tap(() => this.abstractCheck(mergedPaths, currentPath) ? this.setPermissionsReadExecute(currentPath) : {})
+      .pipe(
+        tap(() => this.abstractCheck(mergedPaths, currentPath) === true ? this.setPermissionsReadExecute(currentPath) : {}), // check this node
+        switchMap(() => this.getNodeByPath(currentPath).pipe( // recursively check all children
+          switchMap(node => node.contents instanceof Uint8Array ? EMPTY : this.testElementsInCurrentFolder(node, currentPath, mergedPaths))))
       )
   }
 
