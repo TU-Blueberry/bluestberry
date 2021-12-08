@@ -1,16 +1,16 @@
 import { Component, OnInit } from '@angular/core'
 import { PyodideService } from 'src/app/pyodide/pyodide.service'
-import { EditorComponent } from 'ngx-monaco-editor'
-import { editor } from 'monaco-editor'
-import ICodeEditor = editor.ICodeEditor
-
+import { EditorComponent, NgxEditorModel } from 'ngx-monaco-editor'
+import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
+import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
+const ReconnectingWebSocket = require('reconnecting-websocket');
 @Component({
   selector: 'app-code-viewer',
   templateUrl: './code-viewer.component.html',
   styleUrls: ['./code-viewer.component.scss'],
 })
 export class CodeViewerComponent implements OnInit {
-  private editor!: ICodeEditor
+  private editor!: any
   editorOptions = {
     theme: 'vs-dark',
     language: 'python',
@@ -20,6 +20,7 @@ export class CodeViewerComponent implements OnInit {
       enabled: false,
     },
   }
+  languageId = 'python';
   code = `import os
 import js
 
@@ -135,6 +136,58 @@ send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))
 
   editorInit(editor: any) {
     this.editor = editor
+    MonacoServices.install(editor);
+    // create the web socket
+    const url = this.createUrl();
+    const webSocket = this.createWebSocket(url);
+    // listen when the web socket is opened
+    listen({
+      webSocket,
+      onConnection: (connection: MessageConnection) => {
+        // create and start the language client
+        const languageClient = this.createLanguageClient(connection);
+        const disposable = languageClient.start();
+        connection.onClose(() => disposable.dispose());
+      }
+    });
+  }
+
+  public createUrl(): string {
+    return 'ws://localhost:3000/sampleServer';
+  }
+  
+
+  public createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
+    return new MonacoLanguageClient({
+      name: `BB Monaco Client`,
+      clientOptions: {
+        // use a language id as a document selector
+        documentSelector: [this.languageId],
+        // disable the default error handler
+        errorHandler: {
+          error: () => ErrorAction.Continue,
+          closed: () => CloseAction.DoNotRestart
+        }
+      },
+      // create a language client connection from the JSON RPC connection on demand
+      connectionProvider: {
+        get: (errorHandler, closeHandler) => {
+          return Promise.resolve(createConnection(<any>connection, errorHandler, closeHandler));
+        }
+      }
+    });
+  }
+
+  public createWebSocket(socketUrl: string): WebSocket {
+    const socketOptions = {
+      maxReconnectionDelay: 10000,
+      minReconnectionDelay: 1000,
+      reconnectionDelayGrowFactor: 1.3,
+      connectionTimeout: 10000,
+      maxRetries: Infinity,
+      debug: false
+    };
+    return new ReconnectingWebSocket.default(socketUrl, [], socketOptions);    
   }
 
   undo(): void {
