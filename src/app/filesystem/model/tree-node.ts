@@ -18,6 +18,7 @@ export class TreeNode {
     private _parentPath = '';
     private _isRoot = false;
     private _rootName = '';
+    private _tempName = '';
 
     constructor(private uiEv: UiEventsService, private fs: FilesystemService, private ev: FilesystemEventService) {
         this._activeElementChangeSubscription = this.uiEv.onActiveElementChange
@@ -49,13 +50,14 @@ export class TreeNode {
         } 
     }
 
-    private updateEmptyStatus() {
+    public updateEmptyStatus() {
         const entries = this._ref?.contents;
 
-        if (entries && !(entries instanceof Uint8Array)) {
-            this.fs.scanWithoutFetch(entries, this._path, this._depth, true).subscribe(([folders, files]) => {
+        
+        if (this._path !== '' && entries !== undefined && entries !== null && !(entries instanceof Uint8Array)) {
+             this.fs.scanWithoutFetch(entries, this._path, this._depth, true).subscribe(([folders, files]) => {
                 this._isEmptyNode = folders.length === 0 && files.length === 0;
-            });
+            }); 
         }
 
         if (!entries) {
@@ -127,8 +129,20 @@ export class TreeNode {
         );
     }
 
+    public onNewUserInputLocation() {
+        return this.uiEv.onNewUserInputLocation.pipe(filter(path => !this.isDirectChild(path) && path !== this._path));
+    }
+
+    public failedChild() {
+        return this.ev.onFailedCreationFromUi.pipe(filter(params => this.isDirectChild(params.path)));
+    }
+
     public onNewNodeByUser() {
         return this.ev.onNewNodeByUser.pipe(filter(params => this.isDirectChild(params.path)), tap(() => this.updateEmptyStatus()))
+    }
+
+    public onNewNodeByUserSynced() {
+        return this.ev.onNewNodeByUserSynced.pipe(filter(params => this.isDirectChild(params.path)));
     }
 
     // ----- Getters and setters -----
@@ -167,6 +181,7 @@ export class TreeNode {
 
     public set ref(ref: FSNode | undefined) {
         this._ref = ref;
+        this.updateEmptyStatus();
     }
 
     public get ref() {
@@ -177,7 +192,19 @@ export class TreeNode {
         if (this._isRoot) {
             return this._rootName;
         } else {
-            return this._ref?.name || '';
+            if (this.ref) {
+                return this.ref.name;
+            } else {
+                return this._tempName;
+            }
+        }
+    }
+
+    public set name(name: string) {
+        if (this._ref) {
+            this._ref.name = name;
+        } else {
+            this._tempName = name;
         }
     }
 

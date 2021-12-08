@@ -13,7 +13,7 @@ export class CommonActionsComponent {
   @Input() isRoot?: boolean = false;
   @Output() delete: EventEmitter<Event> = new EventEmitter();
   @Output() startRenaming: EventEmitter<Event> = new EventEmitter();
-  @Output() createNewFromUI: EventEmitter<{ev: Event, newFile: boolean}> = new EventEmitter();
+  @Output() createNewFromUI: EventEmitter<{ev: Event, isFile: boolean}> = new EventEmitter();
   @Output() selectedFiles: EventEmitter<{name: string, convertedFile: Uint8Array}[]> = new EventEmitter();
   constructor() { }
 

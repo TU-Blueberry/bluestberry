@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output } from '@angular/core';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FilesystemService } from '../filesystem.service';
@@ -22,6 +22,17 @@ export class FileComponent implements OnInit {
 
   ngOnInit(): void {
     this.isRenaming = this._node.isTentativeNode;
+
+    if (this._node.isTentativeNode) {
+      this.uiEv.changeUserInputLocation(this._node.parentPath + "/new")
+    }
+
+    this._node.onNewUserInputLocation().subscribe(() => {
+      this.isRenaming = false;
+      if (this._node.isTentativeNode) {
+        this.dismissNameChange();
+      }
+    }); 
   }
 
   deleteFile(ev: Event) {
@@ -41,6 +52,7 @@ export class FileComponent implements OnInit {
     ev.stopPropagation();
     ev.preventDefault();
     this.isRenaming = true;
+    this.uiEv.changeUserInputLocation(this._node.path);
   }
 
   cancelRenaming(): void {
@@ -53,9 +65,14 @@ export class FileComponent implements OnInit {
     if (!this._node?.isTentativeNode) {
       this.fsService.rename(`${this._node.parentPath}/${this._node.name}`, `${this._node.parentPath}/${params.newName}`).subscribe();
     } else {
-      this.fsService.createFile(`${this._node.parentPath}/${params.newName}`, new Uint8Array(), true).subscribe(() => {}, (err) => console.error(err), () => {
-        this.ev.createNewNodeByUser(`${this._node.parentPath}/${params.newName}`, params.isFile);
-    });
+      const newPath = `${this._node.parentPath}/${params.newName}`;
+      this.ev.createNewNodeByUser(newPath, params.isFile);
+      this._node.name = params.newName;
+      this.fsService.createFile(newPath, new Uint8Array(), true).subscribe(
+        () => {}, 
+        (err) => (this.ev.failedCreationFromUi(newPath , true), console.error(err)), 
+        () => {this.ev.updateSyncStatusOfTentative(newPath, params.isFile)}
+      );
     }
   }
 

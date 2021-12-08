@@ -21,7 +21,9 @@ export class FilesystemEventService {
   onMakeSymlink: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
   afterCodeExecution: EventEmitter<void> = new EventEmitter();
   onNewNodeByUser: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
+  onNewNodeByUserSynced: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
   onOpenLesson: EventEmitter<{openLeft: string[], openRight: string[]}> = new EventEmitter();
+  onFailedCreationFromUi: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
   
   constructor(private fsService: FilesystemService, private py: PyodideService) { 
     fsService.getFS().subscribe(fs => {
@@ -66,7 +68,14 @@ export class FilesystemEventService {
   }
 
   createNewNodeByUser(path: string, isFile: boolean): void {
-    console.log("%c nEw node by user", "color: blue", path)
     this.onNewNodeByUser.emit({path: path, isFile: isFile});
-  } 
+  }
+
+  updateSyncStatusOfTentative(path: string, isFile: boolean): void {
+    this.onNewNodeByUserSynced.emit({path: path, isFile: isFile});
+  }
+
+  failedCreationFromUi(path: string, isFile: boolean): void {
+    this.onFailedCreationFromUi.emit({path: path, isFile: isFile});
+  }
 }
