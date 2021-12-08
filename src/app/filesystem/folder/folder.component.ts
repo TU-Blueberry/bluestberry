@@ -1,6 +1,6 @@
 import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { forkJoin, of, Subscription } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FileComponent } from '../file/file.component';

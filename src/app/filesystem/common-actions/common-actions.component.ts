@@ -8,9 +8,16 @@ import { map } from 'rxjs/operators';
   styleUrls: ['./common-actions.component.scss']
 })
 export class CommonActionsComponent {
+  READONLY_MESSAGE_FOLDER = "Nicht möglich (Order ist schreibgeschützt)";
+  READONLY_MESSAGE_FILE = "Nicht möglich (Datei ist schreibgeschützt)";
+  isReadonly = false;
 
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
+  @Input() set mode(mode: number) {
+      this.isReadonly = mode === 33088 || mode === 16704;
+  }
+
   @Output() delete: EventEmitter<Event> = new EventEmitter();
   @Output() startRenaming: EventEmitter<Event> = new EventEmitter();
   @Output() createNewFromUI: EventEmitter<{ev: Event, isFile: boolean}> = new EventEmitter();
@@ -19,11 +26,37 @@ export class CommonActionsComponent {
 
   stopPropagation(ev: Event): void {
     ev.stopPropagation();
+
+    if (this.isReadonly) {
+      ev.preventDefault();
+    }
+  }
+
+  emitCreateFromUi(params: {ev: Event, isFile: boolean}): void {
+    if (!this.isReadonly) {
+      this.createNewFromUI.emit(params);
+    }
+  }
+
+  emitDelete(ev: Event): void {
+    if (!this.isReadonly) {
+      this.delete.emit(ev);
+    }
+  }
+
+  emitStartRenaming(ev: Event): void {
+    if (!this.isReadonly) {
+      this.startRenaming.emit(ev);
+    }
   }
 
   filesChange(ev: Event): void {
     ev.preventDefault();
     ev.stopPropagation();
+
+    if (this.isReadonly) {
+      return;
+    }
 
     const fileList = (ev.target as HTMLInputElement)?.files;
 

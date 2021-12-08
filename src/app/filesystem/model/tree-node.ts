@@ -188,6 +188,10 @@ export class TreeNode {
         return this._ref;
     }
 
+    public get mode(): number {
+        return this._ref?.mode || -1 ;
+    }
+
     public get name() {
         if (this._isRoot) {
             return this._rootName;
