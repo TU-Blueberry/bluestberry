@@ -31,6 +31,13 @@ export class TabManagementService {
               title: 'Simulation',
               type: 'UNITY' as TabType,
             });
+          } else if (file.path.toLowerCase().endsWith('hint')) {
+            return of({
+              groupId: file.on,
+              icon: 'hero-lightning-bolt',
+              title: 'Hinweise',
+              type: 'HINT' as TabType,
+            });
           }
           return this.createOpenTabEvent(file.path).pipe(map(ote => ({...ote, groupId: file.on})))
         })
