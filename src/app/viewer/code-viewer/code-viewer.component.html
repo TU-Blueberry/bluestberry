@@ -1,5 +1,5 @@
 <div id="monaco-editor">
-  <ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="code" (onInit)="editorInit($event)"></ngx-monaco-editor>
+  <ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="code" (ngModelChange)="save()" (onInit)="editorInit($event)"></ngx-monaco-editor>
   <div class="code-action-bar">
     <div class="action-bar-icon" (click)="undo()">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"

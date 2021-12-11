@@ -13,9 +13,9 @@ import { MainViewerComponent } from './main-viewer/main-viewer.component'
 import { AngularSplitModule } from 'angular-split'
 import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
 import { FilesystemModule } from '../filesystem/filesystem.module'
-import { GlossaryEntryViewerComponent } from './glossary-entry-viewer/glossary-entry-viewer.component';
+import { MarkdownViewerComponent } from "./markdown-viewer/markdown-viewer.component";
 import { MarkdownModule } from "ngx-markdown";
-import {TabModule} from 'src/app/tab/tab.module';
+import { TabModule } from 'src/app/tab/tab.module';
 
 /**
  * Module used for all the Viewer-Components.
@@ -39,7 +39,7 @@ import {TabModule} from 'src/app/tab/tab.module';
     ImageViewerComponent,
     MainViewerComponent,
     HintViewerComponent,
-    GlossaryEntryViewerComponent,
+    MarkdownViewerComponent,
   ],
   imports: [
     CommonModule,

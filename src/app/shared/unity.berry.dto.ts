@@ -4,7 +4,12 @@ export class UnityBerryDTO {
     classification: string,
     imagepath: string,
     image: string
-  ) {}
+  ) {
+    this.trait = trait
+    this.classification = classification
+    this.imagePath = imagepath
+    this.image = image
+  }
 
   public trait: string = '0'
   public classification: string = '0'

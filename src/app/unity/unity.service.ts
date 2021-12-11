@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core'
+import { FilesystemService } from '../filesystem/filesystem.service'
 import { PyodideService } from '../pyodide/pyodide.service'
 import { PythonCallable } from '../python-callable/python-callable.decorator'
 import { UnityBerryDTO } from '../shared/unity.berry.dto'
@@ -7,14 +8,14 @@ import { UnityBerryDTO } from '../shared/unity.berry.dto'
   providedIn: 'root',
 })
 export class UnityService {
-  constructor() {}
+  constructor(private fsService: FilesystemService) {}
   gameInstance: any
   progress = 0
   isReady = false
 
   initUnity(path: string): any {
     if (this.gameInstance) {
-      return this.gameInstance;
+      return this.gameInstance
     }
     const loader = (window as any).UnityLoader
     this.gameInstance = loader.instantiate('gameContainer', path, {
@@ -23,6 +24,7 @@ export class UnityService {
         if (progress === 1) {
           this.isReady = true
           this.disableWebGLInput()
+          //this.initialPresentation()
         }
       },
     })
@@ -108,8 +110,31 @@ export class UnityService {
   // Send a Berry delimited by commata: trait,classification,imagePath
   @PythonCallable
   public sendManualBerry(berry: string) {
+    var berryParts: string[] = berry.split(',')
+    var imagePath = berryParts[2]
+    var berryImage = this.fsService.getFileContent(imagePath, 'binary')
+    console.log(imagePath)
+
+    // TODO: This is bad practice but I can't help it right now.
+    if (!berryImage) {
+      return
+    }
     this.gameInstance.SendMessage('AngularCommunicator', 'queueBerry', berry)
-    this.sendImage('TODO GET IMAGE FROM FILESYSTEM VIA FILEPATH')
+
+    berryImage.subscribe((result) => {
+      if (result instanceof Uint8Array) {
+        var blob = new Blob([result], { type: 'image/png' })
+
+        var reader = new FileReader()
+        reader.readAsDataURL(blob)
+        reader.onloadend = () => {
+          var base64data = reader.result
+          if (base64data) {
+            this.sendImage(base64data.toString().split(',')[1])
+          }
+        }
+      }
+    })
   }
 
   // And then send an Image. As soon as the Image has been created and Rendered the berry will be produced.
@@ -117,5 +142,66 @@ export class UnityService {
   @PythonCallable
   public sendImage(image: string) {
     this.gameInstance.SendMessage('AngularCommunicator', 'acceptImage', image)
+  }
+
+  @PythonCallable
+  public reset() {
+    this.gameInstance.SendMessage('AngularCommunicator', 'reset')
+  }
+
+  @PythonCallable
+  public initialPresentation() {
+    this.gameInstance.SendMessage('AngularCommunicator', 'queueBerry')
+
+    var berries: UnityBerryDTO[] = []
+
+    for (var i = 0; i < 10; i++) {
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('0', '0', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '0', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '0', '0', '0'))
+      berries.push(new UnityBerryDTO('0', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '0', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '0', '0', '0'))
+    }
+
+    /*  for (var i = 0; i < 10; i++) {
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('0', '0', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('0', '0', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+      berries.push(new UnityBerryDTO('1', '1', '0', '0'))
+    } */
+
+    var good: number = 0
+    var bad: number = 0
+
+    var baseGood = 'sortierroboter/BlueberryData/TestData/good_'
+    var baseBad = 'sortierroboter/BlueberryData/TestData/bad_'
+    var ending = '.JPG'
+
+    for (var berry of berries) {
+      var berrystring = `${berry.classification}, ${berry.trait},`
+
+      console.log(berry.trait)
+
+      berrystring =
+        berry.trait == '1'
+          ? berrystring + baseGood + good + ending
+          : berrystring + baseBad + bad + ending
+
+      if (berry.trait == '1') good = good + 1
+      if (berry.trait == '0') bad = bad + 1
+
+      this.sendManualBerry(berrystring)
+    }
   }
 }

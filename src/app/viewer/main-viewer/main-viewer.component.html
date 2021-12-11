@@ -1,29 +1,51 @@
 <as-split direction="horizontal" class="main-split" [gutterSize]="4">
-  <as-split-area *ngIf="filetreeVisible" [order]="0" [minSize]="10" [size]="15" [maxSize]="30">
+  <as-split-area
+    *ngIf="filetreeVisible"
+    [order]="0"
+    [minSize]="10"
+    [size]="15"
+    [maxSize]="30"
+    style="max-height: 100vh"
+  >
     <app-filetree></app-filetree>
   </as-split-area>
-  <as-split-area [order]="1" [minSize]="10" [size]="42.5" [maxSize]="70">
+  <as-split-area [order]="1" [minSize]="10" [size]="42.5">
     <as-split direction="vertical" [gutterSize]="4">
-      <as-split-area>
-        <app-tab-group [dataSource]="[{type: 'CODE', title: 'code', icon: 'hero-document-text'}]">
-          <ng-container *appTabTemplate="let tab = tab; let close = close; type: 'CODE'">
-            <app-code-viewer class="code-wrapper" [appFileTab]="tab" (close)="close()"></app-code-viewer>
+      <as-split-area [order]="0" [minSize]="20">
+        <app-tab-group
+          [dataSource]="[
+            { type: 'CODE', title: 'code', icon: 'hero-document-text' }
+          ]"
+        >
+          <ng-container
+            *appTabTemplate="let tab = tab; let close = close; type: 'CODE'"
+          >
+            <app-code-viewer
+              class="code-wrapper"
+              [appFileTab]="tab"
+              (close)="close()"
+            ></app-code-viewer>
           </ng-container>
         </app-tab-group>
       </as-split-area>
-      <as-split-area>
+      <as-split-area [order]="1" [minSize]="34">
         <app-terminal-viewer></app-terminal-viewer>
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area [order]="2" [minSize]="10" [size]="42.5" [maxSize]="70">
-    <app-tab-group [dataSource]="[{type: 'UNITY', title: 'Unity'}]">
-      <app-unity-viewer *appTabTemplate="let data = data; type: 'UNITY'">
-      </app-unity-viewer>
+  <as-split-area [order]="2" [minSize]="10" [size]="42.5">
+    <app-tab-group [dataSource]="[{ type: 'UNITY', title: 'Unity'}, { type: 'HINT', title: 'Hinweise'}]">
+      <unity *appTabTemplate="let data = data; type: 'UNITY'"></unity>
+      <app-hint-viewer *appTabTemplate="let data = data; type: 'HINT'"></app-hint-viewer>
       <div *appTabTemplate="let tab = tab; let close = close; type: 'IMAGE'">
-        <app-image-viewer [appFileTab]="tab" (close)="close()"></app-image-viewer>
+        <app-image-viewer
+          [appFileTab]="tab"
+          (close)="close()"
+        ></app-image-viewer>
+      </div>
+      <div *appTabTemplate="let tab = tab; let close = close; type: 'MARKDOWN'">
+        <app-markdown-viewer [appFileTab]="tab" (close)="close()"></app-markdown-viewer>
       </div>
     </app-tab-group>
-    <app-hint-viewer></app-hint-viewer>
   </as-split-area>
 </as-split>

@@ -25,9 +25,7 @@ export class ImageViewerComponent implements OnInit {
   }
 
   ngOnInit() {
-    console.log(this.fileTabDirective)
     this.fileTabDirective.dataChanges.subscribe(data => {
-      console.log('data changed');
       this.imagePath = this.domSanitizer.bypassSecurityTrustUrl(
         URL.createObjectURL(
           new Blob([data.content], { type: 'image/png' })
@@ -90,7 +88,6 @@ export class ImageViewerComponent implements OnInit {
   }
 
   mouseClick(event: any): void {
-    console.log("zoom factor " + this._zoom_factor)
     if(this._zoom_in) {
       this._zoom_factor += this._zoom_step;
     } else {

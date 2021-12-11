@@ -1,25 +1,62 @@
 .hint-container {
     background-color: lightgray;
+    display: flex;
+    overflow-y: scroll;
+    height: 100%;
 }
 
-.hint-icon {
+.hint-footer-bar {
     position: absolute;
     bottom: 10px;
-    right: 10px;
+}
 
+.undo-button {
+    width: 48px;
     height: 24px;
-    width: 24px;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 50%;
+    margin: 5px;   
+    align-items: center;
+}
 
-    color: #ffffff66;
-    background-color: rgb(46, 49, 56);
+.hint-dialogue > * {
+    margin-top: 7px;
+    width: fit-content;
+
+    padding: 7px;
+    border-radius: 5px;
+
+    max-width: 70%;
+}
+
+.markdown > p {
+    display: inline;
+}
+
+.hint-dialogue {
+    height: 100%;
+    width: 100%;
+}
+
+.hint-question {
+    background-color: #AAD7EC;
+    margin-right: 10%;
+    margin-left: auto;
+    
+}
+
+.hint-answer {
+    background-color: #46C0DE;
+    margin-left: 10%;
+}
+
+#hint-history {
+    cursor: default;
+}
+
+#hint-option {
+    background-color: #FFDC82;
 
     &:hover {
-        background-color: rgb(66, 70, 80);
+        background-color: #FFCA44;
         cursor: pointer;
-        color: rgb(240, 240, 240);
     }
-
 }
