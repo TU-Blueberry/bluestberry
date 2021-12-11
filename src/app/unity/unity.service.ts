@@ -112,7 +112,7 @@ export class UnityService {
   public sendManualBerry(berry: string) {
     var berryParts: string[] = berry.split(',')
     var imagePath = berryParts[2]
-    var berryImage = this.fsService.getFileContent(imagePath, 'binary')
+    var berryImage = this.fsService.getFileAsBinary(imagePath)
     console.log(imagePath)
 
     // TODO: This is bad practice but I can't help it right now.

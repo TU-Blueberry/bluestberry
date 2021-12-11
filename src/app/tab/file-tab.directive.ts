@@ -49,7 +49,7 @@ export class FileTabDirective implements OnInit {
       .pipe(
         filter((event) => this.tab?.data?.path === event.path),
         switchMap((event) =>
-          this.filesystemService.getFileContent(event.path, 'binary')
+          this.filesystemService.getFileAsBinary(event.path)
         ),
         map((content) => content as Uint8Array)
       )
