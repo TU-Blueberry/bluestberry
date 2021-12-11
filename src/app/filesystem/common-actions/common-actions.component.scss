@@ -8,6 +8,15 @@
     }
 }
 
+.disabled {
+    color: grey;
+
+    &:hover {
+        color: grey;
+        cursor: default;
+    }
+}
+
 label:hover {
     cursor: pointer;
 }

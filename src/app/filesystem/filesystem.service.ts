@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
-import { Observable, concat, forkJoin, of } from 'rxjs';
-import { ignoreElements, map, switchMap } from 'rxjs/operators';
+import { Observable, concat, forkJoin, of, iif, throwError, EMPTY, defer, Subscriber, from } from 'rxjs';
+import { ignoreElements, map, switchMap, filter, withLatestFrom, catchError, concatAll, concatMap, mergeAll, tap, mergeMap } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { ConfigObject } from './model/config';
@@ -22,10 +22,7 @@ export class FilesystemService {
   constructor(private pyService: PyodideService) {
     this.pyService.pyodide.subscribe(py => {
       this.PyFS = py.FS;
-
-      console.log("FS: ");
       console.log(this.PyFS);
-
       this.fsSubject.next(this.PyFS);
     });
 
@@ -36,130 +33,96 @@ export class FilesystemService {
     return this.fsSubject;
   }
 
-  storeConfig(config: ConfigObject): Observable<any> {
-    const storeConfigObserv = new Observable(subscriber => {
-      try {
-          this.PyFS?.mkdir(`/configs/${config.name}`);
-          this.PyFS?.writeFile(`/configs/${config.name}/config.json`, JSON.stringify(config));
-          subscriber.complete();
-        }
-      catch (err) {
-      console.error(err);
-      subscriber.error(err);
-      }
-    });
-
-    return concat(this.mountAndSync("configs"), concat(storeConfigObserv, this.unmountAndSync("configs")));
+  public storeConfig(config: ConfigObject) {
+    const createFolderObservable = this.createFolder(`/configs/${config.name}`, true);
+    const storeConfigObservable = this.createFile(`/configs/${config.name}/config.json`, JSON.stringify(config), false);
+  
+    return concat(this.mountAndSync("configs"), createFolderObservable, storeConfigObservable, this.unmountAndSync("configs"));
   }
 
-  // TODO: Glaube config wird aktuell noch in normales Verzeichnis geschrieben
-  // Müsste geändert werden, sodass in external config geschrieben
-  getConfig(lessonName: string) {
-    const getConfigObservable = new Observable<ConfigObject>(subscriber => {
+  // TODO: Glaube config wird aktuell noch zusätzlich in normales Verzeichnis geschrieben
+  public getConfig(lessonName: string): Observable<ConfigObject> {
+    const getConfigObservable = this.getFileAsBinary(`/configs/${lessonName}/config.json`)
+      .pipe(map(config => <ConfigObject>JSON.parse(new TextDecoder().decode(config))))
 
-      try {
-        const config = this.PyFS?.readFile(`/configs/${lessonName}/config.json`);
-        
-        if (config) {
-          const convertedConfig = <ConfigObject>JSON.parse(new TextDecoder().decode(config));       
-          subscriber.next(convertedConfig); 
-          subscriber.complete()
-        } else {
-          subscriber.error("No config found!")
-        } 
-    } catch (err) {
-      subscriber.error("Error retrieving config!")
-    }})
-
-    return this.mountAndSync("configs")
-      .pipe(switchMap(_ => getConfigObservable))
-      .pipe(switchMap(config => concat(this.unmountAndSync("configs").pipe(ignoreElements()), of(config))))
+    return concat(this.mountAndSync("configs").pipe(ignoreElements()), getConfigObservable, this.unmountAndSync("configs").pipe(ignoreElements()))
   }
 
   /** Lesson exists, if the corresponding dir either already exists OR if we can create the
    * corresponding dir and it is not empty after synching with IDBFS
    */
-  checkIfLessonDoesntExistYet(name: string) {
-    return this.mountAndSync(name).pipe(
-      map(path => this.isEmpty(path)));
+  public isNewLesson(name: string): Observable<boolean> {
+    return concat(this.mountAndSync(name).pipe(ignoreElements()), this.isEmpty(`/${name}`))
   }
 
-  sync(fromPersistentStorageToVirtualFS: boolean) {
+  // special case as synfs has some weird behaviour
+  public sync(fromPersistentToVirtual: boolean): Observable<void> {
+    
     return new Observable(subscriber => {
+      if (!this.PyFS) {
+        subscriber.error("FS error");
+      }
+
       try {
-        this.PyFS?.syncfs(fromPersistentStorageToVirtualFS, err => {
-          if (err) {
+        this.PyFS!.syncfs(fromPersistentToVirtual, err => {
+          subscriber.complete();
+          // TODO: Weird sync behaviour
+         /*  if (err) {
             subscriber.error();
           } else {
             subscriber.complete();
-            // this.printRecursively("/", 0, 2);
-          }
+          } */
         });
       } catch (e) {
-        subscriber.error();
+        subscriber.error("Error while syncing the filesystem");
       }
     });
+
   }
 
-  importLesson(existsAlready: boolean, config: ConfigObject, zip?: JSZip): Observable<any> {
-    return new Observable(subscriber => {
-      const path = `/${config.name}`;
-
+  public importLesson(existsAlready: boolean, config: ConfigObject, zip?: JSZip): Observable<void> {
+    const path = `/${config.name}`;
+    
+    const preReq: Observable<void> = new Observable(subscriber => {      
       if (!zip || !config.name) {
         subscriber.error("No zip provided or invalid configuration file");
         return;
       }
-
-      if (existsAlready) {
-        this.deleteFolder(path);
-      }
-
-      concat(this.unmountAndSync(path), this.mountAndSync(config.name), this.storeLesson(zip, config.name), this.sync(false))
-      .subscribe(
-        () => {},
-        err => subscriber.error(err),
-        () =>  subscriber.complete());
+      subscriber.complete()
     });
 
+    return concat(
+      preReq.pipe(filter(() => existsAlready === true)).pipe(map(() => this.deleteFolder(path, false))),
+      this.unmountAndSync(path),
+      this.mountAndSync(config.name),
+      this.storeLesson(zip!, config.name),
+      this.sync(false)
+    );
   }
 
-  // TODO: Error handling (catchError)
-  // TODO: Ggf. sycnfs durch sync() ersetzen
-  mountAndSync(name: string): Observable<string> {
-    return new Observable(subscriber => {
-      console.log(`%cMount and sync ${name}`, "color: green")
+  public mountAndSync(name: string): Observable<void> {
+    const fullPath = name.startsWith("/") ? name : `/${name}`;
 
-      try {
-        const fullPath = `/${name}`;
-        const node = this.PyFS?.analyzePath(fullPath, false);
-
-        if (!node?.exists) {
-          this.PyFS?.mkdir(fullPath);
-          this.PyFS?.mount(this.PyFS?.filesystems.IDBFS, {}, fullPath);  
-          this.PyFS?.syncfs(true, err => { // (subscriber.error(err), console.error(err))
-            subscriber.next(fullPath); subscriber.complete();
-          }); 
-        } else {
-          subscriber.next(fullPath);
-          subscriber.complete(); // path is already mounted
-        }
-      } catch (e) {
-        console.log(e);
-        subscriber.error(e);
-      }
-    });
+    return this.exists(fullPath).pipe(switchMap(exists => { // sync, unmount, delete
+      return exists === true ? throwError("Path already exists") : 
+        concat(
+          defer(() => this.N_mkdir(fullPath)),
+          defer(() => this.mount(fullPath)),
+          this.sync(true)
+        )       
+      }))
   }
 
   // loops over whole mountpoint and verifies that all modules, readonly and hidden paths have readonly permissions
   // additionally verifies that no external path is present (or deletes it if found)
 
   // TODO: Refactor so that mergedPaths is already passed as parameter
-  checkPermissions(mountpoint: string, onlyCheckExternalPermissions: boolean): void {
-   
-
+  public checkPermissions(mountpoint: string, onlyCheckExternalPermissions: boolean): Observable<void> {
+    console.log("Checkpermissions for mountpoint " + mountpoint);
+    
     const mergedPaths = new Set([...this.HIDDEN_PATHS, ...this.READONLY_PATHS, ...this.MODULE_PATHS]);
-
-    this.testCurrentPath(mountpoint, mergedPaths);
+    console.log(mergedPaths)
+    return this.testCurrentPath(mountpoint, mergedPaths);
 
     // muss es halt wieder rekursiv machen nech
     // for all folders, subfolders and files
@@ -175,30 +138,27 @@ export class FilesystemService {
     // TODO: Mount, call checkPermissions for extenral mountpoint
   }
 
-  private testCurrentPath(currentPath: string, mergedPaths: Set<string>) {
+  private testElementsInCurrentFolder(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<void> {
+    return this.getEntriesOfFolder(node, currentPath).pipe(
+      switchMap(entries => entries.map(entry => this.testCurrentPath(entry, mergedPaths))),
+      mergeAll()
+    );
+  }
 
-    if (!this.isEmpty(currentPath)) {
-      const node =  this.getNodeByPath(currentPath);
-
-      if (node) {
-        if (!(node.contents instanceof Uint8Array)) {
-          const entries = node.contents;
-
-          for (const entry in entries) {
-            this.testCurrentPath(`${currentPath}/${entry}`, mergedPaths);
-          }
-        }
-
-        // check if current node (may be folder or file) needs special permissions
-        this.abstractCheck(mergedPaths, currentPath) ? this.setPermissionsReadExecute(currentPath) : {};
-      }
-    }
+  private testCurrentPath(currentPath: string, mergedPaths: Set<string>): Observable<void> {
+    return this.isEmpty(currentPath)
+      .pipe(filter(isEmpty => isEmpty === false))
+      .pipe(
+        tap(() => this.abstractCheck(mergedPaths, currentPath) === true ? this.setPermissionsReadExecute(currentPath) : {}), // check this node
+        switchMap(() => this.getNodeByPath(currentPath).pipe( // recursively check all children
+          switchMap(node => node.contents instanceof Uint8Array ? EMPTY : this.testElementsInCurrentFolder(node, currentPath, mergedPaths))))
+      )
   }
 
 
   private setPermissionsReadExecute(path: string) {
     try {
-      this.PyFS?.chmod(path, 0o500);
+      this.chmod(path, 0o500);
     } catch(err) {
       console.error(err);
     }
@@ -231,133 +191,70 @@ export class FilesystemService {
     return this.abstractCheck(this.MODULE_PATHS, path);
   }
 
-  unmountAndSync(name: string): Observable<string> {
-    console.log(`%c UNMOUNT AND SYNC ${name}"`, "color: blue");
+  public unmountAndSync(name: string): Observable<void> {
+    const fullPath = name.startsWith("/") ? name :  `/${name}`;
 
-    return new Observable(subscriber => {
-      try {
-        const fullPath = `/${name}`;
-        const node = this.PyFS?.analyzePath(fullPath, false);
-
-        if (node?.exists) {
-          this.PyFS?.syncfs(false, err => {
-            if (!err) {
-              this.PyFS?.unmount(fullPath);
-              this.PyFS?.rmdir(fullPath);
-              subscriber.complete();
-            } else {
-              subscriber.error("Error while unmounting");
-            }
-          });
-        } else {
-          subscriber.error("Erorr: Path to unmount doesn't exist");
-        }
-      } catch (e) {
-        subscriber.error("Error before unmount");
-      }
-    });
-  }
-
-  createFileFromZip(unzippedLesson: JSZip, file: string, name: string): Observable<ArrayBuffer> {
-    return new Observable(subscriber => {
-      let stream = unzippedLesson.file(file)?.internalStream("arraybuffer");
-      stream?.on("error", () => subscriber.error('Error reading zip'));
-      stream?.on("end", () => {});
-
-      stream?.accumulate().then(accumulated => {
-        try {
-          if (file !== "config.json") {
-            this.PyFS?.writeFile(`${name}/${file}`, new Uint8Array(accumulated));
-          }      
-          subscriber.next(accumulated);
-          subscriber.complete();
-        } catch (err) {
-          subscriber.error("Error writing file");
-        }
-      });
-    });
-  }
-
-  deleteFile(path: string): void {
-    if (this.isFile(path)) {
-      try {
-        this.PyFS?.unlink(path);
-      } catch (e) {
-        console.error(e);
-      }
-    }
-  }
-
-  deleteFolder(path: string): void {       
-    if (this.isDirectory(path)) {
-      try {
-        if (this.isEmpty(path)) {
-          this.PyFS?.rmdir(path);
-        } else {
-          const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
-
-          for (const [key, value] of Object.entries(entries)) {
-            const nextElement = `${path}/${value.name}`;
-
-            if (this.isDirectory(nextElement)) {
-              this.deleteFolder(nextElement);
-            } else if (this.isFile(nextElement)) {
-              this.deleteFile(nextElement);
-            }
-          }
-
-          // can't delete root path /<lessonName> as it also is a mountpoint
-          // /<lessonName> will be split into ['', '<lessonName>']
-          if (path.split('/').length > 2) {
-            this.PyFS?.rmdir(path);
-          } 
-        }
-      } catch (e) {
-        console.error(e);
-      }
-    }
+    return this.exists(fullPath).pipe(switchMap(exists => { // sync, unmount, delete
+      return !exists ? throwError("Path doesnt exist") :
+      concat(
+        this.sync(false), 
+        defer(() => this.unmount(fullPath)), 
+        defer(() => this.rmdir(fullPath))
+      )
+    }));
   }
 
   /* Returns all non-hidden and non-module subfolders and - if requested - files of the given path as seperate arrays */
-  scan(path: string, depth: number, includeFiles: boolean) {
-    const node = this.getNodeByPath(path);
-    
-    if (node && !(node.contents instanceof Uint8Array)) {
-      return this.scanWithoutFetch(node.contents, path, depth, includeFiles);
-    } else {
-      return [];
-    }
+  public scan(path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
+    return this.getNodeByPath(path).pipe(switchMap(node => {
+      return node.contents instanceof Uint8Array ? of([]) : this.scanWithoutFetch(node.contents, path, depth, includeFiles);
+    }))
   }
 
-  scanWithoutFetch(entries: FSNode, path: string, depth: number, includeFiles: boolean) {
-    const subfolders: FSNode[] = [];
-    const filesInFolder: FSNode[] = [];
+  public scanWithoutFetch(node: FSNode, path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
+      const subfolders: FSNode[] = [];
+      const filesInFolder: FSNode[] = [];
+      
+      // remove all hidden paths + all modules + all system directories
+      const remainingObjects =  Object.entries(node).filter(([_, value], key) => 
+        !this.isHiddenPath(`${path}/${value.name}`) 
+        && !this.isModulePath(`${path}/${value.name}`)
+        && !this.isSystemDirectory(`${path}/${value.name}`));
+      
+      // welp
+      // for each remaining object, we get the results from isFile and isDirectory in parallel
+      // depending on the results we put the node into the corresponding array 
+      const test = remainingObjects.map(([_, value], key) => 
+        forkJoin([this.isFile(`${path}/${value.name}`), this.isDirectory(`${path}/${value.name}`)])
+          .pipe(tap(([isFile, isDirectory]) => isDirectory ? subfolders.push(value) : 
+            (isFile && !(depth == 0 && value.name === 'config.json') && includeFiles ? filesInFolder.push(value) : {}) )))
+      
+      return concat(forkJoin(test).pipe(ignoreElements()), of([subfolders, filesInFolder]));
 
-    Object.entries(entries)
-      .filter(([_, value], key) => !this.isHiddenPath(`${path}/${value.name}`) && !this.isModulePath(`${path}/${value.name}`))
-      .forEach(([_, value], key) =>  {
-      const currentPath = `${path}/${value.name}`;
-
-      if (!this.isSystemDirectory(currentPath) && this.isDirectory(currentPath)) {
-        subfolders.push(value);
-      }
-
-      if (this.isFile(currentPath) && !(depth == 0 && value.name === 'config.json') && includeFiles) {
-        filesInFolder.push(value);
-      }
-    });
-
-    return [subfolders, filesInFolder];
+      /* Object.entries(node)
+        .filter(([_, value], key) => !this.isHiddenPath(`${path}/${value.name}`) && !this.isModulePath(`${path}/${value.name}`))
+        .map(([_, value], key) =>  {
+        const currentPath = `${path}/${value.name}`;
+  
+        if (!this.isSystemDirectory(currentPath) && this.isDirectory(currentPath)) {
+          subfolders.push(value);
+        }
+  
+        if (this.isFile(currentPath) && !(depth == 0 && value.name === 'config.json') && includeFiles) {
+          filesInFolder.push(value);
+        }
+      });  */
   }
 
-  // TODO: Probably also check if path exists?
+  // TODO: Move zip stuff to zip service
+  // TODO: Rewrite (probably also check if path exists)
   fillZip(path: string, zip: JSZip, lessonName: string) {
     try {
       if (!this.isEmpty(path)) {
         const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
 
         for (const entry in entries) {
-          if (this.isFile(`${path}${entry}`)) {
+          if (this.isFile(`${path}${entry}`)) { // TODO: Is async now!
             const file = this.PyFS?.readFile(`${path}${entry}`);
 
             // prevent first level of zip from only containing a folder with the lessonName
@@ -385,7 +282,7 @@ export class FilesystemService {
   }
 
   // https://github.com/emscripten-core/emscripten/issues/2602
-  printRecursively(path: string, startDepth: number, offsetPerLevel: number): void {
+  /* printRecursively(path: string, startDepth: number, offsetPerLevel: number): void {
     try {
       if (!this.isEmpty(path)) {
         const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
@@ -404,9 +301,16 @@ export class FilesystemService {
     } catch (e) {
       console.error(e);
     }
+  } */
+
+  private getFileAsBuffer(unzippedLesson: JSZip, file: string): Observable<ArrayBuffer>{
+    return defer(() => of(unzippedLesson.file(file)?.internalStream("arraybuffer"))).
+      pipe(switchMap(stream => {
+        return !stream ? throwError("Error reading zip") : from(stream.accumulate()) 
+    }))
   }
 
-  storeLesson(unzippedLesson: JSZip, name: string): Observable<any> {
+  public storeLesson(unzippedLesson: JSZip, name: string): Observable<any> {
     const folders: string[] = [];
     const files: string[] = [];
 
@@ -416,217 +320,246 @@ export class FilesystemService {
       }
     });
 
-    const folderObs = new Observable(subscriber => {
-      if (this.isSystemDirectory(name)) {
-        subscriber.error("Invalid lesson name (system directory)")
-      }
+    const folderObservables = folders.map(folder => this.createFolder(`${name}/${folder}`, false));    
+    const fileObservables = files.filter(file => file !== "config.json").map(
+      file => this.getFileAsBuffer(unzippedLesson, file).pipe(   
+      (switchMap(buffer => this.createFile(`${name}/${file}`, new Uint8Array(buffer), false))))); 
 
+    return concat(...folderObservables, forkJoin(fileObservables), this.sync(false));
+  }
+
+  public isEmpty(path: string): Observable<boolean> {
+    return this.basicFactory<boolean>(path, "Error checking whether object is empty or not", 
+      (node) => { return Object.keys(node.contents).length === 0 }, true     
+    );
+  }
+
+  public isFile(path: string): Observable<boolean> {
+    return this.basicFactory<boolean>(path, "Error checking whether path is a file",
+      (node) => { return this.N_isFile(node)}, true
+    );
+  }
+
+  public isDirectory(path: string): Observable<boolean> {
+    return this.basicFactory<boolean>(path, "Error checking whether path is a directory",
+      (node) => { return this.isDir(node.mode)}, true
+    );
+  }
+
+  public getNodeByPath(path: string): Observable<FSNode> {
+    return this.basicFactory<FSNode>(path, "Error getting node",
+      (node) => { return node }, true
+    );
+  }
+
+  public writeFileTest(path: string, content: Uint8Array | string) {
+    return this.basicFactory<void>(path, "Error writing to file", (_) => this.N_writeFile(path, content), false);
+  }
+
+  // TODO: Könnte ich das mit dem neuen "needsToExist" param der factory nicht auch lösen?
+  public exists(path: string) {
+    /* return this.basicFactory<FSNode>(path, "Error",
+      (node) => { return node }
+    ).pipe(catchError(val => of(`I caught: ${val}`)));  */
+
+    return new Observable<boolean>(subscriber => {
       try {
-        folders.forEach(folder => {
-          this.PyFS?.mkdir(`${name}/${folder}`);
-        });
-        subscriber.complete();
+        const analyzeObject = this.N_analyzePath(path);
+
+        if (analyzeObject.exists !== undefined) {
+          subscriber.next(analyzeObject.exists);
+          subscriber.complete();
+        } else {
+          subscriber.error("No information about given path copuld be contained");
+        } 
       } catch (err) {
-        subscriber.error(err);
-      }
-    });
-
-    const fileObservables: any[] = [];
-    files.forEach(file => fileObservables.push(this.createFileFromZip(unzippedLesson, file, name)));
-    return concat(folderObs, forkJoin(fileObservables), this.sync(false));
-  }
-
-  /**
-   * Eigtl. bei allen Pfaden noch zusätzlich vorher prüfen, ob sie existieren
-   * Schreit nach einer eigenen Methode, die trim() etc. macht und dann prüft, ob Pfad existiert
-   */
-
-  // TODO: How to handle errors?
-  // TODO: Check if path exists
-  isEmpty(path: string): boolean {
-    try {
-      const node = this.PyFS?.lookupPath(path, {}).node;
-      return Object.keys((node as FSNode).contents).length === 0;
-    } catch (e) {
-      console.log(e);
-      return false;
-    }
-  }
-
-  // TODO: Fehlerbehandlung
-  // TODO: Check if path exists
-  getTopLevelOfLesson(path: string): FSNode {
-    const node = this.PyFS?.lookupPath(path, {}).node;
-    return (node as FSNode);
-  }
-
-  // TODO: How to handle errors?
-  // TODO: Check if path exists
-  isFile(path: string): boolean {
-    try {
-      const node = this.PyFS?.lookupPath(path, {}).node;
-      return this.PyFS?.isFile((node as FSNode).mode) || false;
-    } catch (e) {
-      console.error(e);
-      return false;
-    }
-  }
-
-  isFile2(path: string): Observable<boolean> {
-    return new Observable(subscriber => {
-      try {
-        const node = this.PyFS?.lookupPath(path, {}).node;
-        const isFile = this.PyFS?.isFile((node as FSNode).mode);
-
-        if (isFile !== undefined) {
-          subscriber.next(isFile);
-          subscriber.complete();
-        } else {
-          subscriber.error("Error checking file")
-        }        
-      } catch (e) {
-        subscriber.error("Error while checking file");
-      }
-    })
-  }
-
-  // TODO: How to handle errors?
-  isDirectory(path: string): boolean {
-    try {
-      const node = this.PyFS?.lookupPath(path, {}).node;
-      return this.PyFS?.isDir((node as FSNode).mode) || false;
-    } catch (e) {
-      return false;
-    }
-  }
-
-  // TODO: errors
-  getNodeByPath(path: string): FSNode | undefined {
-    try {
-      return (this.PyFS?.lookupPath(path, {}).node as FSNode);
-    } catch(e) {
-      console.error(e);
-      return undefined;
-    }
-  }
-
-  getNodeByPath2(path: string): Observable<FSNode> {
-    return new Observable(subscriber => {
-      try {
-        const node = (this.PyFS?.lookupPath(path, {}).node as FSNode);
-        subscriber.next(node);
-        subscriber.complete();
-      } catch(e) {
-        subscriber.error("No node at specified path");
+        subscriber.error("Generic error");
       }
     });
   }
 
-  exists(path: string): Observable<boolean> {
-    return new Observable(subscriber => {
-      try {
-        const node = this.PyFS?.analyzePath(path, false);
+  public writeToFile(path: string, content: Uint8Array | string): Observable<void> {
+    const writeObservable =  this.exists(path).pipe(switchMap(exists => 
+      !exists ? throwError("File doesn't yet exist. Use createFile instead") : 
+        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content)) : throwError("Can't write to system files"))
+      ));
 
-        if (!node) {
-          subscriber.error("Error analyzing path");
-        } else {
-          subscriber.next(node.exists);
-          subscriber.complete();
-        }
-      } catch (e) {
-        subscriber.error("Error checking existence of path");
-      }
-    });
+    return concat(writeObservable, this.sync(false));
   }
 
-  /** Writes to an existing file */
-  writeToFile(path: string, content: Uint8Array): Observable<any> {
-    const writing = new Observable(subscriber => {
-      if (!this.isFile(path)) {
-        subscriber.error("Path doesn't belong to a file");
-      } else {
-        try {
-          this.PyFS?.writeFile(path, content);
-          subscriber.complete();
-        } catch (e) {
-          subscriber.error("Error while writing to file");
-        }
-      }
-    });
+  public createFile(path: string, content: Uint8Array | string, withSync: boolean): Observable<void> {
+    const createFileObservable =  this.exists(path).pipe(switchMap(exists => 
+      exists ? throwError("File already exists. Use writeFile instead") : 
+        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content)) : throwError("Can't create file in system directory"))
+      ));
 
-    return concat(writing, this.sync(false));
+    return withSync === true ? concat(createFileObservable, this.sync(false)) : createFileObservable;
   }
 
-  createFile(path: string, content: Uint8Array): Observable<any> {
-    const writing = new Observable(subscriber => {
-      try {
-        this.PyFS?.writeFile(path, content);
-        subscriber.complete();
-      } catch (e) {
-        subscriber.error("Error while writing to file");
-      }
-    });
+  public deleteFile(path: string, withSync: boolean): Observable<void> {
+    const deleteFileObservable =  this.basicFactory<void>(path, "Error removing file",
+      (node) => this.unlink(path), true
+    );
 
-    return concat(writing, this.sync(false));
+    const full = this.isFile(path).pipe(switchMap(isFile => {
+      return isFile ? deleteFileObservable : throwError("Path is not a file");
+    }));
+
+    return withSync ? concat(full, this.sync(false)) : full;
   }
 
-  createFolder(path: string): Observable<any> {
-    return concat(this.exists(path).pipe(switchMap(exists => {
-      const mkDir = new Observable(subscriber => {
-        if (exists) {
-          subscriber.error("Destination is not empty");
-          return;
-        }
+  public createFolder(path: string, withSync: boolean, mode?: number): Observable<void> {
+    const createFolderObservable = this.exists(path).pipe(switchMap(exists => 
+        exists ? throwError("Path is not empty!") : 
+          (!this.isSystemDirectory(path) ? defer(() => this.N_mkdir(path, mode)) : throwError("Can't create folder in system directory"))
+      ));
+
+    return withSync ? concat(createFolderObservable, this.sync(false)) : createFolderObservable;
+  }
+
+  public deleteFolder(path: string, withSync: boolean): Observable<void> {     
+    const deleteFolderObservable = this.isDirectory(path).pipe(switchMap(isDir => {
+      return isDir ? this.isEmpty(path) : throwError("Path is not a directory")
+    })).pipe(switchMap(isEmpty => {
+      return isEmpty && path.split('/').length > 2 ? defer(() => this.rmdir(path)) : // isEmpty and not root directory --> delete
+        concat(this.getNodeByPath(path).pipe(switchMap(node => this.deleteEntriesInFolder(node, path))), defer(() => this.rmdir(path))) // else: recursive delete
+    }))
+
+    return withSync ? concat(deleteFolderObservable, this.sync(false)) : deleteFolderObservable;
+  }
+
+  // for each subnode of current node, check if it is a file and map to corresponding delete observable
+  private deleteEntriesInFolder(node: FSNode, path: string) {
+    return this.getEntriesOfFolder(node, path).pipe(
+      switchMap(entries => entries.map(entry => this.isFile(entry).pipe(
+        switchMap(isFile => isFile ? this.deleteFile(entry, false) : this.deleteFolder(entry, false))
+      ))), mergeAll())
+  }
   
-        try {
-          this.PyFS?.mkdir(path);
-          subscriber.complete();
-        } catch (e) {
-          subscriber.error("Error creating directory");
-        }
-      });
-  
-      return mkDir;
-    })), this.sync(false));
+  private getEntriesOfFolder(node: FSNode, path: string): Observable<string[]>{
+    return of(Object.entries(node.contents).map(([key, value]) => `${path}/${value.name}`));
+  }  
+
+  public getFileAsString(path: string): Observable<string> {
+    return this.isFile(path).pipe(switchMap(isFile => 
+        isFile ? of(this.N_readFileAsString(path)) : throwError("Given path is no file") 
+      ));
   }
 
-  getFileContent(path: string, _encoding: allowedEncodings): Observable<Uint8Array | string> {
-    return new Observable(subscriber => {
-      if (!this.isFile(path)) {
-        subscriber.error("Path doesn't belong to a file");
-      } else {
-        try {
-          if (this.PyFS) {
-            const content = this.PyFS.readFile(path, { encoding: _encoding});
-            subscriber.next(content);
-            subscriber.complete();
-          } else {
-            subscriber.error("Error reading file");
-          }
-        } catch (e) {
-          subscriber.error("Error reading file");
-        }
-      }
-    });
+  public getFileAsBinary(path: string): Observable<Uint8Array> {
+    return this.isFile(path).pipe(switchMap(isFile => 
+      isFile ? of(this.N_readFileAsBinary(path)) : throwError("Given path is no file") 
+    ));
   }
 
   /** Renaming and moving (works for both files and folders) */
-  rename(oldPath: string, newPath: string): Observable<any> {
-    return concat(this.exists(newPath).pipe(switchMap(exists => {
-      return new Observable(subscriber => {  
-        if (exists) {
-          subscriber.error("New path not empty");
-          return;
-        }
-  
-        try {
-          this.PyFS?.rename(oldPath, newPath);
-          subscriber.complete();
-        } catch (e) {
-          subscriber.error("Error while moving node");
-        }
-      });
-    })), this.sync(false));
+  public rename(oldPath: string, newPath: string): Observable<void> {
+    const renameObservable = this.exists(newPath).pipe(
+      switchMap(exists => {  return !exists ? 
+          (!this.isSystemDirectory(oldPath) && !this.isSystemDirectory(newPath) ? defer(() => this.N_rename(oldPath, newPath)) : throwError("Can't rename system directories")) 
+          : throwError("New path is not empty")
+      }));
+
+    return concat(renameObservable, this.sync(false));
+  }
+
+  // ---- Helper methods
+
+  // T = return type of the observable
+  private basicFactory<T>(path: string, errorMsg: string, fn: (node: FSNode) => T, needsToExist: boolean): Observable<T> {
+    return new Observable<T>(subscriber => {
+      try {
+        const analyzeObject = this.N_analyzePath(path);
+
+        if (analyzeObject.exists !== undefined) {
+           if (analyzeObject.object) {
+            subscriber.next(fn(analyzeObject.object));
+            subscriber.complete();
+          } else {
+            needsToExist ? subscriber.error(`Path ${path} exists but no object could be found`) :
+            (subscriber.next(fn(analyzeObject.object)), subscriber.complete());
+          }
+        } else {
+          console.error("1111")
+          subscriber.error(`Given path (${path}) does not exist`);          
+        } 
+      } catch (err) {
+        console.error(err);
+        subscriber.error(errorMsg);
+      }
+    });
+  }
+
+  // wrappers for emscripten functions for easier use later on
+  private N_analyzePath(path: string) {
+    this.checkFilesystem();
+    return this.PyFS!.analyzePath(path, false);
+  }
+
+  private N_isFile(node: FSNode) {
+    this.checkFilesystem();
+    return this.PyFS!.isFile(node.mode);
+  }
+
+  private N_writeFile(path: string, data: Uint8Array | string) {
+    this.checkFilesystem();
+    this.PyFS?.writeFile(path, data);
+  }
+
+  private N_readFileAsString(path: string) {
+    this.checkFilesystem();
+    return this.PyFS!.readFile(path, { encoding: "utf8" });
+  }
+
+  private N_readFileAsBinary(path: string) {
+    this.checkFilesystem();
+    return this.PyFS!.readFile(path, { encoding: "binary" });
+  }
+
+  private N_rename(oldPath: string, newPath: string) {
+    this.checkFilesystem();
+    this.PyFS?.rename(oldPath, newPath);
+  }
+
+  private N_mkdir(path: string, mode?: number) {
+    this.checkFilesystem();
+    mode ? this.PyFS?.mkdir(path, mode) : this.PyFS?.mkdir(path);
+  }
+
+  private mount(path: string) {
+    this.checkFilesystem();
+    this.PyFS?.mount(this.PyFS?.filesystems.IDBFS, {}, path);
+  }
+
+  private chmod(path: string, permission: number) {
+    this.checkFilesystem();
+    this.PyFS?.chmod(path, permission);
+  }
+
+  private unmount(path: string) {
+    this.checkFilesystem();
+    this.PyFS?.unmount(path);
+  }
+
+  private rmdir(path: string) {
+    this.checkFilesystem();
+    this.PyFS?.rmdir(path);
+  }
+
+  private unlink(path: string) {
+    this.checkFilesystem();
+    this.PyFS?.unlink(path);
+  }
+
+  private isDir(mode: number) {
+    this.checkFilesystem();
+    return this.PyFS!.isDir(mode);
+  }
+ 
+  private checkFilesystem(): void {
+    if (!this.PyFS) {
+      throw new Error("No filesystem available");
+    }
   }
 
   // -------------------------- TODO
