@@ -1,0 +1,28 @@
+<div *ngIf="fileType !== undefined">
+    <svg *ngIf="fileType === fileTypeEnum.PROGRAMMING_LANGUAGE 
+        || fileType === fileTypeEnum.MARKDOWN
+        || fileType === fileTypeEnum.JSON" 
+        viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width: 20px; height: 20px;" [style.fill]="fillColor">
+            <text x="50%" y="65%" dominant-baseline="middle" text-anchor="middle" class="icon-text">{{ fileTypeString }}</text>
+    </svg> 
+
+    <img *ngIf="fileType === fileTypeEnum.IMAGE" src="{{ getImageIconPath() }}" style="width: 20px; height: 20px;">
+    <img *ngIf="fileType === fileTypeEnum.DATA" src="{{ getTableIconPath() }}" style="width: 20px; height: 20px;">
+    <img *ngIf="fileType === fileTypeEnum.PLAIN_TEXT" src="{{ getPlainTextIconPath() }}" style="width: 20px; height: 20px;">
+    <img *ngIf="fileType === fileTypeEnum.OTHER" src="{{ getUnknownFileTypeIconPath() }}" style="width: 20px; height: 20px;">
+</div>
+
+<div *ngIf="fileType === undefined && _tabType === undefined && !isTentativeFile" class="folder-icon">
+    <svg class="actual-folder" [class.actual-folder-active]="isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="folderIconTitle" 
+        fill="currentColor"> <title id="folderIconTitle">Ordner</title>
+            <path d="M3 5h6l1 2h11v12H3z"/>
+    </svg>
+</div>
+
+<div *ngIf="_tabType !== undefined && _tabType === 'UNITY'">
+    <img src="{{ getUnityIconPath() }}" style="width: 20px; height: 20px;">
+</div>
+
+<div *ngIf="_tabType !== undefined && _tabType === 'HINT'">
+    <img src="{{ getHintIconPath() }}" style="width: 20px; height: 20px;">
+</div>

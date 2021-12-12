@@ -24,6 +24,7 @@
 .file-heading {
     padding-left: 16px;
     display: flex;
+    align-items: center;
 }
 
 .file:hover > .common-actions {
@@ -47,3 +48,4 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+

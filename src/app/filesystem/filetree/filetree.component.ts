@@ -51,7 +51,7 @@ export class FiletreeComponent implements OnDestroy{
       const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
       const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
       baseNode.path = "/";
-      folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, "Sortierroboter");
+      folderComp.node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, "Sortierroboter");
       this.rootComponent = folderComp;
     });
   }

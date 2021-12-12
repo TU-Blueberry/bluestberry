@@ -1,25 +1,17 @@
-<div class="file" [style.padding-left.px] = "_node.depth * 10" (dblclick)="onDoubleClick()" [class.active]="_node.isActive">
+<div class="file" [style.padding-left.px] = "node.depth * 10" (dblclick)="onDoubleClick()" [class.active]="node.isActive">
     <div class="file-heading">
-        <svg class="file-type-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-            aria-labelledby="imageIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
-            stroke-linejoin="miter" fill="none">
-            <title id="imageIconTitle">Bilddatei</title>
-            <rect width="18" height="18" x="3" y="3" />
-            <path stroke-linecap="round" d="M3 14l4-4 11 11" />
-            <circle cx="13.5" cy="7.5" r="2.5" />
-            <path stroke-linecap="round" d="M13.5 16.5L21 9" />
-        </svg>
+        <app-file-icons [fileType]="isRenaming ? getExtensionFromTentativeName() : node.fileType" [isTentativeFile]="node.isTentativeNode"></app-file-icons>
         <div class="file-name" *ngIf="!isRenaming">
-            {{ _node.name }}
+            {{ node.name }}
         </div> 
         <div *ngIf="isRenaming">
-            <app-user-input [parentPath]="_node.parentPath" [depth]="_node.depth" [isFile]="true" [editMode]="true" 
-            [currentName]="_node.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
+            <app-user-input [parentPath]="node.parentPath" [depth]="node.depth" [isFile]="true" [editMode]="true" 
+            [currentName]="node.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"
+            (currentValue)="updateTentativeName($event)"></app-user-input>
         </div>
     </div>
     <div *ngIf="!isRenaming" class="common-actions">
-        <app-common-actions [isRoot]="_node.isRoot" [isFile]="true" [mode]="_node.mode || -1 "
+        <app-common-actions [isRoot]="node.isRoot" [isFile]="true" [mode]="node.mode || -1 "
         (delete)="this.deleteFile($event)" (startRenaming)="this.startRenaming($event)"></app-common-actions>
     </div>
 </div>
-

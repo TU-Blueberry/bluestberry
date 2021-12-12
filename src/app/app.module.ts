@@ -16,6 +16,7 @@ import { AngularSplitModule} from 'angular-split';
 import { MarkdownModule, MarkedOptions, MarkedRenderer } from "ngx-markdown";
 import { NgIconsModule } from '@ng-icons/core';
 import { HeroDocument, HeroDocumentText, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
+import { SharedModule } from './shared/shared.module';
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -38,6 +39,7 @@ export function markedOptionsFactory(): MarkedOptions {
     FormsModule,
     FilesystemModule,
     UnityModule,
+    SharedModule, 
     HttpClientModule,
     NgIconsModule.withIcons({ HeroDocumentText, HeroDocument, HeroX, HeroPhotograph, HeroBookOpen }),
     MarkdownModule.forRoot({

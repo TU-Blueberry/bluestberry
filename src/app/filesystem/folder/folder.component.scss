@@ -42,20 +42,8 @@
     margin-left: 5px;
 }
 
-.folder-icon  {
-    width: 16px;
-    height: 16px;
-
-    & > .arrow {
-        color: #ffffff66;
-    }
-
-    & > .actual-folder {
-        fill: #0068b3;
-    }
-
-    & > .actual-folder-active {
-        fill: white;
-        color: white;
-    }
+.folder-icon > .arrow{
+    width: 20px;
+    height: 20px;
+    color: #ffffff66;
 }

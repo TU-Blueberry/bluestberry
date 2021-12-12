@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { FileType } from 'src/app/shared/files/filetypes.enum';
 import { UiEventsService } from 'src/app/ui-events.service';
 
 @Component({
@@ -8,6 +9,7 @@ import { UiEventsService } from 'src/app/ui-events.service';
 })
 export class MainViewerComponent implements OnInit {
   filetreeVisible = true;
+  types = FileType;
 
   constructor(private uiEv: UiEventsService) {
     this.uiEv.onFiletreeToggle.subscribe(next => this.filetreeVisible = next);

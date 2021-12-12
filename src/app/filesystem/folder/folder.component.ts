@@ -24,13 +24,23 @@ export class FolderComponent implements OnInit, OnDestroy {
   showSubfolders = false;
   isRenaming = false;
 
-  @Input('node') _node!: TreeNode; 
+  private _node: TreeNode;
+
+  @Input('node') set node (node: TreeNode) {
+    this._node = node;
+  } 
+
+  public get node(): TreeNode {
+    return this._node;
+  }
+
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
   @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef;
   @ViewChild('files', { read: ViewContainerRef, static: true }) filesRef!: ViewContainerRef;
   constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private ev: FilesystemEventService, private componentFactoryResolver: ComponentFactoryResolver) {
     this.folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     this.fileFactory = this.componentFactoryResolver.resolveComponentFactory(FileComponent);
+    this._node = new TreeNode(this.uiEv, this.fsService, this.ev);
   }
 
   ngOnInit(): void {
@@ -96,7 +106,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     
     if (elements && elements.length > 0) {
       const instance = elements[elements.length - 1].instance;
-      instance._node.path = path;
+      instance.node.path = path;
       this._node.updateEmptyStatus();
 
       if (!isFile) {
@@ -177,7 +187,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     if (this._node) {
       const treeNode = path ? this._node.generateTreeNode(this._node.depth + 1, path, node) : this._node.generateTreeNode(this._node.depth + 1);
       // treeNode.parentPath = this._node.path;
-      nodeComponentRef.instance._node = treeNode;
+      nodeComponentRef.instance.node = treeNode;
     }     
   }
 

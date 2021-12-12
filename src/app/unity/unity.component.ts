@@ -5,9 +5,8 @@ import {
   OnChanges,
   OnInit,
 } from '@angular/core'
-import { UnityScenes } from '../shared/unity.scenes.enum'
+import { UnityScenes } from '../shared/unity/unity.scenes.enum'
 import { UnityService } from './unity.service'
-// import { PyodideService } from 'src/app/services/pyodide/pyodide.service'
 
 @Component({
   selector: 'unity',

@@ -52,7 +52,6 @@ export class TreeNode {
 
     public updateEmptyStatus() {
         const entries = this._ref?.contents;
-
         
         if (this._path !== '' && entries !== undefined && entries !== null && !(entries instanceof Uint8Array)) {
              this.fs.scanWithoutFetch(entries, this._path, this._depth, true).subscribe(([folders, files]) => {
@@ -157,6 +156,20 @@ export class TreeNode {
     public set path(path : string) {
         this._path = path;
         this.fs.getNodeByPath(this._path).subscribe(ref => this._ref = ref);
+    }
+
+    public get fileType(): string {
+        if (this._ref && this._ref.name !== '') {
+            const split = this._ref.name.split(".");
+
+            if (split.length == 0) {
+                return '';
+            } else {
+                return split[split.length - 1].toUpperCase();
+            }
+        } else {
+            return '';
+        }
     }
 
     public get path(): string {

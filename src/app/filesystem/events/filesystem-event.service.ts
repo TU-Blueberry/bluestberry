@@ -1,7 +1,7 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
-import { FileType } from 'src/app/shared/filetypes.enum';
+import { FileType, FileTypes } from 'src/app/shared/files/filetypes.enum';
 import { ConfigObject } from '../model/config';
 
 @Injectable({
@@ -9,10 +9,10 @@ import { ConfigObject } from '../model/config';
 })
 export class FilesystemEventService { 
   willMovePath: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
-  onMovePath: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
+  onMovePath: EventEmitter<{oldPath: string, newPath: string, extension: string}> = new EventEmitter();
   willDeletePath: EventEmitter<string> = new EventEmitter();
   onDeletePath: EventEmitter<string> = new EventEmitter();
-  onOpenFile: EventEmitter<{path: string, byUser: boolean, fileContent?: Uint8Array, type?: FileType}> = new EventEmitter();
+  onOpenFile: EventEmitter<{path: string, byUser: boolean, fileContent?: Uint8Array, type?: FileType, extension?: string}> = new EventEmitter();
   onReadFile: EventEmitter<{path: string, bytesRead: number}> = new EventEmitter();
   onWriteToFile: EventEmitter<{path: string, bytesWritten: number}> = new EventEmitter();
   onSeekFile: EventEmitter<{path: string, position: number, whence: any}> = new EventEmitter();
@@ -30,7 +30,7 @@ export class FilesystemEventService {
       fs.trackingDelegate['willMovePath'] = (_oldPath: string, _newPath: string) => this.willMovePath.emit({oldPath: _oldPath, newPath: _newPath});
       fs.trackingDelegate['willDeletePath'] = (_path: string) => this.willDeletePath.emit(_path);
       fs.trackingDelegate['onDeletePath'] = (_path: string) => this.onDeletePath.emit(_path);
-      fs.trackingDelegate['onMovePath'] = (_oldPath: string, _newPath: string) => this.onMovePath.emit({oldPath: _oldPath, newPath: _newPath});
+      fs.trackingDelegate['onMovePath'] = (_oldPath: string, _newPath: string) => this.onPathMoved(_oldPath, _newPath);
       
       fs.trackingDelegate['onOpenFile'] = (_path: string, _flags: any) => {
         if (!this.fsService.isSystemDirectory(_path)) {
@@ -48,23 +48,32 @@ export class FilesystemEventService {
     this.onOpenLesson.emit({openLeft: config.openLeft, openRight: config.openRight});
   }
 
+  onPathMoved(oldPath: string, newPath: string): void {
+    this.onMovePath.emit({oldPath: oldPath, newPath: newPath, extension: this.getExtension(newPath)});
+  }
+
   onUserOpenFile(_path: string, node: FSNode) {
     if (!this.fsService.isSystemDirectory(_path)) {
       const content = node.contents instanceof Uint8Array ? node.contents : undefined;
-        const matches = RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z]{2,5}$/, "i").exec(node.name);
-        let fileType: FileType | undefined;
+      const matches = RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z]{2,5}$/, "i").exec(node.name);
+      let fileType: FileType | undefined;
+      let extension = '';
 
         if (!matches || matches.length === 0) {
           fileType = FileType.OTHER;
         } else {
-          const extension = matches[matches.length - 1].split(".");
-          const trimmedExtension = extension[extension.length - 1];
-          fileType = FileType[trimmedExtension.toUpperCase() as keyof typeof FileType];
-          fileType = fileType === undefined ? FileType.OTHER : fileType;
+          extension = this.getExtension(matches);
+          fileType = FileTypes.getType(extension);
         }
 
-      this.onOpenFile.emit({path: _path, byUser: true, fileContent: content, type: fileType});
+      this.onOpenFile.emit({path: _path, byUser: true, fileContent: content, type: fileType, extension: extension});
     }
+  }
+
+  private getExtension(name: string[] | string): string {
+    const str = (name instanceof Array && name.length > 0) ? name[name.length -1] : (name as string);
+    const extension_match = str.split(".");
+    return extension_match[extension_match.length - 1].toUpperCase();
   }
 
   createNewNodeByUser(path: string, isFile: boolean): void {
