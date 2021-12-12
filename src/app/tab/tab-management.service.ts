@@ -1,6 +1,6 @@
  import {Injectable} from '@angular/core';
-import {concat, merge, Observable, of, Subject} from 'rxjs';
-import {filter, map, switchMap} from 'rxjs/operators';
+import {concat, EMPTY, merge, Observable, of, Subject} from 'rxjs';
+import {catchError, filter, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
 import {FileType} from 'src/app/shared/filetypes.enum';
@@ -56,8 +56,13 @@ export class TabManagementService {
   createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
     const fileType = type || this.filesystemService.getFileType(path);
     return (
-      fileContent ? of(fileContent) : this.filesystemService.getFileContent(path, 'binary')
-    ).pipe(map((fileContent) => ({
+      fileContent ? of(fileContent) : this.filesystemService.getFileAsBinary(path)
+    ).pipe(
+      catchError(error => {
+        console.error('could not read file, error: ', error);
+        return EMPTY;
+      }),
+      map((fileContent) => ({
       title: path.split('/').pop() || path,
       groupId: this.mapFileTypeToTabGroup(fileType),
       icon: this.mapTypeToIcon(fileType),
