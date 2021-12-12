@@ -163,7 +163,7 @@ export class HintViewerComponent {
     }
   }
 
-  undo(): void { 
+  simpleUndo(): void { 
 
     if (this.dialogue_history_.length < 2) {
       return
@@ -181,6 +181,19 @@ export class HintViewerComponent {
       this.dialogue_options_.push(o)
     }
   }
+
+  multiUndo(): void {
+    this.simpleUndo();
+    this.simpleUndo();
+    this.simpleUndo();
+  }
+
+  reset(): void {
+    this.dialogue_options_ = []
+    this.dialogue_history_ = []
+    this.initDialogue();
+  }
+
 
   getQuestionOptions(answer: Answer): Array<Question> {
     return this.questions_storage_.filter((q) =>
