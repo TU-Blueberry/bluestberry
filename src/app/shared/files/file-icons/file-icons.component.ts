@@ -1,4 +1,5 @@
 import { Component, Input, OnInit } from '@angular/core';
+import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { TabType } from 'src/app/tab/model/tab-type.model';
 import { FileType, FileTypes } from '../filetypes.enum';
 
@@ -17,13 +18,14 @@ export class FileIconsComponent implements OnInit {
   public fileTypeString = '';
   public fillColor = '';
 
-  @Input('fileType')
-  set filetype(type: string) {
-    if (type !== '') {
-      this._fileType = FileTypes.getType(type); 
-      this.fileTypeString = this.fileType === FileType.JSON ? '{..}' : type;
-      this.fillColor = FileTypes.getColorCode(type);
-    }
+  @Input('data')
+  set data(data: any) {
+    if (data !== undefined) {
+      const extension = this.fsService.getExtension(data?.path || '');
+      this._fileType = FileTypes.getType(extension); 
+      this.fileTypeString = this.fileType === FileType.JSON ? '{..}' : extension;
+      this.fillColor = FileTypes.getColorCode(extension);
+    } 
   }
 
   @Input('isTentativeFile')
@@ -53,7 +55,7 @@ export class FileIconsComponent implements OnInit {
     return this._isTentativeFile;
   }
 
-  constructor() { }
+  constructor(public fsService: FilesystemService) { }
 
   ngOnInit(): void {
   }

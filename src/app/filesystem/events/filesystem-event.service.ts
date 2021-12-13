@@ -30,7 +30,7 @@ export class FilesystemEventService {
       fs.trackingDelegate['willMovePath'] = (_oldPath: string, _newPath: string) => this.willMovePath.emit({oldPath: _oldPath, newPath: _newPath});
       fs.trackingDelegate['willDeletePath'] = (_path: string) => this.willDeletePath.emit(_path);
       fs.trackingDelegate['onDeletePath'] = (_path: string) => this.onDeletePath.emit(_path);
-      fs.trackingDelegate['onMovePath'] = (_oldPath: string, _newPath: string) => this.onMovePath.emit({oldPath: _oldPath, newPath: _newPath});
+      fs.trackingDelegate['onMovePath'] = (_oldPath: string, _newPath: string) => this.onPathMoved(_oldPath, _newPath);
 
       fs.trackingDelegate['onOpenFile'] = (_path: string, _flags: any) => {
         if (!this.fsService.isSystemDirectory(_path)) {
@@ -49,7 +49,7 @@ export class FilesystemEventService {
   }
 
   onPathMoved(oldPath: string, newPath: string): void {
-    this.onMovePath.emit({oldPath: oldPath, newPath: newPath, extension: this.getExtension(newPath)});
+    this.onMovePath.emit({oldPath: oldPath, newPath: newPath, extension: this.fsService.getExtension(newPath)});
   }
 
   onUserOpenFile(_path: string, node: FSNode) {
@@ -58,12 +58,6 @@ export class FilesystemEventService {
       const fileType = this.fsService.getFileType(_path);
       this.onOpenFile.emit({path: _path, byUser: true, fileContent: content, type: fileType});
     }
-  }
-
-  private getExtension(name: string[] | string): string {
-    const str = (name instanceof Array && name.length > 0) ? name[name.length -1] : (name as string);
-    const extension_match = str.split(".");
-    return extension_match[extension_match.length - 1].toUpperCase();
   }
 
   createNewNodeByUser(path: string, isFile: boolean): void {

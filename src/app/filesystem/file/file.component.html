@@ -1,6 +1,6 @@
 <div class="file" [style.padding-left.px] = "node.depth * 10" (dblclick)="onDoubleClick()" [class.active]="node.isActive">
     <div class="file-heading">
-        <app-file-icons [fileType]="isRenaming ? getExtensionFromTentativeName() : node.fileType" [isTentativeFile]="node.isTentativeNode"></app-file-icons>
+        <app-file-icons [data]="isRenaming ? {path: tentativeName} : {path: node.path}" [isTentativeFile]="node.isTentativeNode"></app-file-icons>
         <div class="file-name" *ngIf="!isRenaming">
             {{ node.name }}
         </div> 

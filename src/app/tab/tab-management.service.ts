@@ -3,9 +3,9 @@ import {concat, EMPTY, merge, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
-import {FileType} from 'src/app/shared/filetypes.enum';
 import {OpenTabEvent} from 'src/app/tab/model/open-tab-event';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
+import { FileType } from '../shared/files/filetypes.enum';
 
 
 @Injectable({
@@ -27,14 +27,12 @@ export class TabManagementService {
           if (file.path.toLowerCase().endsWith('unity')) {
             return of({
               groupId: file.on,
-              icon: 'hero-chip',
               title: 'Simulation',
               type: 'UNITY' as TabType,
             });
           } else if (file.path.toLowerCase().endsWith('hint')) {
             return of({
               groupId: file.on,
-              icon: 'hero-lightning-bolt',
               title: 'Hinweise',
               type: 'HINT' as TabType,
             });
@@ -47,13 +45,13 @@ export class TabManagementService {
 
     const userOpenEvent$ = filesystemEventService.onOpenFile.pipe(
       filter(e => e.byUser),
-      switchMap(e => this.createOpenTabEvent(e.path, e.type, e.fileContent)),
+      switchMap(e => this.createOpenTabEvent(e.path, e.extension, e.type, e.fileContent)),
     );
 
     merge(lesson$, userOpenEvent$).subscribe(t => this._openTab.next(t));
   }
 
-  createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
+  createOpenTabEvent(path: string, extension?: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
     const fileType = type || this.filesystemService.getFileType(path);
     return (
       fileContent ? of(fileContent) : this.filesystemService.getFileAsBinary(path)
@@ -65,7 +63,7 @@ export class TabManagementService {
       map((fileContent) => ({
       title: path.split('/').pop() || path,
       groupId: this.mapFileTypeToTabGroup(fileType),
-      icon: this.mapTypeToIcon(fileType),
+      extension: extension,
       type: this.mapFileTypeToTabType(fileType),
       data: { path: path, content: fileContent },
     })));
@@ -83,16 +81,13 @@ export class TabManagementService {
 
   private mapFileTypeToTabGroup(fileType?: FileType): string {
     switch (fileType) {
-      case FileType.PY:
-      case FileType.MD:
+      case FileType.PROGRAMMING_LANGUAGE:
+      case FileType.MARKDOWN:
       case FileType.JSON:
       case FileType.TEX:
-      case FileType.CSV:
+      case FileType.DATA:
         return 'left';
-      case FileType.BMP:
-      case FileType.JPEG:
-      case FileType.JPG:
-      case FileType.PNG:
+      case FileType.IMAGE:
         return 'right';
       default:
         return 'left';

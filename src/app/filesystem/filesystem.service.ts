@@ -5,7 +5,7 @@ import { ignoreElements, map, switchMap, filter, mergeAll, tap } from 'rxjs/oper
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { ConfigObject } from './model/config';
-import {FileType} from 'src/app/shared/filetypes.enum';
+import { FileType } from '../shared/files/filetypes.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -589,5 +589,10 @@ this.checkFilesystem();
       const trimmedExtension = extension[extension.length - 1];
       return FileType[trimmedExtension.toUpperCase() as keyof typeof FileType] || FileType.OTHER;
     }
+  }
+
+  getExtension(name: string): string {
+    const extension_match = name.split(".");
+    return extension_match[extension_match.length - 1].toUpperCase();
   }
 }

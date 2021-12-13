@@ -43,7 +43,6 @@ export class FileTabDirective implements OnInit {
       .subscribe((event) => {
         this.tab!.data.path.replace(event.oldPath, event.newPath)
         this.tab!.title = event.newPath.split('/').pop() || event.newPath
-        this.tab!.extension = event.extension
       })
 
     this.filesystemEventService.onWriteToFile

@@ -10,7 +10,7 @@
     (click)="activeTab = tab"
   >
     <div class="tab-icon">
-      <app-file-icons [fileType]="tab.extension || ''" [tabType]="tab.type"></app-file-icons>
+      <app-file-icons [data]="tab?.data" [tabType]="tab.type"></app-file-icons>
     </div>
     <div class="tab-title">
       <span>
