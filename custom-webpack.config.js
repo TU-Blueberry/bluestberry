@@ -1,3 +1,5 @@
+const path = require('path');
+
 module.exports = {
   module: {
     rules: [
@@ -13,7 +15,7 @@ module.exports = {
   // https://github.com/TypeFox/monaco-languageclient/blob/master/CHANGELOG.md#breaking-changes-1 (scroll to 0.7.0)
   resolve: {
     alias: {
-        'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
+        'vscode': path.resolve(__dirname, 'node_modules/monaco-languageclient/lib/vscode-compatibility')
     }
-}
+  }
 }

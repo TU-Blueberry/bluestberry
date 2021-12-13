@@ -1,24 +1,19 @@
 import { Component, Input, OnInit } from '@angular/core'
 import { PyodideService } from 'src/app/pyodide/pyodide.service'
-<<<<<<< HEAD
 import { EditorComponent, NgxEditorModel } from 'ngx-monaco-editor'
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
 import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
-const ReconnectingWebSocket = require('reconnecting-websocket');
-=======
-import { EditorComponent } from 'ngx-monaco-editor'
-import { editor } from 'monaco-editor'
-import ICodeEditor = editor.ICodeEditor
+import ReconnectingWebSocket from 'reconnecting-websocket';
 import { FileTabDirective } from 'src/app/tab/file-tab.directive'
 import { Subject } from 'rxjs'
 import { concatMap, debounceTime, switchMap, tap } from 'rxjs/operators'
 
->>>>>>> development
 @Component({
   selector: 'app-code-viewer',
   templateUrl: './code-viewer.component.html',
   styleUrls: ['./code-viewer.component.scss'],
 })
+
 export class CodeViewerComponent implements OnInit {
   private editor!: any
   editorOptions = {
@@ -215,7 +210,7 @@ main()
     });
   }
 
-  public createWebSocket(socketUrl: string): WebSocket {
+  public createWebSocket(socketUrl: string): any {
     const socketOptions = {
       maxReconnectionDelay: 10000,
       minReconnectionDelay: 1000,
@@ -224,7 +219,7 @@ main()
       maxRetries: Infinity,
       debug: false
     };
-    return new ReconnectingWebSocket.default(socketUrl, [], socketOptions);    
+    return new ReconnectingWebSocket(socketUrl, [], socketOptions);    
   }
 
   undo(): void {
