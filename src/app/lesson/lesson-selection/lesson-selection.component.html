@@ -1,0 +1,14 @@
+<div *ngIf="isSwitching" class="loading-animation">
+    <!-- TODO: Ladeanimation sollte vmtl die gleiche wie beim ersten Start sein, bietet sich also
+    an es in eigene Komponente auszulagern-->
+    SWITCHING!
+</div>
+
+<select (change)="onSelectChange($event)">
+    <option value="" disabled [selected]="selectedLesson === ''">Lektion wählen</option>
+    <option *ngFor="let lesson of lessons | async" 
+        [value]="lesson"
+        [selected]="lesson === selectedLesson">
+            {{lesson}}
+    </option>
+</select>

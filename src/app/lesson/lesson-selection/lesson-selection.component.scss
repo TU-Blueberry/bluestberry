@@ -1,0 +1,10 @@
+.loading-animation {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    z-index: 99;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    background-color: rgba(0, 0, 0, 1);
+}

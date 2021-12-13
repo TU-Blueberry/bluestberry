@@ -473,18 +473,30 @@ export class FilesystemService {
       try {
         const analyzeObject = this.N_analyzePath(path);
 
-        if (analyzeObject.exists !== undefined) {
+          if (analyzeObject.exists) {
+            if (analyzeObject.object) {
+              subscriber.next(fn(analyzeObject.object));
+              subscriber.complete();
+            } else {
+              needsToExist ? subscriber.error(`Path "${path}" exists but no corresponding object could be found in the fileystem`) :
+              (subscriber.next(fn(analyzeObject.object)), subscriber.complete());
+            }
+          } else {
+            needsToExist ? subscriber.error(`Path "${path} doesn't exist`) :
+            (subscriber.next(fn(analyzeObject.object)), subscriber.complete());
+          }
+
+        /* if (analyzeObject.exists !== undefined) {
            if (analyzeObject.object) {
             subscriber.next(fn(analyzeObject.object));
             subscriber.complete();
           } else {
-            needsToExist ? subscriber.error(`Path ${path} exists but no object could be found`) :
+            needsToExist ? subscriber.error(`Path "${path} exists but no object could be found`) :
             (subscriber.next(fn(analyzeObject.object)), subscriber.complete());
           }
         } else {
-          console.error("1111")
           subscriber.error(`Given path (${path}) does not exist`);
-        }
+        } */
       } catch (err) {
         console.error(err);
         subscriber.error(errorMsg);

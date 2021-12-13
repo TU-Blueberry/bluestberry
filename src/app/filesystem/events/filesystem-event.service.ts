@@ -22,7 +22,6 @@ export class FilesystemEventService {
   afterCodeExecution: EventEmitter<void> = new EventEmitter();
   onNewNodeByUser: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
   onNewNodeByUserSynced: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
-  onOpenLesson: EventEmitter<{open: {path: string, on: string}[]}> = new EventEmitter();
   onFailedCreationFromUi: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
 
   constructor(private fsService: FilesystemService, private py: PyodideService) {
@@ -44,10 +43,6 @@ export class FilesystemEventService {
     py.getAfterExecution().subscribe(() => this.afterCodeExecution.emit());
   }
 
-  onLessonOpened(config: ConfigObject) {
-    this.onOpenLesson.emit({open: config.open.map(({path, on}) => ({path: `${config.name}/${path}`, on}))});
-  }
-
   onPathMoved(oldPath: string, newPath: string): void {
     this.onMovePath.emit({oldPath: oldPath, newPath: newPath, extension: this.fsService.getExtension(newPath)});
   }
@@ -62,7 +57,9 @@ export class FilesystemEventService {
 
   createNewNodeByUser(path: string, isFile: boolean): void {
     this.onNewNodeByUser.emit({path: path, isFile: isFile});
-  }updateSyncStatusOfTentative(path: string, isFile: boolean): void {
+  }
+  
+  updateSyncStatusOfTentative(path: string, isFile: boolean): void {
     this.onNewNodeByUserSynced.emit({path: path, isFile: isFile});
   }
 

@@ -90,6 +90,10 @@ export class TabGroupComponent implements AfterViewInit {
     //TBD
   }
 
+  closeAllTabs(): void {
+    this.viewContainerRef?.clear();
+  }
+
   closeTab(index: number) {
     const tab = this.dataSource[index];
     tab.view?.destroy();

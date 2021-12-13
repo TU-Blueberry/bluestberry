@@ -6,10 +6,11 @@ import { FolderComponent } from '../folder/folder.component';
 import { catchError, switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
-import { LessonManagementService } from '../lesson-management/lesson-management.service';
+import { LessonManagementService } from '../../lesson/lesson-management/lesson-management.service';
 import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
+import { LessonEventsService } from 'src/app/lesson/lesson-events.service';
 
 @Component({
   selector: 'app-filetree',
@@ -30,11 +31,22 @@ export class FiletreeComponent implements OnDestroy{
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
   constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
-    private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService) {
-      this.changeLesson("sortierroboter")
+    private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService,
+    private lse: LessonEventsService) {
+      this.lse.onLessonOpened.subscribe((lesson) => {
+        console.log("ON LESSON OPENED, ", lesson)
+        this.SELECTED_LESSON = lesson.name;
+        this.kickstartTreeGeneration();
+      })
+
+      this.lse.onLessonClosed.subscribe(() => {
+        this.listRef.clear();
+        console.log("Cleared UI");
+      })
   }
 
   private kickstartTreeGeneration() {
+    this.listRef.clear();
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     this.fsService.getNodeByPath(`/${this.SELECTED_LESSON}`).subscribe((node) => {
       const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
@@ -45,7 +57,7 @@ export class FiletreeComponent implements OnDestroy{
     });
   }
 
-  public changeLesson(newLesson: string) {
+ /*  public changeLesson(newLesson: string) {
     if (this.SELECTED_LESSON === "") {
       concat(this.pys.pyodide, this.mgmtService.openLessonByName(newLesson)).subscribe(
         () => { }, err => console.error(err), 
@@ -55,7 +67,7 @@ export class FiletreeComponent implements OnDestroy{
         () => { }, err => console.error(err), 
         () => { this.SELECTED_LESSON = newLesson; this.kickstartTreeGeneration();  });
     }
-  }
+  }*/ 
 
   // TODO: Dateien laden bugg bei FF irgendwie
   // TODO: Catch error

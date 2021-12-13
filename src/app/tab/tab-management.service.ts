@@ -6,6 +6,7 @@ import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event
 import {OpenTabEvent} from 'src/app/tab/model/open-tab-event';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
 import { FileType } from '../shared/files/filetypes.enum';
+import { LessonEventsService } from '../lesson/lesson-events.service';
 
 
 @Injectable({
@@ -20,9 +21,10 @@ export class TabManagementService {
 
   constructor(
     private filesystemEventService: FilesystemEventService,
-    private filesystemService: FilesystemService
+    private filesystemService: FilesystemService,
+    private lessonEventService: LessonEventsService
   ) {
-    const lesson$ = filesystemEventService.onOpenLesson.pipe(
+    const lesson$ = lessonEventService.onLessonOpened.pipe(
         switchMap(({open}) => concat(...open.map(file => {
           if (file.path.toLowerCase().endsWith('unity')) {
             return of({
