@@ -6,8 +6,6 @@ import {NgIconsModule} from '@ng-icons/core';
 import {FileTabDirective} from 'src/app/tab/file-tab.directive';
 import { SharedModule } from '../shared/shared.module';
 
-
-
 @NgModule({
   declarations: [
     TabGroupComponent,

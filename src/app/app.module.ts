@@ -15,8 +15,8 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AngularSplitModule} from 'angular-split';
 import { MarkdownModule, MarkedOptions, MarkedRenderer } from "ngx-markdown";
 import { NgIconsModule } from '@ng-icons/core';
-import { HeroDocument, HeroDocumentText, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
 import { SharedModule } from './shared/shared.module';
+import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -41,7 +41,7 @@ export function markedOptionsFactory(): MarkedOptions {
     UnityModule,
     SharedModule, 
     HttpClientModule,
-    NgIconsModule.withIcons({ HeroDocumentText, HeroDocument, HeroX, HeroPhotograph, HeroBookOpen }),
+    NgIconsModule.withIcons({ HeroDocumentText, HeroDocument, HeroX, HeroPhotograph, HeroChip, HeroLightningBolt, HeroBookOpen }),
     MarkdownModule.forRoot({
       loader: HttpClient, // Optional, only needed if we use [src] attribute
       markedOptions: {
