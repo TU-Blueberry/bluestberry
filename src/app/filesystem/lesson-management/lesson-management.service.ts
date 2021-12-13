@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Location } from '@angular/common';
 import { concat, EMPTY, iif, throwError } from 'rxjs';
-import { map, mergeMap, switchMap, tap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 import { FilesystemService } from '../filesystem.service';
 import { ZipService } from '../zip/zip.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
@@ -24,12 +24,12 @@ export class LessonManagementService {
 
   private test(name: string) {
     return this.loadFromServer(name).pipe(
-        tap((res) => console.log("%c YEEEEEEEET", "color: red", res)),
         switchMap(buff => this.zipService.loadZip(buff)), 
         switchMap(zip => concat(
           this.fsService.storeLesson(zip, name), 
           this.zipService.getConfigFromStream(zip).pipe(
-            switchMap(config => this.fsService.storeConfig(config)))
+            switchMap(config => this.fsService.storeConfig(config))),
+          this.py.addToSysPath(name)
         ))
     );
   }
@@ -58,11 +58,10 @@ export class LessonManagementService {
         if (config) {
           console.log("%c Config found!", "color: green", config)
           this.fsService.HIDDEN_PATHS = new Set(this.filterPaths(name, config.hidden));
-          this.fsService.MODULE_PATHS = new Set(this.filterPaths(name, config.modules));
+          this.fsService.MODULE_PATHS = new Set(this.filterPaths(name, config.modules || []));
           this.fsService.READONLY_PATHS = new Set(this.filterPaths(name, config.readonly));
           this.fsService.EXTERNAL_PATHS = new Set(this.filterPaths(name, config.external));
           this.fsEv.onLessonOpened(config);
-          this.py.modulePaths = this.filterPaths(name, config.modules);
           return this.fsService.checkPermissions(`/${name}`, false);
         } else {
           return throwError("No config found!")
