@@ -26,8 +26,12 @@ export class MainViewerComponent implements OnInit {
       // TODO 
       const path = "/sortierroboter/hint_files/root.yml"
       
-      var content = this.fsService.getFileAsString(path);
-      content.subscribe(node => console.log(node))
+      // var content = this.fsService.getFileAsString(path);
+      // content.subscribe(node => console.log(node))
+
+      this.fsService.getFileAsBinary(path).subscribe(node => {
+        this.fsEventService.onOpenFile.emit({path: path, byUser: true, fileContent: node, type: FileType.HINT});
+      });
 
     });
   }

@@ -59,6 +59,7 @@ import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group
     UnityViewerComponent,
     TerminalViewerComponent,
     ImageViewerComponent,
+    HintViewerComponent,
     MainViewerComponent,
   ],
 })

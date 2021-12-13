@@ -1,7 +1,9 @@
-import { Component } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { load } from 'js-yaml'
 import {KatexOptions} from "ngx-markdown";
-import {HttpClient} from "@angular/common/http";
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
+import {FileTabDirective} from 'src/app/tab/file-tab.directive';
+import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 
 @Component({
   selector: 'app-hint-viewer',
@@ -9,7 +11,7 @@ import {HttpClient} from "@angular/common/http";
   styleUrls: ['./hint-viewer.component.scss'],
 })
 
-export class HintViewerComponent {
+export class HintViewerComponent implements OnInit {
   questions_storage_: Array<Question> = []
   answer_storage_: Array<Answer> = []
 
@@ -18,26 +20,33 @@ export class HintViewerComponent {
 
   error_answer: Answer = new Answer(-1, "Ich konnte leider keine Antwort finden.", []);
 
-  is_open_ = false
-
   katexOptions: KatexOptions = {
     // displayMode: true,
     throwOnError: false,
     errorColor: '#cc0000',
   }
 
-  constructor(private http: HttpClient) {
-    this.loadContent()
-  }
+  constructor(private domSanitizer: DomSanitizer,
+    private fileTabDirective: FileTabDirective, private fsService: FilesystemService) {}
 
-  loadContent() {
-    this.http.get('assets/hints/hints.yml', { responseType: 'text' })
-      .subscribe(data => { 
-        this.loadQuestionAnswers(data);
+  ngOnInit() {
+    this.fileTabDirective.dataChanges.subscribe(data => {
+      if(data) {
+        var rootFileString = new TextDecoder().decode(data.content);
+        this.loadRootFileString(rootFileString);
+      }
     });
   }
 
-  loadQuestionAnswers(yamlString: string): void {  
+
+  loadRootFileString(yamlString: string): void {
+    console.log(yamlString);
+    
+    var loadedYaml = load(yamlString) as Array<Object>
+
+  }
+
+  loadQuestionAnswersFromString(yamlString: string): void {  
   
     if(yamlString != null && yamlString != undefined && yamlString != '') {
       console.log("YamlString loaded!")
@@ -98,10 +107,6 @@ export class HintViewerComponent {
 
     this.initDialogue();
 
-  }
-
-  toggleHints(): void {
-    this.is_open_ = !this.is_open_
   }
 
   initDialogue(): void {
