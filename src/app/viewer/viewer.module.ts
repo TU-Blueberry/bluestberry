@@ -10,12 +10,13 @@ import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.compo
 import { LessonSelectionComponent } from './lesson-selection/lesson-selection.component'
 import { ImageViewerComponent } from './image-viewer/image-viewer.component'
 import { MainViewerComponent } from './main-viewer/main-viewer.component'
-import { TabComponent } from 'src/app/viewer/tab/tab.component'
-import { TabGroupComponent } from './tab-group/tab-group.component'
 import { AngularSplitModule } from 'angular-split'
 import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
-import { GlossaryEntryViewerComponent } from './glossary-entry-viewer/glossary-entry-viewer.component';
+import { FilesystemModule } from '../filesystem/filesystem.module'
+import { MarkdownViewerComponent } from "./markdown-viewer/markdown-viewer.component";
 import { MarkdownModule } from "ngx-markdown";
+import { TabModule } from 'src/app/tab/tab.module';
+import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group-facade.component';
 
 /**
  * Module used for all the Viewer-Components.
@@ -38,10 +39,9 @@ import { MarkdownModule } from "ngx-markdown";
     LessonSelectionComponent,
     ImageViewerComponent,
     MainViewerComponent,
-    TabComponent,
-    TabGroupComponent,
     HintViewerComponent,
-    GlossaryEntryViewerComponent,
+    MarkdownViewerComponent,
+    TabGroupFacadeComponent,
   ],
   imports: [
     CommonModule,
@@ -50,7 +50,9 @@ import { MarkdownModule } from "ngx-markdown";
     UnityModule,
     AngularSplitModule,
     OverlayModule,
+    FilesystemModule,
     MarkdownModule,
+    TabModule,
   ],
   exports: [
     CodeViewerComponent,

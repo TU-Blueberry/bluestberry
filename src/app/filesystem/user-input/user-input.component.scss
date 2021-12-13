@@ -1,0 +1,40 @@
+.input-error {
+    color: red;
+}
+
+.icon {
+    width: 16px;
+    height: 16px;
+    color: #cccccc;
+
+    &:hover {
+        color: white;
+    }
+}
+
+input, input:focus-visible, input:focus {
+    background-color: #2e3138;
+    border: 1px solid #1389fd;
+    border-radius: 0px;
+    color: white;
+    max-width: 80%;
+    text-overflow: ellipsis;
+}
+
+button {
+    background: none;
+    border: 0px;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+form, .input {
+    display: flex;
+}
+
+form {
+    flex-direction: column; 
+}
+

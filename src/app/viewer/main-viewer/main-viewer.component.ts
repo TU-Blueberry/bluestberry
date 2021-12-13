@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { UiEventsService } from 'src/app/ui-events.service';
 
 @Component({
   selector: 'app-main-viewer',
@@ -6,8 +7,11 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./main-viewer.component.scss']
 })
 export class MainViewerComponent implements OnInit {
+  filetreeVisible = true;
 
-  constructor() { }
+  constructor(private uiEv: UiEventsService) {
+    this.uiEv.onFiletreeToggle.subscribe(next => this.filetreeVisible = next);
+  }
 
   ngOnInit(): void {
   }

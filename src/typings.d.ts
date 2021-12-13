@@ -26,7 +26,7 @@ declare interface AnalyzeObject {
 }
 
 declare class FSNode {
-  contents: FSNode   
+  contents: FSNode | Uint8Array
   mode: number;
   id: number;
   name: string;
@@ -38,17 +38,22 @@ declare interface FSTypes {
   IDBFS: any;
 }
 
+type allowedEncodings = "binary" | "utf8";
+
 declare class MissingInEmscripten {
   filesystems: FSTypes;
   analyzePath(path: string, dontResolveLastLink: boolean): AnalyzeObject;
+  readFile(path: string, opts: { encoding: allowedEncodings; flags?: string | undefined }): Uint8Array | string;
 }
 
 declare class Pyodide {
+  FS: typeof FS & MissingInEmscripten;
   globals: Map<string, any>;
+
   runPythonAsync(code: string): Promise<any>;
   loadPackage(pythonPackage: string): Promise<any>;
-  FS: typeof FS & MissingInEmscripten;
   toPy(obj: any, options?: {depth: number}): PyProxy;
+  loadPackagesFromImports(code: string, messageCallback?: (message: string) => void, errorCallback?: (error: any) => void): Promise<any>;
 }
 
 declare class PyProxy {

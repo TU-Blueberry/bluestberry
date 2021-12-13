@@ -1,0 +1,30 @@
+<div
+  class="tab-header"
+  (wheel)="handleScroll($event)"
+  [scrollLeft]="scrollPosition"
+  >
+  <button
+    class="tab-button"
+    [ngClass]="{'active': tab === activeTab}"
+    *ngFor="let tab of dataSource; let i = index"
+    (click)="activeTab = tab"
+  >
+    <div class="tab-icon">
+      <ng-icon [name]="tab.icon || 'hero-document'"></ng-icon>
+    </div>
+    <div class="tab-title">
+      <span>
+        {{ tab.title }}
+      </span>
+    </div>
+    <div class="tab-action">
+      <button class="close-button" (click)="closeTab(i)">
+        <ng-icon name="hero-x"></ng-icon>
+      </button>
+    </div>
+  </button>
+</div>
+<div class="tab-body">
+  <ng-container #tabcontainer>
+  </ng-container>
+</div>

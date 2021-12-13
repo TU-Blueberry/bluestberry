@@ -1,0 +1,27 @@
+.common-action-icon {
+    width: 16px;
+    height: 16px;
+
+    &:hover {
+        color: white;
+        cursor: pointer;
+    }
+}
+
+.disabled {
+    color: grey;
+
+    &:hover {
+        color: grey;
+        cursor: default;
+    }
+}
+
+label:hover {
+    cursor: pointer;
+}
+
+.common-actions {
+    display: flex;
+    justify-content: space-evenly;
+}

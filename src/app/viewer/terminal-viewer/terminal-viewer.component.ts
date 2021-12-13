@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {PyodideService} from "../../pyodide/pyodide.service";
 
 @Component({
@@ -7,17 +7,26 @@ import {PyodideService} from "../../pyodide/pyodide.service";
   styleUrls: ['./terminal-viewer.component.scss']
 })
 export class TerminalViewerComponent implements OnInit {
-  terminalOutput: string = 'Ausgabe:\n';
+  terminalOutput: string = 'Ausgabe:';
+  error = false;
 
   constructor(private pyodideService: PyodideService) { }
 
   ngOnInit(): void {
-    this.pyodideService.getStdOut().subscribe(
-      result => this.terminalOutput += (result + "\n")
-    );
+    this.pyodideService.getStdOut().subscribe(result => {
+        this.error = false;
+        this.terminalOutput = this.terminalOutput +  ("\n" + result + "\n");
+    });
+
+    this.pyodideService.getStdErr().subscribe(result => {
+        if (!this.error) { this.terminalOutput += "\nFehler: \n"; }
+        this.error = true;
+        this.terminalOutput += (result + "\n");
+    });
   }
 
   clearOutput(): void {
-    this.terminalOutput = 'Ausgabe:\n\n';
+    this.error = false;
+    this.terminalOutput = 'Ausgabe:\n';
   }
 }

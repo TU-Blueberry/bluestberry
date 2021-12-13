@@ -1,0 +1,50 @@
+<div class="common-actions">
+  <div class="common-action-icon" [class.disabled]="isReadonly"  *ngIf="!isRoot" (click)="this.emitDelete($event)">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="binIconTitle" 
+      stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
+      <title id="binIconTitle" *ngIf="!isReadonly">Löschen</title> 
+      <title id="binIconTitle" *ngIf="isReadonly && isFile">{{READONLY_MESSAGE_FILE}}</title> 
+      <title id="binIconTitle" *ngIf="isReadonly && !isFile">{{READONLY_MESSAGE_FOLDER}}</title>
+      <path d="M19 6L5 6M14 5L10 5M6 10L6 20C6 20.6666667 6.33333333 21 7 21 7.66666667 21 11 21 17 21 17.6666667 21 18 20.6666667 18 20 18 19.3333333 18 16 18 10"/> 
+    </svg>
+  </div>
+  <div (click)="this.emitStartRenaming($event)" class="common-action-icon" [class.disabled]="isReadonly" *ngIf="!isRoot">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="editIconTitle"
+    stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+      <title *ngIf="!isReadonly && isFile" id="editIconTitle">Dateinamen bearbeiten</title>
+      <title *ngIf="!isReadonly && !isFile" id="editIconTitle">Ordnernamen bearbeiten</title>
+      <title *ngIf="isReadonly && isFile" id="editIconTitle">{{READONLY_MESSAGE_FILE}}</title>
+      <title *ngIf="isReadonly && !isFile" id="editIconTitle">{{READONLY_MESSAGE_FOLDER}}</title>
+      <path d="M18.4142136 4.41421356L19.5857864 5.58578644C20.366835 6.36683502 20.366835 7.63316498 19.5857864 8.41421356L8 20 4 20 4 16 15.5857864 4.41421356C16.366835 3.63316498 17.633165 3.63316498 18.4142136 4.41421356zM14 6L18 10"/> 
+    </svg>
+  </div>
+  <div (click)="this.emitCreateFromUi({ev: $event, isFile: false})" class="common-action-icon" [class.disabled]="isReadonly" *ngIf="!isFile">
+    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-labelledby="folderAddIconTitle" 
+    stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none" >
+      <title *ngIf="!isReadonly" id="folderAddIconTitle">Neuen Ordner erstellen</title> 
+      <title *ngIf="isReadonly" id="folderAddIconTitle">{{READONLY_MESSAGE_FOLDER}}</title> 
+      <path d="M3 5H9L10 7H21V19H3V5Z"/> <path d="M15 13H9"/>
+      <path d="M12 10V16"/> </svg>
+  </div>
+  <div (click)="this.emitCreateFromUi({ev: $event, isFile: true})" class="common-action-icon" [class.disabled]="isReadonly"  *ngIf="!isFile">
+    <svg role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="fileIconTitle"
+    stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
+      <title *ngIf="!isReadonly" id="fileIconTitle">Neue Datei erstellen</title>
+      <title *ngIf="isReadonly" id="fileIconTitle">{{READONLY_MESSAGE_FOLDER}}</title> 
+      <path stroke-linecap="round" d="M13 3v6h6"/> <path d="M13 3l6 6v12H5V3z"/>
+    </svg>
+  </div>
+  <div class="common-action-icon" [class.disabled]="isReadonly" *ngIf="!isFile" (click)="stopPropagation($event)">
+    <label [class.disabled]="isReadonly">
+      <input type="file" multiple="true" (change)="filesChange($event)" class="invisible">  
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="uploadIconTitle" 
+        stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
+        <title *ngIf="!isReadonly" id="uploadIconTitle">Datei hochladen</title> 
+        <title *ngIf="isReadonly" id="uploadIconTitle">{{READONLY_MESSAGE_FOLDER}}</title> 
+        <path d="M12,4 L12,17"/> 
+        <polyline points="7 8 12 3 17 8"/> 
+        <path d="M20,21 L4,21"/> 
+      </svg>
+    </label>
+  </div>
+</div>

@@ -1,30 +1,25 @@
-<as-split direction="horizontal" class="main-split">
-  <as-split-area>
-    <as-split direction="vertical">
-      <as-split-area>
-        <app-tab-group>
-          <app-tab title="code">
-            <app-code-viewer class="code-wrapper"></app-code-viewer>
-          </app-tab>
-        </app-tab-group>
+<as-split direction="horizontal" class="main-split" [gutterSize]="4">
+  <as-split-area
+    *ngIf="filetreeVisible"
+    [order]="0"
+    [minSize]="10"
+    [size]="15"
+    [maxSize]="30"
+    style="max-height: 100vh"
+  >
+    <app-filetree></app-filetree>
+  </as-split-area>
+  <as-split-area [order]="1" [minSize]="10" [size]="42.5">
+    <as-split direction="vertical" [gutterSize]="4">
+      <as-split-area [order]="0" [minSize]="20">
+        <app-tab-group-facade id="left"></app-tab-group-facade>
       </as-split-area>
-      <as-split-area>
+      <as-split-area [order]="1" [minSize]="34">
         <app-terminal-viewer></app-terminal-viewer>
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area>
-    <app-tab-group>
-      <app-tab title="unity">
-        <app-unity-viewer></app-unity-viewer>
-      </app-tab>
-      <app-tab title="glossary-entry">
-        <app-glossary-entry-viewer [entryIdentifier]="'example-entry'"></app-glossary-entry-viewer>
-      </app-tab>
-      <app-tab title="dog">
-        <app-image-viewer imagePath="assets/dog.png"></app-image-viewer>
-      </app-tab>
-    </app-tab-group>
-    <app-hint-viewer></app-hint-viewer>
+  <as-split-area [order]="2" [minSize]="10" [size]="42.5">
+    <app-tab-group-facade id="right"></app-tab-group-facade>
   </as-split-area>
 </as-split>

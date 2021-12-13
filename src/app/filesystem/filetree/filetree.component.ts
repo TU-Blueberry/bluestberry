@@ -1,14 +1,15 @@
 import { Component, ComponentFactoryResolver, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Observable, Subject, Subscription } from 'rxjs';
+import { concat, from, Observable, of, Subject, Subscription } from 'rxjs';
 import { PyodideService } from '../../pyodide/pyodide.service';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
-import { saveAs } from 'file-saver';
-import { EventService } from '../events/event.service';
-import { switchMap } from 'rxjs/operators';
-import { ConfigObject } from '../shared/configObject';
-import { JSZipObject } from 'jszip';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
+import { ZipService } from '../zip/zip.service';
+import { LessonManagementService } from '../lesson-management/lesson-management.service';
+import { TreeNode } from '../model/tree-node';
+import { UiEventsService } from 'src/app/ui-events.service';
+import { FilesystemEventService } from '../events/filesystem-event.service';
 
 @Component({
   selector: 'app-filetree',
@@ -25,64 +26,59 @@ export class FiletreeComponent implements OnDestroy{
   selectedFile?: File;
   userResult$: Subject<boolean> = new Subject();
   lastCheck?: Subscription;
-  test: any;
+
+  readonly SELECTED_LESSON = "sortierroboter"
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
-  constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, private ev: EventService) {
+  constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
+    private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService) {
 
     // TODO: error handling
-    concat(this.pys.pyodide, this.fsService.openLessonByName('/sortierroboter'))
+    concat(this.pys.pyodide, this.mgmtService.openLessonByName(this.SELECTED_LESSON))
       .subscribe(
         () => { },
-        err => { },
-        () => { 
-          this.kickstartTreeGeneration();
-        });
+        err => { console.error(err) },
+        () => this.kickstartTreeGeneration());
+  }
 
-    // Sync after every write
-    // TODO: Should probably be done automatically after every code execution by pyodide service
-    ev.onWriteToFile.subscribe(() => {
-      this.fsService.sync(false).subscribe()
+  kickstartTreeGeneration() {
+    console.log("kickstart trtee")
+
+    const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
+    const root = this.fsService.getNodeByPath(`/${this.SELECTED_LESSON}`).subscribe((node) => {
+      console.log("Got node: ", node)
+
+      const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
+      const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
+      baseNode.path = "/";
+      folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, "Sortierroboter");
+      this.rootComponent = folderComp;
     });
   }
-
-  // TODO: Remove hardcoded stuff
-  kickstartTreeGeneration(): void {
-    const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
-    const root = this.fsService.getTopLevelOfLesson("/sortierroboter");
-    const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
-    folderComp.depth = 0;
-    folderComp.path = "/sortierroboter";
-    folderComp.ref = root;
-    folderComp.rootname = "Sortierroboter";
-    this.rootComponent = folderComp;
-  }
-
-  // TODO: Soll man mehr als eine Lektion gleichzeitig offen haben können?
-  // Falls ja müsste es beim Import noch eine Flag wie "nach dem importieren öffnen" geben (ngModel)
-
-  // TODO: Vor dem Import alle Tabs der alten Lektion schließen, changes discarden
-  // Nach dem Import: openLeft und openRight der neuen Lektion aufrufen
 
   // TODO: Dateien laden bugg bei FF irgendwie
+  // TODO: Catch error
+
+  // TODO: Config aus neuem Mountpoint laden und reinpacken
+  // Gleiches gilt für external dateien
   export(name: string): void {
-    this.fsService.exportLesson(name).subscribe(blob => {
-      saveAs(blob, name);
-    });
+    this.zipService.export(name).subscribe()
   }
 
   finishImport(): void {
     this.userResult$.next(true);
   }
 
-  // TODO: Additionally check whether it zip is completely empty or only consists of config.json
+  // TODO: Regular flow should be similar to this!
+
+  // TODO: Additionally check whether zip is completely empty or only consists of config.json
   unpackCheckAndPossiblyImport(file: File) {
     this.checkInProgress = true;
     return from(file.arrayBuffer()).pipe(
-      switchMap(buffer => this.fsService.loadZip(buffer)),
-      switchMap(zip => this.getFileFromZip(zip)),
-      switchMap(res => this.getConfigFromStream(res)),
-      switchMap(conf => this.fsService.checkIfLessonDoesntExistYet(conf.name)
+      switchMap(buffer => this.zipService.loadZip(buffer)),
+      tap(unzipped => this.tempZip = unzipped),
+      switchMap(res => this.zipService.getConfigFromStream(res)),
+      switchMap(conf => this.fsService.isNewLesson(conf.name)
         .pipe(
             switchMap(isEmpty => { 
               this.conflictDetected = !isEmpty;
@@ -99,37 +95,6 @@ export class FiletreeComponent implements OnDestroy{
     return new Observable(subscriber => {
       this.userResult$.complete();
       subscriber.complete();
-    });
-  }
-
-  getConfigFromStream(config: JSZipObject): Observable<ConfigObject> {
-    return new Observable(subscriber => {
-      const stream = config.internalStream("string");
-      stream.on("error", () => subscriber.error("Error trying to stream config"));
-      stream.accumulate().then((data => {
-        const parsedConfig: ConfigObject = JSON.parse(data);
-      
-        if (parsedConfig.name) {
-          subscriber.next(parsedConfig);
-          subscriber.complete();
-        } else {
-          subscriber.error("Config is missing name property");
-        }      
-      }));
-    });
-  }
-
-  getFileFromZip(unzipped: JSZip): Observable<JSZipObject> {
-    return new Observable(subscriber => {
-      this.tempZip = unzipped;
-      const config = unzipped.file("config.json");
-
-      if (!config) {
-        subscriber.error("Couldn't find config file");
-      } else {
-        subscriber.next(config);
-        subscriber.complete();
-      }
     });
   }
 

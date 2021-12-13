@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { UiEventsService } from '../ui-events.service';
 
 @Component({
   selector: 'app-actionbar',
@@ -7,18 +8,14 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ActionbarComponent implements OnInit {
   showFiles = false;
-  showTestOverlay = false;
 
-  constructor() { }
+  constructor(private uiEv: UiEventsService) { }
 
   ngOnInit(): void {
   }
 
   toggleFiles(): void {
     this.showFiles = !this.showFiles;
-  }
-
-  showTests(): void {
-    this.showTestOverlay = true;
+    this.uiEv.changeFiletree(this.showFiles);
   }
 }

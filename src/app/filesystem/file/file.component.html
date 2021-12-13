@@ -1,4 +1,4 @@
-<div class="file" [style.padding-left.px] = "depth * 10">
+<div class="file" [style.padding-left.px] = "_node.depth * 10" (dblclick)="onDoubleClick()" [class.active]="_node.isActive">
     <div class="file-heading">
         <svg class="file-type-image" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
             aria-labelledby="imageIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
@@ -9,18 +9,17 @@
             <circle cx="13.5" cy="7.5" r="2.5" />
             <path stroke-linecap="round" d="M13.5 16.5L21 9" />
         </svg>
-        <div class="file-name">
-            {{ ref?.name }}
+        <div class="file-name" *ngIf="!isRenaming">
+            {{ _node.name }}
         </div> 
-    </div>
-    <div class="file-actions">
-        <div class="delete-file file-action-icon" (click)="deleteFile($event)">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="binIconTitle" 
-            stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none"> 
-            <title id="binIconTitle">Löschen</title> 
-            <path d="M19 6L5 6M14 5L10 5M6 10L6 20C6 20.6666667 6.33333333 21 7 21 7.66666667 21 11 21 17 21 17.6666667 21 18 20.6666667 18 20 18 19.3333333 18 16 18 10"/> 
-          </svg>
+        <div *ngIf="isRenaming">
+            <app-user-input [parentPath]="_node.parentPath" [depth]="_node.depth" [isFile]="true" [editMode]="true" 
+            [currentName]="_node.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
         </div>
+    </div>
+    <div *ngIf="!isRenaming" class="common-actions">
+        <app-common-actions [isRoot]="_node.isRoot" [isFile]="true" [mode]="_node.mode || -1 "
+        (delete)="this.deleteFile($event)" (startRenaming)="this.startRenaming($event)"></app-common-actions>
     </div>
 </div>
 

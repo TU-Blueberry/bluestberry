@@ -4,8 +4,10 @@ import {
   ElementRef,
   Input,
   ViewChild,
-  HostListener
+  HostListener, Output, EventEmitter, OnInit
 } from '@angular/core';
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
+import {FileTabDirective} from 'src/app/tab/file-tab.directive';
 
 @Component({
   selector: 'app-image-viewer',
@@ -13,25 +15,29 @@ import {
   styleUrls: ['./image-viewer.component.scss'],
 })
 
-export class ImageViewerComponent {
+export class ImageViewerComponent implements OnInit {
 
   @ViewChild('imageLoaded', { read: ElementRef, static: false })
   imageLoaded: ElementRef;
 
-  @Input()
-  get imagePath(): string {
-    return this._image_path;
+  constructor(private domSanitizer: DomSanitizer,
+              private fileTabDirective: FileTabDirective) {
   }
-  set imagePath(path: string) {
-    this._image_path = path || 'assets/blueberry.png';
+
+  ngOnInit() {
+    this.fileTabDirective.dataChanges.subscribe(data => {
+      this.imagePath = this.domSanitizer.bypassSecurityTrustUrl(
+        URL.createObjectURL(
+          new Blob([data.content], { type: 'image/png' })
+        )
+      );
+    })
   }
-  
-  constructor() {}
 
   onImageLoad(evt: Event): void {
     if(evt && evt.target) {
       const img = evt.target as HTMLImageElement;
-      
+
       this._image_width = img.naturalWidth;
       this._image_height = img.naturalHeight;
       this._original_image_ratio = this._image_width / this._image_height;
@@ -72,7 +78,7 @@ export class ImageViewerComponent {
   onKeyupEvent($event: KeyboardEvent) {
     this._zoom_in = true;
   }
-  
+
   mouseOver(event: any): void {
     this._hover_img = true;
   }
@@ -82,7 +88,6 @@ export class ImageViewerComponent {
   }
 
   mouseClick(event: any): void {
-    console.log("zoom factor " + this._zoom_factor)
     if(this._zoom_in) {
       this._zoom_factor += this._zoom_step;
     } else {
@@ -96,10 +101,11 @@ export class ImageViewerComponent {
     this.imageLoaded.nativeElement.height = this._image_height;
   }
 
-  private _image_path = '';
+  imagePath: SafeUrl = '';
+
   private _image_width = 0;
   private _image_height = 0;
-  
+
   private _original_image_width = 0;
   private _original_image_ratio = 0;
 

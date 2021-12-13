@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, Renderer2 } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-root',
@@ -7,4 +7,6 @@ import { AfterViewInit, Component, Renderer2 } from '@angular/core';
 })
 export class AppComponent {
   title = 'BluestBerry';
+
+  constructor() { }
 }

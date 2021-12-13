@@ -1,9 +1,19 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, Input, OnInit } from '@angular/core'
 import { PyodideService } from 'src/app/pyodide/pyodide.service'
+<<<<<<< HEAD
 import { EditorComponent, NgxEditorModel } from 'ngx-monaco-editor'
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
 import { MonacoLanguageClient, CloseAction, ErrorAction, MonacoServices, createConnection } from 'monaco-languageclient';
 const ReconnectingWebSocket = require('reconnecting-websocket');
+=======
+import { EditorComponent } from 'ngx-monaco-editor'
+import { editor } from 'monaco-editor'
+import ICodeEditor = editor.ICodeEditor
+import { FileTabDirective } from 'src/app/tab/file-tab.directive'
+import { Subject } from 'rxjs'
+import { concatMap, debounceTime, switchMap, tap } from 'rxjs/operators'
+
+>>>>>>> development
 @Component({
   selector: 'app-code-viewer',
   templateUrl: './code-viewer.component.html',
@@ -22,7 +32,6 @@ export class CodeViewerComponent implements OnInit {
   }
   languageId = 'python';
   code = `import os
-import js
 
 import numpy as np
 import pandas as pd
@@ -31,7 +40,11 @@ from skimage import io
 from sklearn import metrics
 from sklearn.dummy import DummyClassifier
 
-path = "sortierroboter/sortierroboter/BlueberryData/"
+import berrytemplates as bt
+from berrysort import TestDataLoader
+
+# Der Pfad zu den Trainingsdaten
+path = "sortierroboter/BlueberryData/TrainingData/"
 
 
 def load_images(path):
@@ -76,19 +89,6 @@ def print_metrics(y, predictions, set_name="test"):
     print("\\n")
 
 
-def send_to_unity(labels, predictions):
-    # do not touch this function
-    str_labels = np.char.mod("%d", labels).tolist()
-    str_labels = ",".join(str_labels)
-    print(str_labels)
-    js.sendTraits(str_labels)
-
-    str_predictions = np.char.mod("%d", predictions).tolist()
-    str_predictions = ",".join(str_predictions)
-    print(str_predictions)
-    js.sendClassification(str_predictions)
-
-
 def plot_results(predictions):
     # plot the number of images classified as 0 (bad)
     count_good = sum(predictions)
@@ -99,15 +99,21 @@ def plot_results(predictions):
     # fig.show()
 
 
+def predict_pipeline(X_test, model):
+    X_test = extract_features(X_test)
+    return model.predict(X_test)
+
+
 def main():
+    # required line to work with the test data
+    tdl = TestDataLoader()
     # load images
-    X_train, y_train = load_images(path + "TrainingData/")
-    X_test, y_test = load_images(path + "TestData/")
+    X_train, y_train = load_images(path)
     print("finished loading data")
     print("\\n")
 
     # extract features from the images
-    X_train, X_test = extract_features(X_train), extract_features(X_test)
+    X_train = extract_features(X_train)
 
     # build model
     model = DummyClassifier(strategy="uniform")
@@ -116,19 +122,50 @@ def main():
     model.fit(X_train, y_train)
 
     # evaluate model
-    predictions = model.predict(X_test)
-    print_metrics(y_test, predictions, "test")
-    plot_results(predictions)
+    predict_func = lambda X_test: predict_pipeline(X_test, model)
 
-    send_to_unity(y_test, predictions)
+    # examples for template methods
+    # X_train, y_train = bt.load_images()
+    # X_train = bt.extract_features(X_train)
+    # model = bt.classifier()
+    # model.fit(X_train, y_train)
+    # predict_func = lambda X_test: model.predict(bt.extract_features(X_test))
+    # bt.print_prediction_metrics(predict_func, tdl)
 
-# comment out the following line for own classifier
-send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))
-#main()`
+    tdl.send_to_unity(predict_func)
+    acc = tdl.evaluate_metric(predict_func)
+    print(acc)
 
-  constructor(private pyodideService: PyodideService) {}
+main()
+`
 
-  ngOnInit(): void {}
+  saveSubject = new Subject<void>()
+  constructor(
+    private pyodideService: PyodideService,
+    private fileTabDirective: FileTabDirective
+  ) {}
+
+  ngOnInit(): void {
+    this.fileTabDirective.dataChanges.subscribe((data) => {
+      if (data) {
+        this.code = new TextDecoder().decode(data.content)
+      }
+    })
+
+    this.saveSubject
+      .pipe(
+        debounceTime(1000),
+        tap(() => console.log('save file observable')),
+        concatMap(() =>
+          this.fileTabDirective.saveCurrentFile(
+            new TextEncoder().encode(this.code)
+          )
+        )
+      )
+      .subscribe(() => {
+        console.log('saved file')
+      })
+  }
 
   executeCode(): void {
     this.pyodideService.runCode(this.code).subscribe()
@@ -196,5 +233,9 @@ send_to_unity(np.array([1,0,1,1,0,1,0]), np.array([1,0,0,1,1,1,0]))
 
   redo(): void {
     this.editor?.trigger(null, 'redo', '')
+  }
+
+  save(): void {
+    this.saveSubject.next()
   }
 }
