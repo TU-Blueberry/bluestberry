@@ -113,8 +113,7 @@ export class PyodideService {
 import sys
 
 if "${lessonName}" not in sys.path:
-    sys.path.append("/${lessonName}")
-      `
+    sys.path.append("/${lessonName}")`
 
     return this.runCodeSilently(code);
   }
@@ -124,8 +123,7 @@ if "${lessonName}" not in sys.path:
 import sys
 
 if "/${lessonName}" in sys.path:
-    sys.path.remove("/${lessonName}")
-      `
+    sys.path.remove("/${lessonName}")`
 
     return this.runCodeSilently(code);
   }

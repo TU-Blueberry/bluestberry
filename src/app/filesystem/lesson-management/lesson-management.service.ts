@@ -17,12 +17,12 @@ export class LessonManagementService {
     private location: Location, private fsEv: FilesystemEventService, private py: PyodideService) { }
 
   /** Retrieves lesson from server and stores it */
-  loadFromServer(name: string) {
+  private loadFromServer(name: string) {
     const url = this.location.prepareExternalUrl(`/assets/${name}.zip`);
     return this.http.get(url, { responseType: 'arraybuffer' });
   }
 
-  private test(name: string) {
+  private loadAndStore(name: string) {
     return this.loadFromServer(name).pipe(
         switchMap(buff => this.zipService.loadZip(buff)), 
         switchMap(zip => concat(
@@ -39,19 +39,26 @@ export class LessonManagementService {
    * If no, the lesson with the given name will be requested from the server and stored afterwards 
    * Intended for situations where user shall choose between multiple lessons (e.g. application startup)
    * */
-    openLessonByName(name: string) {
+  public openLessonByName(name: string) {
     return concat(this.fsService.isNewLesson(name).pipe(
-      switchMap(isEmpty => iif(() => isEmpty, this.test(name), EMPTY)),
+      switchMap(isEmpty => iif(() => isEmpty, this.loadAndStore(name), EMPTY)),
     ), this.checkAfterMount(name))
   }
 
-  // TODO: On close of lesson:
-  // Sync everything
-  // Reset all PATHS in fsService
-  // Reset modulePaths in pyodideService
-  // Remove all module paths from pyodides sys.path
+  public closeLesson(name: string): any {
+    concat(this.fsService.unmountAndSync(name), this.py.removeFromSysPath(name)).subscribe(() => {
+      this.fsService.HIDDEN_PATHS = new Set();
+      this.fsService.EXTERNAL_PATHS = new Set();
+      this.fsService.READONLY_PATHS = new Set();
+      this.fsService.MODULE_PATHS = new Set();
+    });
+  }
 
-  checkAfterMount(name: string){
+  public changeLesson(oldLesson: string, newLesson: string) {
+    return concat(this.closeLesson(oldLesson), this.openLessonByName(newLesson));
+  }
+
+  private checkAfterMount(name: string){
     console.log("check after mount!")
 
       return this.fsService.getConfig(name).pipe(switchMap(config => {  
