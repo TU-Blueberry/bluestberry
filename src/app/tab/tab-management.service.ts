@@ -45,13 +45,13 @@ export class TabManagementService {
 
     const userOpenEvent$ = filesystemEventService.onOpenFile.pipe(
       filter(e => e.byUser),
-      switchMap(e => this.createOpenTabEvent(e.path, e.extension, e.type, e.fileContent)),
+      switchMap(e => this.createOpenTabEvent(e.path, e.type, e.fileContent)),
     );
 
     merge(lesson$, userOpenEvent$).subscribe(t => this._openTab.next(t));
   }
 
-  createOpenTabEvent(path: string, extension?: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
+  createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
     const fileType = type || this.filesystemService.getFileType(path);
     return (
       fileContent ? of(fileContent) : this.filesystemService.getFileAsBinary(path)
@@ -63,7 +63,6 @@ export class TabManagementService {
       map((fileContent) => ({
       title: path.split('/').pop() || path,
       groupId: this.mapFileTypeToTabGroup(fileType),
-      extension: extension,
       type: this.mapFileTypeToTabType(fileType),
       data: { path: path, content: fileContent },
     })));
