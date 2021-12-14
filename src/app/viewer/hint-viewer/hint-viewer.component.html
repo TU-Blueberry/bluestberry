@@ -19,7 +19,7 @@
               style="display: inline"
               >{{divider[0]}}</markdown
             >
-            <img *ngIf="divider[1] == 'IMAGE'" src="{{divider[0]}}" />
+            <img *ngIf="divider[1] == 'IMAGE'" [src]="imagePathToSafeUrl.get(divider[0])" />
             <code *ngIf="divider[1] == 'INLINE_CODE'">{{ divider[0] }}</code>
             {{ action.getTextSlice(i + 1) }}
           </ng-container>

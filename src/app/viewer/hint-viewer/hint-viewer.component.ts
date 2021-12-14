@@ -28,6 +28,9 @@ export class HintViewerComponent implements OnInit {
 
   base_path_: string = '';
 
+  imagePathToSafeUrl = new Map<string, SafeUrl>();
+
+
   constructor(private domSanitizer: DomSanitizer,
     private fileTabDirective: FileTabDirective, private fsService: FilesystemService) {}
 
@@ -41,15 +44,34 @@ export class HintViewerComponent implements OnInit {
       }
     });
 
-    setTimeout(() => {this.initDialogue();}, 1000)
+    
+    const imagesPath = [this.base_path_, "img"].join("/")
 
-    // load all images from base path
-    // filter for image files
-    // map, flatten, concat...
-    this.fsService.scan(this.base_path_, 10, true).subscribe(node => {
-      console.log(node);
+    this.fsService.scan(imagesPath, 2, true, true).subscribe(nestedNodes => {
+      for(let arrayOfNodes of nestedNodes) {
+        if(arrayOfNodes.length > 0) {
+          for(let imageNode of arrayOfNodes) {
+            const imageFileName = imageNode.name
 
+            if(imageFileName.toLowerCase().endsWith(".png") || imageFileName.toLowerCase().endsWith("jpeg") || imageFileName.toLowerCase().endsWith("jpg")) {
+              const imageFilePath = [imagesPath, imageFileName].join("/");
+              console.log("Image loaded from filesystem " + imageFilePath);
+
+              this.fsService.getFileAsBinary(imageFilePath).subscribe(binary => {
+                const safeUrl = this.domSanitizer.bypassSecurityTrustUrl(
+                  URL.createObjectURL(
+                    new Blob([binary.buffer], {type: 'image/png'})
+                  )
+                );
+                this.imagePathToSafeUrl.set(imageFileName, safeUrl);
+              });
+            }
+          }
+        }
+      }
     });
+   
+    setTimeout(() => {this.initDialogue(); console.log(this.imagePathToSafeUrl);}, 1000)
 
   }
   
@@ -172,6 +194,7 @@ export class HintViewerComponent implements OnInit {
     } 
 
     this.dialogue_history_.push(answer!)
+    console.log(answer!.getTextDividers())
 
     const new_options = this.getQuestionOptions(answer!)
     for (var o of new_options) {
