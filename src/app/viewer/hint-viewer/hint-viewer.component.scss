@@ -1,20 +1,36 @@
 .hint-container {
     background-color: lightgray;
     display: flex;
-    overflow-y: scroll;
     height: 100%;
+    overflow-y: scroll;
 }
+
 
 .hint-footer-bar {
     position: absolute;
+    
+    display: flex;
+    justify-items: center; 
+    justify-content: center;
+    
+    padding-top: 5px;
+    padding-bottom: 5px;
     bottom: 10px;
 }
 
-.undo-button {
-    width: 48px;
+.hint-footer-bar-button {
     height: 24px;
-    margin: 5px;   
-    align-items: center;
+    padding: 10px;
+    margin: 10px;
+    border-radius: 50%;
+    color: #ffffff66;
+    background-color: rgb(46, 49, 56);
+
+    &:hover {
+        background-color: rgb(66, 70, 80);
+        cursor: pointer;
+        color: rgb(240, 240, 240);
+    }
 }
 
 .hint-dialogue > * {

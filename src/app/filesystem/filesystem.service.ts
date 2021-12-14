@@ -206,20 +206,20 @@ export class FilesystemService {
   }
 
   /* Returns all non-hidden and non-module subfolders and - if requested - files of the given path as seperate arrays */
-  public scan(path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
+  public scan(path: string, depth: number, includeFiles: boolean, includeHidden: boolean = false): Observable<FSNode[][]> {
     return this.getNodeByPath(path).pipe(switchMap(node => {
 
-    return node.contents instanceof Uint8Array ? of([]) : this.scanWithoutFetch(node.contents, path, depth, includeFiles);
+    return node.contents instanceof Uint8Array ? of([]) : this.scanWithoutFetch(node.contents, path, depth, includeFiles, includeHidden);
     }))
   }
 
-  public scanWithoutFetch(node: FSNode, path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
+  public scanWithoutFetch(node: FSNode, path: string, depth: number, includeFiles: boolean, includeHidden: boolean = false): Observable<FSNode[][]> {
       const subfolders: FSNode[] = [];
       const filesInFolder: FSNode[] = [];
 
       // remove all hidden paths + all modules + all system directories
       const remainingObjects =  Object.entries(node).filter(([_, value], key) =>
-        !this.isHiddenPath(`${path}/${value.name}`)
+        (includeHidden || !this.isHiddenPath(`${path}/${value.name}`))
         && !this.isModulePath(`${path}/${value.name}`)
         && !this.isSystemDirectory(`${path}/${value.name}`));
 
