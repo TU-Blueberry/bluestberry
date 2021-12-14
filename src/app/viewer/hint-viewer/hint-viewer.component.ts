@@ -26,40 +26,54 @@ export class HintViewerComponent implements OnInit {
     errorColor: '#cc0000',
   }
 
+  base_path_: string = '';
+
   constructor(private domSanitizer: DomSanitizer,
     private fileTabDirective: FileTabDirective, private fsService: FilesystemService) {}
 
   ngOnInit() {
     this.fileTabDirective.dataChanges.subscribe(data => {
       if(data) {
+        this.base_path_ = data.path.split("/").slice(0,-1).join("/");
         var rootFileString = new TextDecoder().decode(data.content);
-        this.loadRootFileString(rootFileString);
+        console.log("Hints file " + data.path + " loaded");
+        this.loadFile(rootFileString);
       }
     });
+
+    setTimeout(() => {this.initDialogue();}, 1000)
+
+    // load all images from base path
+    // filter for image files
+    // map, flatten, concat...
+    this.fsService.scan(this.base_path_, 10, true).subscribe(node => {
+      console.log(node);
+
+    });
+
   }
-
-
-  loadRootFileString(yamlString: string): void {
-    console.log(yamlString);
-    
-    var loadedYaml = load(yamlString) as Array<Object>
-
-  }
-
-  loadQuestionAnswersFromString(yamlString: string): void {  
   
-    if(yamlString != null && yamlString != undefined && yamlString != '') {
-      console.log("YamlString loaded!")
-    } else {
-      console.log("Could not load YamlString from hints.yml")
-    }
-
+  loadFile(yamlString: string): void {  
+  
     var loadedYaml = load(yamlString) as Array<Object>
-
+    
     for (let item_id in loadedYaml) {
       var outerItem = loadedYaml[item_id] as any
       var name = Object.keys(outerItem)[0]
       var item = outerItem[name]
+      
+      if(name == "files") {
+        for(let subfile_id in item) {
+          const subfileName = item[subfile_id]
+          const subfilePath = [this.base_path_, subfileName].join("/");
+
+          this.fsService.getFileAsString(subfilePath).subscribe(subfileContent => {
+            console.log("Hints subfile " + subfilePath + " loaded");
+            this.loadFile(subfileContent);
+          });
+        }
+        continue
+      }
 
       if (item.hasOwnProperty('content')) {
         const content = item['content'] as string
@@ -104,9 +118,6 @@ export class HintViewerComponent implements OnInit {
         console.log('Error parsing hint-yaml. Item has no content.')
       }
     }
-
-    this.initDialogue();
-
   }
 
   initDialogue(): void {
