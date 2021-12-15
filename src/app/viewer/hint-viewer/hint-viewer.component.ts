@@ -1,7 +1,9 @@
-import { Component } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { load } from 'js-yaml'
 import {KatexOptions} from "ngx-markdown";
-import {HttpClient} from "@angular/common/http";
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
+import {FileTabDirective} from 'src/app/tab/file-tab.directive';
+import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 
 @Component({
   selector: 'app-hint-viewer',
@@ -9,7 +11,7 @@ import {HttpClient} from "@angular/common/http";
   styleUrls: ['./hint-viewer.component.scss'],
 })
 
-export class HintViewerComponent {
+export class HintViewerComponent implements OnInit {
   questions_storage_: Array<Question> = []
   answer_storage_: Array<Answer> = []
 
@@ -18,39 +20,82 @@ export class HintViewerComponent {
 
   error_answer: Answer = new Answer(-1, "Ich konnte leider keine Antwort finden.", []);
 
-  is_open_ = false
-
   katexOptions: KatexOptions = {
     // displayMode: true,
     throwOnError: false,
     errorColor: '#cc0000',
   }
 
-  constructor(private http: HttpClient) {
-    this.loadContent()
-  }
+  base_path_: string = '';
 
-  loadContent() {
-    this.http.get('assets/hints/hints.yml', { responseType: 'text' })
-      .subscribe(data => { 
-        this.loadQuestionAnswers(data);
+  imagePathToSafeUrl = new Map<string, SafeUrl>();
+
+
+  constructor(private domSanitizer: DomSanitizer,
+    private fileTabDirective: FileTabDirective, private fsService: FilesystemService) {}
+
+  ngOnInit() {
+    this.fileTabDirective.dataChanges.subscribe(data => {
+      if(data) {
+        this.base_path_ = data.path.split("/").slice(0,-1).join("/");
+        var rootFileString = new TextDecoder().decode(data.content);
+        console.log("Hints file " + data.path + " loaded");
+        this.loadFile(rootFileString);
+      }
     });
+
+    
+    const imagesPath = [this.base_path_, "img"].join("/")
+
+    this.fsService.scan(imagesPath, 2, true, true).subscribe(nestedNodes => {
+      for(let arrayOfNodes of nestedNodes) {
+        if(arrayOfNodes.length > 0) {
+          for(let imageNode of arrayOfNodes) {
+            const imageFileName = imageNode.name
+
+            if(imageFileName.toLowerCase().endsWith(".png") || imageFileName.toLowerCase().endsWith("jpeg") || imageFileName.toLowerCase().endsWith("jpg")) {
+              const imageFilePath = [imagesPath, imageFileName].join("/");
+              console.log("Image loaded from filesystem " + imageFilePath);
+
+              this.fsService.getFileAsBinary(imageFilePath).subscribe(binary => {
+                const safeUrl = this.domSanitizer.bypassSecurityTrustUrl(
+                  URL.createObjectURL(
+                    new Blob([binary.buffer], {type: 'image/png'})
+                  )
+                );
+                this.imagePathToSafeUrl.set(imageFileName, safeUrl);
+              });
+            }
+          }
+        }
+      }
+    });
+   
+    setTimeout(() => {this.initDialogue(); console.log(this.imagePathToSafeUrl);}, 1000)
+
   }
-
-  loadQuestionAnswers(yamlString: string): void {  
   
-    if(yamlString != null && yamlString != undefined && yamlString != '') {
-      console.log("YamlString loaded!")
-    } else {
-      console.log("Could not load YamlString from hints.yml")
-    }
-
+  loadFile(yamlString: string): void {  
+  
     var loadedYaml = load(yamlString) as Array<Object>
-
+    
     for (let item_id in loadedYaml) {
       var outerItem = loadedYaml[item_id] as any
       var name = Object.keys(outerItem)[0]
       var item = outerItem[name]
+      
+      if(name == "files") {
+        for(let subfile_id in item) {
+          const subfileName = item[subfile_id]
+          const subfilePath = [this.base_path_, subfileName].join("/");
+
+          this.fsService.getFileAsString(subfilePath).subscribe(subfileContent => {
+            console.log("Hints subfile " + subfilePath + " loaded");
+            this.loadFile(subfileContent);
+          });
+        }
+        continue
+      }
 
       if (item.hasOwnProperty('content')) {
         const content = item['content'] as string
@@ -95,13 +140,6 @@ export class HintViewerComponent {
         console.log('Error parsing hint-yaml. Item has no content.')
       }
     }
-
-    this.initDialogue();
-
-  }
-
-  toggleHints(): void {
-    this.is_open_ = !this.is_open_
   }
 
   initDialogue(): void {
@@ -156,6 +194,7 @@ export class HintViewerComponent {
     } 
 
     this.dialogue_history_.push(answer!)
+    console.log(answer!.getTextDividers())
 
     const new_options = this.getQuestionOptions(answer!)
     for (var o of new_options) {
@@ -163,7 +202,7 @@ export class HintViewerComponent {
     }
   }
 
-  undo(): void { 
+  simpleUndo(): void { 
 
     if (this.dialogue_history_.length < 2) {
       return
@@ -181,6 +220,19 @@ export class HintViewerComponent {
       this.dialogue_options_.push(o)
     }
   }
+
+  multiUndo(): void {
+    this.simpleUndo();
+    this.simpleUndo();
+    this.simpleUndo();
+  }
+
+  reset(): void {
+    this.dialogue_options_ = []
+    this.dialogue_history_ = []
+    this.initDialogue();
+  }
+
 
   getQuestionOptions(answer: Answer): Array<Question> {
     return this.questions_storage_.filter((q) =>

@@ -18,4 +18,8 @@ export class ActionbarComponent implements OnInit {
     this.showFiles = !this.showFiles;
     this.uiEv.changeFiletree(this.showFiles);
   }
+
+  openHints(): void {
+    this.uiEv.changeHints();
+  }
 }
