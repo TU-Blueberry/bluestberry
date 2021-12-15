@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
 import { Observable, concat, forkJoin, of, throwError, EMPTY, defer, from } from 'rxjs';
-import { ignoreElements, map, switchMap, filter, mergeAll, tap } from 'rxjs/operators';
+import { ignoreElements, map, switchMap, filter, mergeAll, tap, delay } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { ConfigObject } from './model/config';
-import { FileType } from '../shared/files/filetypes.enum';
+import { FileType, FileTypes } from '../shared/files/filetypes.enum';
 
 @Injectable({
   providedIn: 'root'
@@ -53,7 +53,11 @@ export class FilesystemService {
    * corresponding dir and it is not empty after synching with IDBFS
    */
   public isNewLesson(name: string): Observable<boolean> {
-    return concat(this.mountAndSync(name).pipe(ignoreElements()), this.isEmpty(`/${name}`))
+    return concat(
+      this.mountAndSync(name).pipe(ignoreElements()), 
+      this.isEmpty(`/${name}`),
+      this.unmountAndSync(name).pipe(ignoreElements())
+    )
   }
 
   // special case as synfs has some weird behaviour
@@ -65,8 +69,20 @@ export class FilesystemService {
       }
 
       try {
+        let r = (Math.random() + 1).toString(36).substring(7);
+
+        console.log(`%cSync ${r} start: ${new Date(Date.now()).toISOString()}`, "color: green")
         this.PyFS!.syncfs(fromPersistentToVirtual, err => {
+        /* setTimeout(() => {
+
+          }, 1000); */ 
+          
+          console.log(`%cSync ${r} end: ${new Date(Date.now()).toISOString()}`, "color: green");
+          console.log(`Sync complete. (${fromPersistentToVirtual === true ? "Persistent" : "Virtual"} -----> ${fromPersistentToVirtual === true ? "Virtual" : "Persistent"})`);
+          console.info(err);
+          console.log(this.PyFS?.analyzePath("/", true));
           subscriber.complete();
+ 
           // TODO: Weird sync behaviour
          /*  if (err) {
             subscriber.error();
@@ -104,7 +120,7 @@ export class FilesystemService {
   public mountAndSync(name: string): Observable<void> {
     const fullPath = name.startsWith("/") ? name : `/${name}`;
 
-    return this.exists(fullPath).pipe(switchMap(exists => { // sync, unmount, delete
+    return this.exists(fullPath).pipe(switchMap(exists => { // mkdir, mount, sync
       return exists === true ? throwError("Path already exists") :
         concat(
           defer(() => this.N_mkdir(fullPath)),
@@ -478,11 +494,11 @@ export class FilesystemService {
               subscriber.next(fn(analyzeObject.object));
               subscriber.complete();
             } else {
-              needsToExist ? subscriber.error(`Path "${path}" exists but no corresponding object could be found in the fileystem`) :
+              needsToExist ? subscriber.error(`Path ${path} exists but no corresponding object could be found in the fileystem`) :
               (subscriber.next(fn(analyzeObject.object)), subscriber.complete());
             }
           } else {
-            needsToExist ? subscriber.error(`Path "${path} doesn't exist`) :
+            needsToExist ? subscriber.error(`Path ${path} doesn't exist`) :
             (subscriber.next(fn(analyzeObject.object)), subscriber.complete());
           }
 
@@ -526,7 +542,7 @@ export class FilesystemService {
   }
 
   private N_readFileAsBinary(path: string) {
-this.checkFilesystem();
+    this.checkFilesystem();
     return this.PyFS!.readFile(path, { encoding: "binary" });
   }
 
@@ -536,14 +552,22 @@ this.checkFilesystem();
   }
 
   private N_mkdir(path: string, mode?: number) {
-
-        this.checkFilesystem();
+    this.checkFilesystem();
     mode ? this.PyFS?.mkdir(path, mode) : this.PyFS?.mkdir(path);
+    console.log("Dir created, ", path)
   }
 
   private mount(path: string) {
+    console.log("MOUNT ", path)
     this.checkFilesystem();
     this.PyFS?.mount(this.PyFS?.filesystems.IDBFS, {}, path);
+    console.log("%c Here's the root:", "color: blue", this.PyFS?.lookupPath(path, {}).node)
+
+    // Sort -> exp2 -> sort
+    // beim ersten mount des zweiten aufrufs von sort ist alles vorhanden, gibt aber fs error (err.code 2)
+    // danach verabschiedet es sich dann..
+
+    // library_fs.js: ca. 550 steht was von cdefine, aber kA was die fkt macht
   }
 
   private chmod(path: string, permission: number) {
@@ -552,11 +576,13 @@ this.checkFilesystem();
   }
 
   private unmount(path: string) {
+    console.log("UNMOUNT ", path)
     this.checkFilesystem();
     this.PyFS?.unmount(path);
   }
 
   private rmdir(path: string) {
+    console.log("RMDIR " + path)
     this.checkFilesystem();
     this.PyFS?.rmdir(path);
   }
@@ -564,6 +590,7 @@ this.checkFilesystem();
   private unlink(path: string) {
     this.checkFilesystem();
     this.PyFS?.unlink(path);
+    console.log("unlink", path)
   }
 
   private isDir(mode: number) {
@@ -593,14 +620,9 @@ this.checkFilesystem();
   }
 
   getFileType(path: string): FileType {
-    const matches = RegExp(/([a-zA-Z\d-_]+\/)*[a-zA-Z\d-_]+\.[a-zA-Z]{2,5}$/, "i").exec(path);
-    if (!matches || matches.length === 0) {
-      return FileType.OTHER;
-    } else {
-      const extension = matches[0].split(".");
-      const trimmedExtension = extension[extension.length - 1];
-      return FileType[trimmedExtension.toUpperCase() as keyof typeof FileType] || FileType.OTHER;
-    }
+    const extension = path.split(".");
+    const trimmedExtension = extension[extension.length - 1];
+    return FileTypes.getType(trimmedExtension);
   }
 
   getExtension(name: string): string {

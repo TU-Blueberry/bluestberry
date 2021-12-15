@@ -20,6 +20,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   tentativeNode?: ComponentRef<FolderComponent> | ComponentRef<FileComponent>;
   tentativeNodeSubscription?: Subscription;
   tentativeNodeIsFile?: boolean;
+  subscriptions: Subscription[] = [];
 
   showSubfolders = false;
   isRenaming = false;
@@ -66,22 +67,24 @@ export class FolderComponent implements OnInit, OnDestroy {
     }); 
   }
 
-  // TODO: Symbole für neuen Ordner/neue Datei deaktivieren falls es tentativeNode gibt + normaler cursor on hover
   private addListeners(): void {
-    this._node.onDelete().subscribe(path => this.deleteSubcomponent(path));
-    this._node.addNewFilesListener(this.files).subscribe(params => this.createSubcomponent(true, params.path, params.node));
-    this._node.addAfterCodeExecutionListener().subscribe(() => this.checkForNewFolders());
-    this._node.pathMoveOldPath().subscribe(params => this.deleteSubcomponent(params.oldPath));
-    this._node.pathMoveNewPath().subscribe(params => this.createSubcomponent(params.isFile, params.newPath, params.node));
-    this._node.onNewNodeByUser().subscribe(params =>  this.convertTentativeNode(params.path, params.isFile));
-    this._node.onNewNodeByUserSynced().subscribe(params => this.triggerUpdate(params.path, params.isFile));
-    this._node.failedChild().subscribe(params => this.deleteSubcomponent(params.path));
-    this._node.onNewUserInputLocation().subscribe((path) => {
+    const deleteSubscription = this._node.onDelete().subscribe(path => this.deleteSubcomponent(path));
+    const newFileSubscription = this._node.addNewFilesListener(this.files).subscribe(params => this.createSubcomponent(true, params.path, params.node));
+    const afterCodeSubscription = this._node.addAfterCodeExecutionListener().subscribe(() => this.checkForNewFolders());
+    const moveOldPathSubscription = this._node.pathMoveOldPath().subscribe(params => this.deleteSubcomponent(params.oldPath));
+    const pathMoveSubscription = this._node.pathMoveNewPath().subscribe(params => this.createSubcomponent(params.isFile, params.newPath, params.node));
+    const newNodeByUserSubscription = this._node.onNewNodeByUser().subscribe(params =>  this.convertTentativeNode(params.path, params.isFile));
+    const newNodeByUserSyncedSubscription = this._node.onNewNodeByUserSynced().subscribe(params => this.triggerUpdate(params.path, params.isFile));
+    const failedChildSubscription = this._node.failedChild().subscribe(params => this.deleteSubcomponent(params.path));
+    const newUserInputSubscription = this._node.onNewUserInputLocation().subscribe((path) => {
       this.isRenaming = false;
       if (this.tentativeNode && this.tentativeNodeIsFile !== undefined) {
         this.tentativeNodeDismissal(this.tentativeNodeIsFile);
       }
     });
+
+    this.subscriptions = [deleteSubscription, newFileSubscription, afterCodeSubscription, moveOldPathSubscription, pathMoveSubscription,
+    newNodeByUserSubscription, newNodeByUserSyncedSubscription, failedChildSubscription, newUserInputSubscription];
   }
 
   // sadly, emscripten only uses its "onMakeDirectory" callback if it was compiled in debug mode (which pyodide isn't)
@@ -251,10 +254,12 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    console.log("on destroy", this._node)
     this._node.destroy();
     this.tentativeNodeSubscription?.unsubscribe();
     this.filesRef.clear();
     this.foldersRef.clear();
+    this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
   changeName(params: {newName: string, isFile: boolean}): void {

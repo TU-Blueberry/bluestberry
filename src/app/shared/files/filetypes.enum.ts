@@ -49,7 +49,7 @@ export class FileTypes {
     }
 
     public static getType(extension: string): FileType {
-        const type = this.extToType.get(extension);
+        const type = this.extToType.get(extension.toUpperCase());
         return type !== undefined ? type : FileType.OTHER;
     }
 }

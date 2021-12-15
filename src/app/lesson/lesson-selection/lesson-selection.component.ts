@@ -23,7 +23,7 @@ export class LessonSelectionComponent {
         this.selectedLesson = preference;
       } else {
         localStorage.removeItem("lastLesson");
-        this.selectedLesson = lessons.shift() || '';
+        this.selectedLesson = lessons.length > 0 ? lessons[0] : '';
       }
 
       if (this.selectedLesson !== '') {
@@ -43,8 +43,6 @@ export class LessonSelectionComponent {
         this.selectedLesson = to;
         localStorage.setItem("lastLesson", this.selectedLesson);
 
-       // TODO: Close all open tabs
-       // TODO: Image is getting opened as text. why?
        // TODO: Can't switch back
       }
     )

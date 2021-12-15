@@ -144,6 +144,8 @@ main()
       }
     })
 
+    console.log("-- Init code viewer ---")
+
     this.saveSubject
       .pipe(
         debounceTime(1000),

@@ -2,12 +2,13 @@ import { HttpClient } from '@angular/common/http';
 import { EventEmitter, Injectable } from '@angular/core';
 import { Location } from '@angular/common';
 import { concat, EMPTY, iif, Observable, of, ReplaySubject, Subject, throwError } from 'rxjs';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { delay, ignoreElements, map, switchMap, takeLast, tap } from 'rxjs/operators';
 import { FilesystemService } from '../../filesystem/filesystem.service';
 import { ZipService } from '../../filesystem/zip/zip.service';
 import { FilesystemEventService } from '../../filesystem/events/filesystem-event.service';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
 import { LessonEventsService } from '../lesson-events.service';
+import { TabManagementService } from 'src/app/tab/tab-management.service';
 
 @Injectable({
   providedIn: 'root'
@@ -33,7 +34,9 @@ export class LessonManagementService {
   private loadAndStore(name: string) {
     return this.loadFromServer(name).pipe(
       switchMap(buff => this.zipService.loadZip(buff)), 
+      tap(() => console.log("load and store!")),
       switchMap(zip => concat(
+        this.fsService.mountAndSync(name),
         this.fsService.storeLesson(zip, name), 
         this.zipService.getConfigFromStream(zip).pipe(
           switchMap(config => this.fsService.storeConfig(config))),
@@ -48,41 +51,54 @@ export class LessonManagementService {
    * Intended for situations where user shall choose between multiple lessons (e.g. application startup)
    * */
   public openLessonByName(name: string) {
-    return concat(this.py.pyodide, this.fsService.isNewLesson(name).pipe(
-      switchMap(isEmpty => iif(() => isEmpty, this.loadAndStore(name), EMPTY)),
-    ), this.checkAfterMount(name))
+    return concat(
+      this.py.pyodide.pipe(ignoreElements()), 
+      this.fsService.isNewLesson(name)
+    ).pipe(
+      takeLast(1),
+      switchMap(isEmpty => iif(() => isEmpty === true, 
+      concat(this.loadAndStore(name), this.checkAfterMount(name)), 
+      concat(this.fsService.mountAndSync(name), this.py.addToSysPath(name), this.checkAfterMount(name))))
+    ) 
   }
 
   public closeLesson(name: string): Observable<void> {
-    return concat(this.fsService.unmountAndSync(name), this.py.removeFromSysPath(name)).pipe(tap(() => {
+    return concat(
+      this.fsService.unmountAndSync(name), 
+      this.py.removeFromSysPath(name), 
+      of(this.lse.emitLessonClosed(name)));
+  }
+
+  /*
+  .pipe(tap(() => {
       this.fsService.HIDDEN_PATHS = new Set();
       this.fsService.EXTERNAL_PATHS = new Set();
       this.fsService.READONLY_PATHS = new Set();
       this.fsService.MODULE_PATHS = new Set();
-      console.log("RESET FS SERVICE!")
-    })), of(this.lse.emitLessonClosed(name));
-  }
+      console.log("RresetESET FS SERVICE!")
+    })
+
+  */
 
   public changeLesson(oldLesson: string, newLesson: string) {
+    console.log("change lesson: ", oldLesson, newLesson)
     return concat(this.closeLesson(oldLesson), this.openLessonByName(newLesson));
   }
 
   private checkAfterMount(name: string){
-    console.log("check after mount!")
-
-      return this.fsService.getConfig(name).pipe(switchMap(config => {  
-        if (config) {
-          console.log("%c Config found!", "color: green", config)
-          this.fsService.HIDDEN_PATHS = new Set(this.filterPaths(name, config.hidden));
-          this.fsService.MODULE_PATHS = new Set(this.filterPaths(name, config.modules || []));
-          this.fsService.READONLY_PATHS = new Set(this.filterPaths(name, config.readonly));
-          this.fsService.EXTERNAL_PATHS = new Set(this.filterPaths(name, config.external));
-    
-          return concat(this.fsService.checkPermissions(`/${name}`, false), of(this.lse.emitLessonOpened(config, name)));
-        } else {
-          return throwError("No config found!")
-        }
-      }));
+    return this.fsService.getConfig(name).pipe(switchMap(config => {  
+      if (config) {
+        console.log("%c Config found!", "color: green", config)
+        this.fsService.HIDDEN_PATHS = new Set(this.filterPaths(name, config.hidden));
+        this.fsService.MODULE_PATHS = new Set(this.filterPaths(name, config.modules || []));
+        this.fsService.READONLY_PATHS = new Set(this.filterPaths(name, config.readonly));
+        this.fsService.EXTERNAL_PATHS = new Set(this.filterPaths(name, config.external));
+  
+        return concat(this.fsService.checkPermissions(`/${name}`, false), of(this.lse.emitLessonOpened(config, name)));
+      } else {
+        return throwError("No config found!")
+      }
+    }));
   }
 
   private filterPaths(name: string, paths: string[]): string[] {

@@ -42,6 +42,7 @@ export class FiletreeComponent implements OnDestroy{
       this.lse.onLessonClosed.subscribe(() => {
         this.listRef.clear();
         console.log("Cleared UI");
+        console.log(this.listRef);
       })
   }
 

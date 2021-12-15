@@ -37,7 +37,9 @@ export class FilesystemEventService {
         }
       }
 
-      fs.trackingDelegate['onWriteToFile'] = (_path: string, _bytesWritten: number) => this.onWriteToFile.emit({path: _path, bytesWritten: _bytesWritten})
+      fs.trackingDelegate['onWriteToFile'] = (_path: string, _bytesWritten: number) => {
+        this.onWriteToFile.emit({path: _path, bytesWritten: _bytesWritten})
+      }
     });
 
     py.getAfterExecution().subscribe(() => this.afterCodeExecution.emit());

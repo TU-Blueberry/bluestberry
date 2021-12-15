@@ -1,4 +1,4 @@
- import {Injectable} from '@angular/core';
+ import {EventEmitter, Injectable} from '@angular/core';
 import {concat, EMPTY, merge, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
