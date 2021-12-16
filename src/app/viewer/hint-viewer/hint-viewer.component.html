@@ -1,75 +1,158 @@
 <div class="hint-container">
-    <div class="hint-dialogue">
-      <ng-container *ngFor="let action of dialogue_history_">
-        <div id="hint-history" [ngClass]="action.getDivClass()">
-          {{ action.getTextSlice(0) }}
-          <ng-container
-            *ngFor="let divider of action.getTextDividers(); let i = index"
-          >
-            <a
-              *ngIf="divider[1] == 'HREF'"
-              href="{{ divider[0] }}"
-              style="display: inline"
-              >{{ divider[0] }}</a
-            >
-            <markdown
-              lineNumbers [start]="1" [lineOffset]="0"
-              katex [katexOptions]="katexOptions"
-              *ngIf="divider[1] == 'MARKDOWN'"
-              style="display: inline"
-              >{{divider[0]}}</markdown
-            >
-            <img *ngIf="divider[1] == 'IMAGE'" [src]="imagePathToSafeUrl.get(divider[0])" />
-            <code *ngIf="divider[1] == 'INLINE_CODE'">{{ divider[0] }}</code>
-            {{ action.getTextSlice(i + 1) }}
-          </ng-container>
-        </div>
-      </ng-container>
-
-      <ng-container *ngFor="let option of dialogue_options_">
-        <div
-          id="hint-option"
-          [ngClass]="option.getDivClass()"
-          (click)="optionSelected(option.getQuestionId())"
+  <div class="hint-dialogue">
+    <ng-container *ngFor="let action of dialogue_history_">
+      <div id="hint-history" [ngClass]="action.getDivClass()">
+        {{ action.getTextSlice(0) }}
+        <ng-container
+          *ngFor="let divider of action.getTextDividers(); let i = index"
         >
-          {{ option.getTextSlice(0) }}
-          <ng-container
-            *ngFor="let divider of option.getTextDividers(); let i = index"
+          <a
+            *ngIf="divider[2] == 'HREF'"
+            href="{{ divider[0] }}"
+            style="display: inline"
+            >{{ divider[1] != undefined ? divider[1] : divider[0] }}</a
           >
-            <a
-              *ngIf="divider[1] == 'HREF'"
-              href="{{ divider[0] }}"
-              style="display: inline"
-              >{{ divider[0] }}</a
-            >
-            <markdown
-              lineNumbers [start]="1" [lineOffset]="0"
-              katex [katexOptions]="katexOptions"
-              *ngIf="divider[1] == 'MARKDOWN'"
-              style="display: inline"
-              >{{ divider[0] }}</markdown
-            >
-            <img *ngIf="divider[1] == 'IMAGE'" src="{{divider[0]}}" />
-            {{ option.getTextSlice(i + 1) }}
-          </ng-container>
-        </div>
-      </ng-container>
+
+          <markdown
+            lineNumbers
+            [start]="1"
+            [lineOffset]="0"
+            katex
+            [katexOptions]="katexOptions"
+            *ngIf="divider[2] == 'MARKDOWN'"
+            style="display: inline"
+            >{{ divider[0] }}</markdown
+          >
+
+          <img
+            *ngIf="divider[2] == 'IMAGE'"
+            [src]="imagePathToSafeUrl.get(divider[0])"
+          />
+
+          <code *ngIf="divider[2] == 'INLINE_CODE'">{{ divider[0] }}</code>
+
+          <a
+            *ngIf="divider[2] == 'GLOSSARY'"
+            href="javascript:;"
+            (click)="openGlossary(divider[0])"
+          >
+            {{ divider[1] != undefined ? divider[1] : divider[0] }}
+          </a>
+
+          {{ action.getTextSlice(i + 1) }}
+        </ng-container>
+      </div>
+    </ng-container>
+
+    <ng-container *ngFor="let option of dialogue_options_">
+      <div
+        id="hint-option"
+        [ngClass]="option.getDivClass()"
+        (click)="optionSelected(option.getQuestionId())"
+      >
+        {{ option.getTextSlice(0) }}
+        <ng-container
+          *ngFor="let divider of option.getTextDividers(); let i = index"
+        >
+          <a
+            *ngIf="divider[2] == 'HREF'"
+            href="{{ divider[0] }}"
+            style="display: inline"
+            >{{ divider[1] != undefined ? divider[1] : divider[0] }}</a
+          >
+
+          <markdown
+            lineNumbers
+            [start]="1"
+            [lineOffset]="0"
+            katex
+            [katexOptions]="katexOptions"
+            *ngIf="divider[2] == 'MARKDOWN'"
+            style="display: inline"
+            >{{ divider[0] }}</markdown
+          >
+
+          <img *ngIf="divider[2] == 'IMAGE'" src="{{ divider[0] }}" />
+
+          <code *ngIf="divider[2] == 'INLINE_CODE'">{{ divider[0] }}</code>
+
+          <a
+            *ngIf="divider[2] == 'GLOSSARY'"
+            href="javascript:;"
+            (click)="openGlossary(divider[0])"
+          >
+            {{ divider[1] != undefined ? divider[1] : divider[0] }}
+          </a>
+
+          {{ option.getTextSlice(i + 1) }}
+        </ng-container>
+      </div>
+    </ng-container>
+  </div>
+
+  <div class="hint-footer-bar">
+    <div class="hint-footer-bar-button" (click)="simpleUndo()">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke="currentColor"
+        stroke-linejoin="round"
+      >
+        <polygon points="19 20 9 12 19 4 19 20"></polygon>
+        <line x1="5" y1="19" x2="5" y2="5"></line>
+      </svg>
     </div>
 
-    <div class="hint-footer-bar">
-
-      <div class="hint-footer-bar-button" (click)="simpleUndo()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke="currentColor" stroke-linejoin="round"><polygon points="19 20 9 12 19 4 19 20"></polygon><line x1="5" y1="19" x2="5" y2="5"></line></svg>
-      </div>
-
-      <div class="hint-footer-bar-button" (click)="multiUndo()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke="currentColor" stroke-linejoin="round"><polygon points="11 19 2 12 11 5 11 19"></polygon><polygon points="22 19 13 12 22 5 22 19"></polygon></svg>
-        <span style="color: white; font-size: 12px; display:block; margin-top: -35px; margin-left: 10px">x 3</span>
-      </div>
-
-      <div class="hint-footer-bar-button" (click)="reset()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2" stroke-linecap="round" stroke="currentColor" stroke-linejoin="round"> <path d="M2.5 2v6h6M21.5 22v-6h-6"/><path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2"/></svg>
-      </div>
-
+    <div class="hint-footer-bar-button" (click)="multiUndo()">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke="currentColor"
+        stroke-linejoin="round"
+      >
+        <polygon points="11 19 2 12 11 5 11 19"></polygon>
+        <polygon points="22 19 13 12 22 5 22 19"></polygon>
+      </svg>
+      <span
+        style="
+          color: white;
+          font-size: 12px;
+          display: block;
+          margin-top: -35px;
+          margin-left: 10px;
+        "
+        >x 3</span
+      >
     </div>
+
+    <div class="hint-footer-bar-button" (click)="reset()">
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="#000000"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke="currentColor"
+        stroke-linejoin="round"
+      >
+        <path d="M2.5 2v6h6M21.5 22v-6h-6" />
+        <path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2" />
+      </svg>
+    </div>
+  </div>
 </div>

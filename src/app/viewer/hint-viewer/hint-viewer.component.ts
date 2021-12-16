@@ -4,6 +4,8 @@ import {KatexOptions} from "ngx-markdown";
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {FileTabDirective} from 'src/app/tab/file-tab.directive';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
+import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service';
+import { FileType } from 'src/app/shared/filetypes.enum';
 
 @Component({
   selector: 'app-hint-viewer',
@@ -32,7 +34,7 @@ export class HintViewerComponent implements OnInit {
 
 
   constructor(private domSanitizer: DomSanitizer,
-    private fileTabDirective: FileTabDirective, private fsService: FilesystemService) {}
+    private fileTabDirective: FileTabDirective, private fsService: FilesystemService, private fsEventService: FilesystemEventService) {}
 
   ngOnInit() {
     this.fileTabDirective.dataChanges.subscribe(data => {
@@ -239,6 +241,17 @@ export class HintViewerComponent implements OnInit {
       answer.getQuestionIdOptions().includes(q.getQuestionId())
     )
   }
+
+  openGlossary(glossaryFileName: string): void {
+
+    // TODO
+    const path = "/sortierroboter/Glossary/" + glossaryFileName
+    console.log("opening glossary at " + path)
+
+    this.fsService.getFileAsBinary(path).subscribe(node => {
+      this.fsEventService.onOpenFile.emit({path: path, byUser: true, fileContent: node, type: FileType.MD});
+    });
+  }
 }
 
 
@@ -247,17 +260,17 @@ enum TextDividerTypes {
   MARKDOWN = 'MARKDOWN',
   IMAGE = 'IMAGE',
   INLINE_CODE = 'INLINE_CODE',
+  GLOSSARY = 'GLOSSARY',
   NONE = 'NONE',
 }
 
 abstract class DialogueContent {
 
   protected text_slices: Array<string> = [];
-  protected text_dividers: Array<[string, TextDividerTypes]> = [];
+  protected text_dividers: Array<[string, string | undefined, TextDividerTypes]> = [];
   protected question: boolean = false // false -> answer
 
-  // private re_divider = /link<(.|[\r\n])*?\/>|markdown<(.|[\r\n])*?\/>|code<(.|[\r\n])*?\/>|codeinline<(.|[\r\n])*?\/>|img<(.|[\r\n])*?\/>/g
-  private re_divider = /((markdown)|(link)|(codeinline)|(code)|(img))<(.| |[\r\n])*?\/>/g
+  private re_divider = /((markdown)|(link)|(codeinline)|(code)|(img)|(glossary))<(.| |[\r\n])*?\/>/g
 
   constructor(content: string = '') {
     this.parseContent(content);
@@ -295,12 +308,21 @@ abstract class DialogueContent {
         var actual_content: string = "";
         var divider_type: TextDividerTypes = TextDividerTypes.NONE;
 
+        var optional: string | undefined = undefined;
+
         if(match.startsWith("link")) {
 
           actual_content = match.slice(5, -2).trim();
           if(!actual_content.startsWith("http://") && !actual_content.startsWith("https://")) {
             actual_content = "https://" + actual_content;
           }
+
+          var content_split = actual_content.split('|')
+          if(content_split.length > 1) {
+            actual_content = content_split[0].trim();
+            optional = content_split[1].trim();
+          }
+
           divider_type = TextDividerTypes.HREF;
         
         } else if(match.startsWith("markdown")) {
@@ -325,9 +347,20 @@ abstract class DialogueContent {
         } else if(match.startsWith("img")) {
           actual_content = match.slice(4, -2).trim();
           divider_type = TextDividerTypes.IMAGE;
+
+        } else if(match.startsWith("glossary")) {
+
+          actual_content = match.slice(9, -2).trim();
+          divider_type = TextDividerTypes.GLOSSARY;
+          
+          var content_split = actual_content.split('|')
+          if(content_split.length > 1) {
+            actual_content = content_split[0].trim();
+            optional = content_split[1].trim();
+          }
         } 
 
-        this.text_dividers.push([actual_content, divider_type]);
+        this.text_dividers.push([actual_content, optional, divider_type]);
       }
     }
   }
@@ -339,14 +372,15 @@ abstract class DialogueContent {
     return "error";
   }
 
-  getTextDivider(index: number): [string, TextDividerTypes] {
+  getTextDivider(index: number): [string, string | undefined, TextDividerTypes] {
     if(index < this.text_dividers.length) {
+      console.log(this.text_dividers[index])
       return this.text_dividers[index];
     } 
-    return ["error", TextDividerTypes.NONE];
+    return ["error", undefined, TextDividerTypes.NONE];
   }
 
-  getTextDividers(): Array<[string, TextDividerTypes]> {
+  getTextDividers(): Array<[string, string | undefined, TextDividerTypes]> {
     return this.text_dividers;
   }
 
