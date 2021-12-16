@@ -260,6 +260,7 @@ enum TextDividerTypes {
   MARKDOWN = 'MARKDOWN',
   IMAGE = 'IMAGE',
   INLINE_CODE = 'INLINE_CODE',
+  BLOCK_CODE = 'BLOCK_CODE',
   GLOSSARY = 'GLOSSARY',
   NONE = 'NONE',
 }
@@ -341,8 +342,8 @@ abstract class DialogueContent {
           if(actual_content.startsWith("\n")) {
             actual_content = actual_content.slice(1);
           }
-          actual_content = "```python\n" + actual_content + "```"
-          divider_type = TextDividerTypes.MARKDOWN;
+          actual_content = "```python\n" + actual_content + "\n```"
+          divider_type = TextDividerTypes.BLOCK_CODE;
 
         } else if(match.startsWith("img")) {
           actual_content = match.slice(4, -2).trim();
