@@ -19,7 +19,7 @@
             [lineOffset]="0"
             katex
             [katexOptions]="katexOptions"
-            *ngIf="divider[2] == 'MARKDOWN'"
+            *ngIf="divider[2] == 'MARKDOWN' || divider[2] == 'BLOCK_CODE'"
             style="display: inline"
             >{{ divider[0] }}</markdown
           >
@@ -29,7 +29,7 @@
             [src]="imagePathToSafeUrl.get(divider[0])"
           />
 
-          <code *ngIf="divider[2] == 'INLINE_CODE'">{{ divider[0] }}</code>
+          <code class="inlinecode" *ngIf="divider[2] == 'INLINE_CODE'">{{ divider[0] }}</code>
 
           <a
             *ngIf="divider[2] == 'GLOSSARY'"
@@ -67,14 +67,14 @@
             [lineOffset]="0"
             katex
             [katexOptions]="katexOptions"
-            *ngIf="divider[2] == 'MARKDOWN'"
+            *ngIf="divider[2] == 'MARKDOWN' || divider[2] == 'BLOCK_CODE'"
             style="display: inline"
             >{{ divider[0] }}</markdown
           >
 
           <img *ngIf="divider[2] == 'IMAGE'" src="{{ divider[0] }}" />
 
-          <code *ngIf="divider[2] == 'INLINE_CODE'">{{ divider[0] }}</code>
+          <code class="inlinecode" *ngIf="divider[2] == 'INLINE_CODE'">{{ divider[0] }}</code>
 
           <a
             *ngIf="divider[2] == 'GLOSSARY'"
