@@ -16,6 +16,7 @@ import { AngularSplitModule} from 'angular-split';
 import { MarkdownModule, MarkedOptions, MarkedRenderer } from "ngx-markdown";
 import { NgIconsModule } from '@ng-icons/core';
 import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
+import { SearchComponent } from './search/search.component';
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -28,7 +29,7 @@ export function markedOptionsFactory(): MarkedOptions {
 }
 
 @NgModule({
-  declarations: [AppComponent, NavbarComponent, ActionbarComponent],
+  declarations: [AppComponent, NavbarComponent, ActionbarComponent, SearchComponent],
   imports: [
     BrowserModule,
     AppRoutingModule,
