@@ -3,6 +3,8 @@ markdown{
 }
 
 .markdown-entry {
+  height: 90vh;
   margin-left: 10px;
   margin-right: 10px;
+  overflow: auto;
 }
