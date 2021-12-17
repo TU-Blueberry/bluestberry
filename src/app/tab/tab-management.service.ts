@@ -114,11 +114,11 @@ export class TabManagementService {
   private mapFileTypeToTabGroup(fileType?: FileType): string {
     switch (fileType) {
       case FileType.PY:
-      case FileType.MD:
       case FileType.JSON:
       case FileType.TEX:
       case FileType.CSV:
         return 'left';
+      case FileType.MD:
       case FileType.BMP:
       case FileType.JPEG:
       case FileType.JPG:
