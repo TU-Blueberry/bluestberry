@@ -14,18 +14,19 @@ import { FileType } from 'src/app/shared/filetypes.enum';
 })
 export class MainViewerComponent implements OnInit {
   filetreeVisible = true;
+  terminalVisible = true;
 
   constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private fsEventService: FilesystemEventService) {}
 
   ngOnInit(): void {
 
     this.uiEv.onFiletreeToggle.subscribe(next => this.filetreeVisible = next);
-
+    this.uiEv.onToggleTerminal.subscribe(next => this.terminalVisible = !this.terminalVisible);
     this.uiEv.onHintChange.subscribe(() => {
 
-      // TODO 
+      // TODO
       const path = "/sortierroboter/hint_files/root.yml"
-      
+
       // var content = this.fsService.getFileAsString(path);
       // content.subscribe(node => console.log(node))
 
