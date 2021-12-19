@@ -26,4 +26,8 @@ export class ActionbarComponent implements OnInit {
   toggleTerminal(): void {
     this.uiEv.toggleTerminal();
   }
+
+  startTour(): void {
+    this.uiEv.startTour();
+  }
 }
