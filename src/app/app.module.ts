@@ -13,6 +13,7 @@ import { ActionbarComponent } from './actionbar/actionbar.component';
 import { UnityModule } from './unity/unity.module';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
 import { AngularSplitModule} from 'angular-split';
+import {GuidedTourModule, GuidedTourService} from 'ngx-guided-tour';
 import { MarkdownModule, MarkedOptions, MarkedRenderer } from "ngx-markdown";
 import { NgIconsModule } from '@ng-icons/core';
 import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
@@ -40,6 +41,7 @@ export function markedOptionsFactory(): MarkedOptions {
     FilesystemModule,
     UnityModule,
     HttpClientModule,
+    GuidedTourModule,
     NgIconsModule.withIcons({ HeroDocumentText, HeroDocument, HeroX, HeroPhotograph, HeroChip, HeroLightningBolt, HeroBookOpen }),
     MarkdownModule.forRoot({
       loader: HttpClient, // Optional, only needed if we use [src] attribute
@@ -49,7 +51,10 @@ export function markedOptionsFactory(): MarkedOptions {
       },
     }),
   ],
-  providers: [{ provide: Window, useValue: window }],
+  providers: [
+    GuidedTourService,
+    { provide: Window, useValue: window },
+  ],
   bootstrap: [AppComponent],
 })
 export class AppModule {
