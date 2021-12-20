@@ -9,7 +9,7 @@
     justify-content: space-between;
 
     &:hover {
-        background-color: hsl(220 12% 20%);
+        background-color: lighten(#262626, 5%); // Lighten bg color (TODO: Store bg color in global var?)
     }
 }
 

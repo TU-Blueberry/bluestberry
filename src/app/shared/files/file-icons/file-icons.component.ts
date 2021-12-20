@@ -21,7 +21,7 @@ export class FileIconsComponent implements OnInit {
   @Input('data')
   set data(data: any) {
     if (data !== undefined) {
-      const extension = this.fsService.getExtension(data?.path || '');
+      const extension = this.fsService.getExtension(data.path || '');
       this._fileType = FileTypes.getType(extension); 
       this.fileTypeString = this.fileType === FileType.JSON ? '{..}' : extension;
       this.fillColor = FileTypes.getColorCode(extension);

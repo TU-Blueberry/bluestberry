@@ -58,7 +58,7 @@ export class FileComponent implements OnInit {
     this.fsService.deleteFile(this._node?.path, true).subscribe();
   }
 
-  onDoubleClick(): void {
+  onClick(): void {
     if (this._node?.ref?.contents instanceof Uint8Array) {
       this.ev.onUserOpenFile(this._node.path, this._node.ref);
       this.uiEv.onActiveElementChange.emit(this._node.path);

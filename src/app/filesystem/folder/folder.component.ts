@@ -98,9 +98,10 @@ export class FolderComponent implements OnInit, OnDestroy {
           .forEach(folder => this.createSubcomponent(false, folder.path, folder.node))
       });
 
-    if (this._node.isRoot) {
+      // TODO: Braucht es das?
+    /* if (this._node.isRoot) {
       this._node.checkPermissions(); // set permissions after every execution
-    }
+    } */
   }
 
   // called once new node from user is synced to fs
@@ -254,7 +255,6 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    console.log("on destroy", this._node)
     this._node.destroy();
     this.tentativeNodeSubscription?.unsubscribe();
     this.filesRef.clear();

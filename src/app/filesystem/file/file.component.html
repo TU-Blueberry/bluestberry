@@ -1,9 +1,9 @@
-<div class="file" [style.padding-left.px] = "node.depth * 10" (dblclick)="onDoubleClick()" [class.active]="node.isActive">
+<div class="file" [style.padding-left.px] = "node.depth * 10" (click)="onClick()" [class.active]="node.isActive">
     <div class="file-heading">
         <app-file-icons [data]="isRenaming ? {path: tentativeName} : {path: node.path}" [isTentativeFile]="node.isTentativeNode"></app-file-icons>
-        <div class="file-name" *ngIf="!isRenaming">
+        <ng-container class="file-name" *ngIf="!isRenaming">
             {{ node.name }}
-        </div> 
+        </ng-container> 
         <div *ngIf="isRenaming">
             <app-user-input [parentPath]="node.parentPath" [depth]="node.depth" [isFile]="true" [editMode]="true" 
             [currentName]="node.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"

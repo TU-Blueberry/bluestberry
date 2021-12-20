@@ -1,14 +1,13 @@
 import { HttpClient } from '@angular/common/http';
-import { EventEmitter, Injectable } from '@angular/core';
 import { Location } from '@angular/common';
-import { concat, EMPTY, iif, Observable, of, ReplaySubject, Subject, throwError } from 'rxjs';
-import { delay, ignoreElements, map, switchMap, takeLast, tap } from 'rxjs/operators';
+import { concat, iif, Observable, of, Subject, throwError } from 'rxjs';
+import { ignoreElements, switchMap, tap } from 'rxjs/operators';
 import { FilesystemService } from '../../filesystem/filesystem.service';
 import { ZipService } from '../../filesystem/zip/zip.service';
 import { FilesystemEventService } from '../../filesystem/events/filesystem-event.service';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
 import { LessonEventsService } from '../lesson-events.service';
-import { TabManagementService } from 'src/app/tab/tab-management.service';
+import { Injectable } from '@angular/core';
 
 @Injectable({
   providedIn: 'root'
@@ -55,10 +54,11 @@ export class LessonManagementService {
       this.py.pyodide.pipe(ignoreElements()), 
       this.fsService.isNewLesson(name)
     ).pipe(
-      takeLast(1),
+      tap((isNewLesson) => console.log("%c isNewLesson? " + isNewLesson, "color: red")),
       switchMap(isEmpty => iif(() => isEmpty === true, 
       concat(this.loadAndStore(name), this.checkAfterMount(name)), 
-      concat(this.fsService.mountAndSync(name), this.py.addToSysPath(name), this.checkAfterMount(name))))
+      concat(this.fsService.mountAndSync(name), this.py.addToSysPath(name), this.checkAfterMount(name)))
+     )
     ) 
   }
 
@@ -66,19 +66,9 @@ export class LessonManagementService {
     return concat(
       this.fsService.unmountAndSync(name), 
       this.py.removeFromSysPath(name), 
-      of(this.lse.emitLessonClosed(name)));
+      of(this.lse.emitLessonClosed(name))
+    ).pipe(tap(() => this.fsService.reset()))
   }
-
-  /*
-  .pipe(tap(() => {
-      this.fsService.HIDDEN_PATHS = new Set();
-      this.fsService.EXTERNAL_PATHS = new Set();
-      this.fsService.READONLY_PATHS = new Set();
-      this.fsService.MODULE_PATHS = new Set();
-      console.log("RresetESET FS SERVICE!")
-    })
-
-  */
 
   public changeLesson(oldLesson: string, newLesson: string) {
     console.log("change lesson: ", oldLesson, newLesson)

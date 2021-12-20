@@ -1,4 +1,4 @@
-<div *ngIf="fileType !== undefined">
+<ng-container *ngIf="fileType !== undefined && _tabType === undefined">
     <svg *ngIf="fileType === fileTypeEnum.PROGRAMMING_LANGUAGE 
         || fileType === fileTypeEnum.MARKDOWN
         || fileType === fileTypeEnum.JSON" 
@@ -10,7 +10,7 @@
     <img *ngIf="fileType === fileTypeEnum.DATA" src="{{ getTableIconPath() }}" style="width: 20px; height: 20px;">
     <img *ngIf="fileType === fileTypeEnum.PLAIN_TEXT" src="{{ getPlainTextIconPath() }}" style="width: 20px; height: 20px;">
     <img *ngIf="fileType === fileTypeEnum.OTHER" src="{{ getUnknownFileTypeIconPath() }}" style="width: 20px; height: 20px;">
-</div>
+</ng-container>
 
 <div *ngIf="fileType === undefined && _tabType === undefined && !isTentativeFile" class="folder-icon">
     <svg class="actual-folder" [class.actual-folder-active]="isActive" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="folderIconTitle" 
@@ -19,10 +19,10 @@
     </svg>
 </div>
 
-<div *ngIf="_tabType !== undefined && _tabType === 'UNITY'">
+<ng-container *ngIf="_tabType !== undefined && _tabType === 'UNITY'">
     <img src="{{ getUnityIconPath() }}" style="width: 20px; height: 20px;">
-</div>
+</ng-container>
 
-<div *ngIf="_tabType !== undefined && _tabType === 'HINT'">
+<ng-container *ngIf="_tabType !== undefined && _tabType === 'HINT'">
     <img src="{{ getHintIconPath() }}" style="width: 20px; height: 20px;">
-</div>
+</ng-container>

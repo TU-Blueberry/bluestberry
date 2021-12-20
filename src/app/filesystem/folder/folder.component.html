@@ -15,9 +15,9 @@
         </svg>
       </div>
       <app-file-icons [isActive]="node.isActive"></app-file-icons>
-      <div *ngIf="!isRenaming">
+      <ng-container *ngIf="!isRenaming">
         <div class="folder-text">{{node?.name}}</div>
-      </div>
+      </ng-container>
       <div *ngIf="isRenaming">
           <app-user-input [parentPath]="node.parentPath" [depth]="node.depth" [isFile]="false" [editMode]="true" 
           [currentName]="node?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>

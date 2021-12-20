@@ -53,6 +53,10 @@ export class TabManagementService {
     merge(lesson$, userOpenEvent$).subscribe(t => this._openTab.next(t));
   }
 
+  openHintsManually(data: {path: string, content: Uint8Array}): void {
+    this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, data: data});
+  }
+
   createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
     const fileType = type || this.filesystemService.getFileType(path);
     return (

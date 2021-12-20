@@ -71,7 +71,14 @@ export class TabGroupComponent implements AfterViewInit {
       filter(tab => !!this.templates?.find(template => template.type === tab.type)),
       filter(tab => tab.groupId === this.id),
     ).subscribe(tab => {
-      const existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+      let existingTab;
+      
+      if (tab.type === "HINT" || tab.type === "UNITY") {
+        existingTab = this.dataSource.find(t => t.type === tab.type);
+      } else {
+        existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+      }
+
       if (!existingTab) {
         this.dataSource.push(tab);
         this.dataSourceChange.emit(this.dataSource);

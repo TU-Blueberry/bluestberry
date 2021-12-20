@@ -1,7 +1,5 @@
-<div *ngIf="isSwitching" class="loading-animation">
-    <!-- TODO: Ladeanimation sollte vmtl die gleiche wie beim ersten Start sein, bietet sich also
-    an es in eigene Komponente auszulagern-->
-    SWITCHING!
+<div *ngIf="isSwitching"> <!-- TODO: min switching time-->
+    <app-loading-animation>Workspace wird gewechselt. Wir bereiten im Hintergrund alles vor. Einen Moment bitte.</app-loading-animation>
 </div>
 
 <select (change)="onSelectChange($event)">

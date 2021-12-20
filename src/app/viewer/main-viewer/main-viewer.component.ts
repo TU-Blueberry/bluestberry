@@ -6,7 +6,7 @@ import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 
 import { switchMap, map } from 'rxjs/operators';
 import { EMPTY } from 'rxjs';
-import { FileType } from 'src/app/shared/filetypes.enum';
+import { TabManagementService } from 'src/app/tab/tab-management.service';
 
 @Component({
   selector: 'app-main-viewer',
@@ -17,10 +17,9 @@ export class MainViewerComponent implements OnInit {
   filetreeVisible = true;
   types = FileType;
 
-  constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private fsEventService: FilesystemEventService) {}
+  constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private tabManagementService: TabManagementService) {}
 
   ngOnInit(): void {
-
     this.uiEv.onFiletreeToggle.subscribe(next => this.filetreeVisible = next);
 
     this.uiEv.onHintChange.subscribe(() => {
@@ -31,10 +30,9 @@ export class MainViewerComponent implements OnInit {
       // var content = this.fsService.getFileAsString(path);
       // content.subscribe(node => console.log(node))
 
-      this.fsService.getFileAsBinary(path).subscribe(node => {
-        this.fsEventService.onOpenFile.emit({path: path, byUser: true, fileContent: node, type: FileType.HINT});
+      this.fsService.getFileAsBinary(path).subscribe(data => {
+        this.tabManagementService.openHintsManually({path: path, content: data});
       });
-
     });
   }
 

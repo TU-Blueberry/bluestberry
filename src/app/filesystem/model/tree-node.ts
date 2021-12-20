@@ -62,8 +62,6 @@ export class TreeNode {
         if (!entries) {
             this._isEmptyNode = true;
         }
-
-        // console.log("UPDATED Empty status for ", this._path, this._parentPath)
     }
 
     public generateTreeNode(depth: number, fullPath?: string, node?: FSNode, rootName?: string, ): TreeNode  {
@@ -71,9 +69,9 @@ export class TreeNode {
         treeNode.depth = depth ;
         treeNode.parentPath = this._path;
    
-        if (node && fullPath) {
-            treeNode.ref = node;
+        if (node !== undefined && fullPath) {
             treeNode.path = fullPath;
+            treeNode.ref = node;
         }
         
         if (rootName) {
@@ -82,7 +80,6 @@ export class TreeNode {
         }
         
         treeNode.updateEmptyStatus();
-
         return treeNode;
     }
 

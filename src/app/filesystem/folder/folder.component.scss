@@ -8,13 +8,14 @@
     align-items: center;
     justify-content: space-between;
 
-    &:hover {
-        background-color: hsl(220 12% 20%);
+    &:hover{
+        background-color: lighten(#262626, 5%);
     }
 }
 
 .folder-heading {
     display: flex;
+    align-items: center;
 }
 
 .folder:hover > .common-actions {
@@ -23,17 +24,35 @@
 
 .root-folder {
     background-color: hsl(220 12% 20%);
-}
+}       
 
 .common-actions {
     display: none;
 }
 
+
+// TODO:
+// - Minimales Beispiel von Pyodide erstellen und devs fragen
+// - Ladeanimation beim Wechseln zwischen Lektionen
+// - Ladeanimation beim Aufrufen der Seite
+// - Navigation mit Tastatur
+//          https://files.paciellogroup.com/training/WWW2012/samples/Samples/aria/tree/index.html
+//          https://developer.mozilla.org/en-US/docs/Web/Accessibility/Keyboard-navigable_JavaScript_widgets
+// - Active/focus states for filetree components
+// - Improve design
+
+// Tastaturnavigation einbauen
+// Dann gibts unterschied zwischen active (nur hellgrauer hintergrund) und focus (hellblau transparent)
+// Bei Klick auf Objekt dann initial active + focus, kann aber mit Tastennavigation das ändern
 .active {
-    background-color: #0068b3;
+    background-color: lighten(#262626, 10%);
+    outline: 1px solid rgb(0,104,179);
+    box-shadow: 0px 0px 4px 0px rgba(0,104,179,1) inset;
+    -webkit-box-shadow: 0px 0px 4px 0px rgba(0,104,179,1) inset;
+    -moz-box-shadow: 0px 0px 4px 0px rgba(0,104,179,1) inset;
 
     &:hover {
-        background-color: #0068b3;
+        background-color: lighten(#262626, 10%);
     }
 }
 
