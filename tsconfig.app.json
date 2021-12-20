@@ -4,6 +4,9 @@
   "compilerOptions": {
     "outDir": "./out-tsc/app",
     "types": ["emscripten"],
+    "paths": {
+      "vscode": ["node_modules/monaco-languageclient/lib/vscode-compatibility"]
+    },
     "skipLibCheck": true,
   },
   "files": [
