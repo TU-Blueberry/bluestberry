@@ -10,5 +10,6 @@ export enum FileType {
     XLS,
     XLSX,
     PY,
+    HINT,
     OTHER
 }

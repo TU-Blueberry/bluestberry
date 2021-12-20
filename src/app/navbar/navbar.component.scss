@@ -27,23 +27,6 @@
     justify-content: center;
 }
 
-.search-icon {
-    color:rgb(240, 240, 240);
-    margin: 0px 10px 0px 10px;
-}
-
-.search-input {
-    border: 0px;
-    height: 32px;
-    width: 100%;
-    background-color: inherit;
-    color: rgb(240, 240, 240);
-
-    &:focus-visible {
-        outline: none
-    }
-}
-
 .search-wrapper {
     width: 30%;
     background-color: rgb(66, 70, 80);
@@ -54,4 +37,8 @@
     &:focus-within {
         border: 1px solid #1389fd;
     }
+}
+
+app-search {
+  width: 100%;
 }

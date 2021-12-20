@@ -63,11 +63,11 @@ export class TabManagementService {
         return EMPTY;
       }),
       map((fileContent) => ({
-      title: path.split('/').pop() || path,
-      groupId: this.mapFileTypeToTabGroup(fileType),
-      icon: this.mapTypeToIcon(fileType),
-      type: this.mapFileTypeToTabType(fileType),
-      data: { path: path, content: fileContent },
+          title: (fileType == FileType.HINT) ? 'Hinweise' : path.split('/').pop() || path,
+          groupId: this.mapFileTypeToTabGroup(fileType),
+          icon: this.mapTypeToIcon(fileType),
+          type: this.mapFileTypeToTabType(fileType),
+          data: { path: path, content: fileContent },
     })));
   }
 
@@ -104,6 +104,8 @@ export class TabManagementService {
         return 'IMAGE';
       case FileType.MD:
         return 'MARKDOWN'
+      case FileType.HINT:
+        return 'HINT'
       default:
         return 'CODE';
     }
@@ -112,15 +114,16 @@ export class TabManagementService {
   private mapFileTypeToTabGroup(fileType?: FileType): string {
     switch (fileType) {
       case FileType.PY:
-      case FileType.MD:
       case FileType.JSON:
       case FileType.TEX:
       case FileType.CSV:
         return 'left';
+      case FileType.MD:
       case FileType.BMP:
       case FileType.JPEG:
       case FileType.JPG:
       case FileType.PNG:
+      case FileType.HINT:
         return 'right';
       default:
         return 'left';

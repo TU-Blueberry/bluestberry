@@ -1,7 +1,11 @@
-import { Component } from '@angular/core'
+import { Component, OnInit } from '@angular/core'
 import { load } from 'js-yaml'
 import {KatexOptions} from "ngx-markdown";
-import {HttpClient} from "@angular/common/http";
+import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
+import {FileTabDirective} from 'src/app/tab/file-tab.directive';
+import { FilesystemService } from 'src/app/filesystem/filesystem.service';
+import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service';
+import { FileType } from 'src/app/shared/filetypes.enum';
 
 @Component({
   selector: 'app-hint-viewer',
@@ -9,7 +13,7 @@ import {HttpClient} from "@angular/common/http";
   styleUrls: ['./hint-viewer.component.scss'],
 })
 
-export class HintViewerComponent {
+export class HintViewerComponent implements OnInit {
   questions_storage_: Array<Question> = []
   answer_storage_: Array<Answer> = []
 
@@ -18,39 +22,82 @@ export class HintViewerComponent {
 
   error_answer: Answer = new Answer(-1, "Ich konnte leider keine Antwort finden.", []);
 
-  is_open_ = false
-
   katexOptions: KatexOptions = {
     // displayMode: true,
     throwOnError: false,
     errorColor: '#cc0000',
   }
 
-  constructor(private http: HttpClient) {
-    this.loadContent()
-  }
+  base_path_: string = '';
 
-  loadContent() {
-    this.http.get('assets/hints/hints.yml', { responseType: 'text' })
-      .subscribe(data => { 
-        this.loadQuestionAnswers(data);
+  imagePathToSafeUrl = new Map<string, SafeUrl>();
+
+
+  constructor(private domSanitizer: DomSanitizer,
+    private fileTabDirective: FileTabDirective, private fsService: FilesystemService, private fsEventService: FilesystemEventService) {}
+
+  ngOnInit() {
+    this.fileTabDirective.dataChanges.subscribe(data => {
+      if(data) {
+        this.base_path_ = data.path.split("/").slice(0,-1).join("/");
+        var rootFileString = new TextDecoder().decode(data.content);
+        console.log("Hints file " + data.path + " loaded");
+        this.loadFile(rootFileString);
+      }
     });
+
+    
+    const imagesPath = [this.base_path_, "img"].join("/")
+
+    this.fsService.scan(imagesPath, 2, true, true).subscribe(nestedNodes => {
+      for(let arrayOfNodes of nestedNodes) {
+        if(arrayOfNodes.length > 0) {
+          for(let imageNode of arrayOfNodes) {
+            const imageFileName = imageNode.name
+
+            if(imageFileName.toLowerCase().endsWith(".png") || imageFileName.toLowerCase().endsWith("jpeg") || imageFileName.toLowerCase().endsWith("jpg")) {
+              const imageFilePath = [imagesPath, imageFileName].join("/");
+              console.log("Image loaded from filesystem " + imageFilePath);
+
+              this.fsService.getFileAsBinary(imageFilePath).subscribe(binary => {
+                const safeUrl = this.domSanitizer.bypassSecurityTrustUrl(
+                  URL.createObjectURL(
+                    new Blob([binary.buffer], {type: 'image/png'})
+                  )
+                );
+                this.imagePathToSafeUrl.set(imageFileName, safeUrl);
+              });
+            }
+          }
+        }
+      }
+    });
+   
+    setTimeout(() => {this.initDialogue(); console.log(this.imagePathToSafeUrl);}, 1000)
+
   }
-
-  loadQuestionAnswers(yamlString: string): void {  
   
-    if(yamlString != null && yamlString != undefined && yamlString != '') {
-      console.log("YamlString loaded!")
-    } else {
-      console.log("Could not load YamlString from hints.yml")
-    }
-
+  loadFile(yamlString: string): void {  
+  
     var loadedYaml = load(yamlString) as Array<Object>
-
+    
     for (let item_id in loadedYaml) {
       var outerItem = loadedYaml[item_id] as any
       var name = Object.keys(outerItem)[0]
       var item = outerItem[name]
+      
+      if(name == "files") {
+        for(let subfile_id in item) {
+          const subfileName = item[subfile_id]
+          const subfilePath = [this.base_path_, subfileName].join("/");
+
+          this.fsService.getFileAsString(subfilePath).subscribe(subfileContent => {
+            console.log("Hints subfile " + subfilePath + " loaded");
+            this.loadFile(subfileContent);
+          });
+        }
+        continue
+      }
 
       if (item.hasOwnProperty('content')) {
         const content = item['content'] as string
@@ -95,13 +142,6 @@ export class HintViewerComponent {
         console.log('Error parsing hint-yaml. Item has no content.')
       }
     }
-
-    this.initDialogue();
-
-  }
-
-  toggleHints(): void {
-    this.is_open_ = !this.is_open_
   }
 
   initDialogue(): void {
@@ -156,6 +196,7 @@ export class HintViewerComponent {
     } 
 
     this.dialogue_history_.push(answer!)
+    console.log(answer!.getTextDividers())
 
     const new_options = this.getQuestionOptions(answer!)
     for (var o of new_options) {
@@ -163,7 +204,7 @@ export class HintViewerComponent {
     }
   }
 
-  undo(): void { 
+  simpleUndo(): void { 
 
     if (this.dialogue_history_.length < 2) {
       return
@@ -182,10 +223,34 @@ export class HintViewerComponent {
     }
   }
 
+  multiUndo(): void {
+    this.simpleUndo();
+    this.simpleUndo();
+    this.simpleUndo();
+  }
+
+  reset(): void {
+    this.dialogue_options_ = []
+    this.dialogue_history_ = []
+    this.initDialogue();
+  }
+
+
   getQuestionOptions(answer: Answer): Array<Question> {
     return this.questions_storage_.filter((q) =>
       answer.getQuestionIdOptions().includes(q.getQuestionId())
     )
+  }
+
+  openGlossary(glossaryFileName: string): void {
+
+    // TODO
+    const path = "/sortierroboter/Glossary/" + glossaryFileName
+    console.log("opening glossary at " + path)
+
+    this.fsService.getFileAsBinary(path).subscribe(node => {
+      this.fsEventService.onOpenFile.emit({path: path, byUser: true, fileContent: node, type: FileType.MD});
+    });
   }
 }
 
@@ -195,17 +260,18 @@ enum TextDividerTypes {
   MARKDOWN = 'MARKDOWN',
   IMAGE = 'IMAGE',
   INLINE_CODE = 'INLINE_CODE',
+  BLOCK_CODE = 'BLOCK_CODE',
+  GLOSSARY = 'GLOSSARY',
   NONE = 'NONE',
 }
 
 abstract class DialogueContent {
 
   protected text_slices: Array<string> = [];
-  protected text_dividers: Array<[string, TextDividerTypes]> = [];
+  protected text_dividers: Array<[string, string | undefined, TextDividerTypes]> = [];
   protected question: boolean = false // false -> answer
 
-  // private re_divider = /link<(.|[\r\n])*?\/>|markdown<(.|[\r\n])*?\/>|code<(.|[\r\n])*?\/>|codeinline<(.|[\r\n])*?\/>|img<(.|[\r\n])*?\/>/g
-  private re_divider = /((markdown)|(link)|(codeinline)|(code)|(img))<(.| |[\r\n])*?\/>/g
+  private re_divider = /((markdown)|(link)|(codeinline)|(code)|(img)|(glossary))<(.| |[\r\n])*?\/>/g
 
   constructor(content: string = '') {
     this.parseContent(content);
@@ -243,12 +309,21 @@ abstract class DialogueContent {
         var actual_content: string = "";
         var divider_type: TextDividerTypes = TextDividerTypes.NONE;
 
+        var optional: string | undefined = undefined;
+
         if(match.startsWith("link")) {
 
           actual_content = match.slice(5, -2).trim();
           if(!actual_content.startsWith("http://") && !actual_content.startsWith("https://")) {
             actual_content = "https://" + actual_content;
           }
+
+          var content_split = actual_content.split('|')
+          if(content_split.length > 1) {
+            actual_content = content_split[0].trim();
+            optional = content_split[1].trim();
+          }
+
           divider_type = TextDividerTypes.HREF;
         
         } else if(match.startsWith("markdown")) {
@@ -267,15 +342,26 @@ abstract class DialogueContent {
           if(actual_content.startsWith("\n")) {
             actual_content = actual_content.slice(1);
           }
-          actual_content = "```python\n" + actual_content + "```"
-          divider_type = TextDividerTypes.MARKDOWN;
+          actual_content = "```python\n" + actual_content + "\n```"
+          divider_type = TextDividerTypes.BLOCK_CODE;
 
         } else if(match.startsWith("img")) {
           actual_content = match.slice(4, -2).trim();
           divider_type = TextDividerTypes.IMAGE;
+
+        } else if(match.startsWith("glossary")) {
+
+          actual_content = match.slice(9, -2).trim();
+          divider_type = TextDividerTypes.GLOSSARY;
+          
+          var content_split = actual_content.split('|')
+          if(content_split.length > 1) {
+            actual_content = content_split[0].trim();
+            optional = content_split[1].trim();
+          }
         } 
 
-        this.text_dividers.push([actual_content, divider_type]);
+        this.text_dividers.push([actual_content, optional, divider_type]);
       }
     }
   }
@@ -287,14 +373,15 @@ abstract class DialogueContent {
     return "error";
   }
 
-  getTextDivider(index: number): [string, TextDividerTypes] {
+  getTextDivider(index: number): [string, string | undefined, TextDividerTypes] {
     if(index < this.text_dividers.length) {
+      console.log(this.text_dividers[index])
       return this.text_dividers[index];
     } 
-    return ["error", TextDividerTypes.NONE];
+    return ["error", undefined, TextDividerTypes.NONE];
   }
 
-  getTextDividers(): Array<[string, TextDividerTypes]> {
+  getTextDividers(): Array<[string, string | undefined, TextDividerTypes]> {
     return this.text_dividers;
   }
 
