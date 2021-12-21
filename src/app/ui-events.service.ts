@@ -8,6 +8,8 @@ export class UiEventsService {
   onFiletreeToggle: EventEmitter<boolean> = new EventEmitter();
   onNewUserInputLocation: EventEmitter<string> = new EventEmitter();
   onHintChange: EventEmitter<void> = new EventEmitter();
+  onToggleTerminal: EventEmitter<void> = new EventEmitter();
+  onStartTour: EventEmitter<void> = new EventEmitter();
 
   constructor() { }
 
@@ -26,5 +28,13 @@ export class UiEventsService {
 
   changeHints(): void {
     this.onHintChange.emit();
+  }
+
+  toggleTerminal(): void {
+    this.onToggleTerminal.emit();
+  }
+
+  startTour(): void {
+    this.onStartTour.emit();
   }
 }

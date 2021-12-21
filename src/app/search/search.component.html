@@ -1,0 +1,61 @@
+<div id="search-suggestions-container" (keydown.arrowDown)="focusNextElement()" (keydown.arrowUp)="focusPreviousElement()" (keyup.enter)="onEnter()">
+  <svg class="icon svg-icon search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+       aria-labelledby="searchIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
+       stroke-linejoin="miter" fill="none">
+    <title id="searchIconTitle">Suchen</title>
+    <path d="M14.4121122,14.4121122 L20,20" />
+    <circle cx="10" cy="10" r="6" />
+  </svg>
+
+  <input type="search" class="search-input" (blur)="onBlur($event)" (focus)="onFocus()" [ngModel]="searchTerm" (ngModelChange)="onTermChange($event)" placeholder="Suche im Dateisystem...">
+
+  <svg class="icon svg-icon clear-icon" *ngIf="searchTerm !== ''" (click)="clearSearch()" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+       aria-labelledby="searchIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
+       stroke-linejoin="miter" fill="none">
+    <title id="searchIconTitle">Suchen</title>
+    <path d="M15.5355339 15.5355339L8.46446609 8.46446609M15.5355339 8.46446609L8.46446609 15.5355339"></path>
+ </svg>
+
+  <div class="expand" [class.hidden]="searchTerm === '' || isBlurred">
+    <ng-container *ngFor="let entry of matchingEntries; let i = index;">
+      <a tabIndex="0" class="matching-entry expand-entry" (click)="clickSuggestion(entry)" [class.active]="i === highlightedIndex">
+        <ng-template [ngIf]="entry.type < 4">
+          <div class="type type-picture">Bild</div>
+          <div class="result-info">
+            <span>{{entry.file.name}}</span>
+          </div>
+        </ng-template>
+        <ng-template [ngIf]="entry.type == 4">
+          <div class="type type-markdown">Markdown</div>
+          <div class="result-info">
+            <span>{{entry.file.name}}</span>
+          </div>
+        </ng-template>
+        <ng-template [ngIf]="entry.type > 4">
+          <div class="type type-code">Code</div>
+          <div class="result-info">
+            <span>{{entry.file.name}}</span>
+          </div>
+        </ng-template>
+      </a>
+    </ng-container>
+  </div>
+
+  <div class="expand" [class.hidden]="searchTerm !== '' || isBlurred">
+    <div class="history-info expand-entry">Letzte Suchanfragen</div>
+    <ng-template [ngIf]="lastSearches.length === 0">
+      <div class="expand-entry">Keine vergangenen Suchanfragen!</div>
+    </ng-template>
+    <ng-container *ngFor="let element of lastSearches; let i = index;">
+      <a tabIndex="0" class="expand-entry">
+          <div class="recent-query" (click)="selectHistoryElement(element)">{{element}} </div>
+          <svg style="float: right" class="icon svg-icon" (click)="deleteHistoryElement(element)" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+               aria-labelledby="searchIconTitle" stroke="currentColor" stroke-width="1" stroke-linecap="square"
+               stroke-linejoin="miter" fill="none">
+            <title id="searchIconTitle">Suchen</title>
+            <path d="M15.5355339 15.5355339L8.46446609 8.46446609M15.5355339 8.46446609L8.46446609 15.5355339"></path>
+          </svg>
+      </a>
+    </ng-container>
+  </div>
+</div>

@@ -29,6 +29,7 @@
     "js-yaml": "^3.14.1",
     "jszip": "^3.7.1",
     "monaco-editor": "^0.29.1",
+    "ngx-guided-tour": "^1.1.11",
     "ngx-markdown": "^12.0.1",
     "ngx-monaco-editor": "^12.0.0",
     "rxjs": "~6.6.0",

@@ -22,4 +22,12 @@ export class ActionbarComponent implements OnInit {
   openHints(): void {
     this.uiEv.changeHints();
   }
+
+  toggleTerminal(): void {
+    this.uiEv.toggleTerminal();
+  }
+
+  startTour(): void {
+    this.uiEv.startTour();
+  }
 }

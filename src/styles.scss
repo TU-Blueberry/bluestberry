@@ -75,3 +75,25 @@ body {
 }
 
 /** Glossary end */
+
+/** ngx-guided-tour start */
+
+.tour-block {
+  border-radius: 10px;
+}
+
+$tour-skip-link-color: white;                   // Skip button color.
+$tour-text-color: white;                        // Color of the text that is in the tour step box.
+$tour-next-text-color: white;                   // Next button text color.
+$tour-shadow-color: rgb(46, 49, 56);            // Shadow backdrop that is used for the tour.
+$tour-step-color: rgb(66, 70, 80);              // Background color for the tour step box.
+$tour-next-button-color : rgb(66, 70, 80);      // Next button color.
+$tour-next-button-hover: rgb(66, 70, 80);       // Next button hover color.
+$tour-back-button-color : white;                // Back button color.
+
+//$tour-zindex :                                // Base z-index for the tour.
+//$tour-orb-color :                             // Color of the orb to start   a tour.
+
+@import '../node_modules/ngx-guided-tour/scss/guided-tour-base-theme.scss';
+
+/** ngx-guided-tour start end */

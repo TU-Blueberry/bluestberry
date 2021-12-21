@@ -6360,6 +6360,13 @@ neo-async@^2.6.2:
   resolved "https://registry.npmjs.org/neo-async/-/neo-async-2.6.2.tgz"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
 
+ngx-guided-tour@^1.1.11:
+  version "1.1.11"
+  resolved "https://registry.yarnpkg.com/ngx-guided-tour/-/ngx-guided-tour-1.1.11.tgz#f338d5549a33e0ce79da89a0ff1c1894e90195ba"
+  integrity sha512-NQCbh6sRhBQxxVJdu1xALhx+TZLafVt4tWryOsu6AloKN/VVYbnPICm7IX+8D1SKxnMtTcpY1zpyLGXIjOfMyg==
+  dependencies:
+    tslib "^1.9.0"
+
 ngx-markdown@^12.0.1:
   version "12.0.1"
   resolved "https://registry.npmjs.org/ngx-markdown/-/ngx-markdown-12.0.1.tgz"
