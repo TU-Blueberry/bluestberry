@@ -1,12 +1,10 @@
 import { Component, ComponentFactoryResolver, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Observable, of, Subject, Subscription } from 'rxjs';
-import { PyodideService } from '../../pyodide/pyodide.service';
+import { concat, from, Observable, Subject, Subscription } from 'rxjs';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
-import { LessonManagementService } from '../../lesson/lesson-management/lesson-management.service';
 import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
@@ -30,18 +28,16 @@ export class FiletreeComponent implements OnDestroy{
   SELECTED_LESSON = ""
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
-  constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
-    private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService,
+  constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
+    private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
     private lse: LessonEventsService) {
       this.lse.onLessonOpened.subscribe((lesson) => {
-        console.log("ON LESSON OPENED, ", lesson)
         this.SELECTED_LESSON = lesson.name;
         this.kickstartTreeGeneration();
       })
 
       this.lse.onLessonClosed.subscribe(() => {
         this.listRef.clear();
-        console.log("Cleared UI");
         console.log(this.listRef);
       })
   }
@@ -58,20 +54,7 @@ export class FiletreeComponent implements OnDestroy{
     });
   }
 
- /*  public changeLesson(newLesson: string) {
-    if (this.SELECTED_LESSON === "") {
-      concat(this.pys.pyodide, this.mgmtService.openLessonByName(newLesson)).subscribe(
-        () => { }, err => console.error(err), 
-        () => { this.SELECTED_LESSON = newLesson; this.kickstartTreeGeneration(); });
-    } else {
-      concat(this.pys.pyodide, this.mgmtService.changeLesson(this.SELECTED_LESSON, newLesson)).subscribe(
-        () => { }, err => console.error(err), 
-        () => { this.SELECTED_LESSON = newLesson; this.kickstartTreeGeneration();  });
-    }
-  }*/ 
-
   // TODO: Dateien laden bugg bei FF irgendwie
-  // TODO: Catch error
 
   // TODO: Config aus neuem Mountpoint laden und reinpacken
   // Gleiches gilt für external dateien

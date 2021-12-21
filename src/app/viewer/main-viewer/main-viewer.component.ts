@@ -1,11 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { FileType } from 'src/app/shared/files/filetypes.enum';
 import { UiEventsService } from 'src/app/ui-events.service';
-import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
-
-import { switchMap, map } from 'rxjs/operators';
-import { EMPTY } from 'rxjs';
 import { TabManagementService } from 'src/app/tab/tab-management.service';
 
 @Component({

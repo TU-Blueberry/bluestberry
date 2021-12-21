@@ -1,12 +1,12 @@
- import {EventEmitter, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {concat, EMPTY, merge, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
 import {OpenTabEvent} from 'src/app/tab/model/open-tab-event';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
-import { FileType } from '../shared/files/filetypes.enum';
-import { LessonEventsService } from '../lesson/lesson-events.service';
+import {FileType} from '../shared/files/filetypes.enum';
+import {LessonEventsService} from '../lesson/lesson-events.service';
 
 
 @Injectable({

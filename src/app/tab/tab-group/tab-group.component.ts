@@ -3,7 +3,7 @@ import {
   Component,
   ContentChildren,
   EventEmitter,
-  Input, OnInit,
+  Input,
   Output,
   QueryList,
   ViewChild,
@@ -12,8 +12,8 @@ import {
 import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {Tab} from 'src/app/tab/model/tab.model';
 import {TabManagementService} from 'src/app/tab/tab-management.service';
-import {filter, tap} from 'rxjs/operators';
-import { LessonEventsService } from 'src/app/lesson/lesson-events.service';
+import {filter} from 'rxjs/operators';
+import {LessonEventsService} from 'src/app/lesson/lesson-events.service';
 
 @Component({
   selector: 'app-tab-group',

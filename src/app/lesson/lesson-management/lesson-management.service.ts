@@ -27,20 +27,22 @@ export class LessonManagementService {
   }
 
   private getLessonList(): Observable<string[]> {
-    return this.http.get<string[]>('/assets/lessons.json');
+    const url = this.location.prepareExternalUrl('/assets/lessons.json');
+    return this.http.get<string[]>(url);
   }
 
   private loadAndStore(name: string) {
     return this.loadFromServer(name).pipe(
-      switchMap(buff => this.zipService.loadZip(buff)), 
-      tap(() => console.log("load and store!")),
-      switchMap(zip => concat(
-        this.fsService.mountAndSync(name),
-        this.fsService.storeLesson(zip, name), 
-        this.zipService.getConfigFromStream(zip).pipe(
-          switchMap(config => this.fsService.storeConfig(config))),
-        this.py.addToSysPath(name)
-      ))
+      switchMap(buff => this.zipService.loadZip(buff)),
+      switchMap(zip => 
+        concat(
+          this.fsService.mountAndSync(name).pipe(ignoreElements()),
+          this.fsService.storeLesson(zip, name).pipe(ignoreElements()), 
+          this.zipService.getConfigFromStream(zip).pipe(
+            switchMap(config => this.fsService.storeConfig(config))),
+          this.py.addToSysPath(name)
+        )
+      )
     );
   }
 
@@ -54,10 +56,9 @@ export class LessonManagementService {
       this.py.pyodide.pipe(ignoreElements()), 
       this.fsService.isNewLesson(name)
     ).pipe(
-      tap((isNewLesson) => console.log("%c isNewLesson? " + isNewLesson, "color: red")),
       switchMap(isEmpty => iif(() => isEmpty === true, 
-      concat(this.loadAndStore(name), this.checkAfterMount(name)), 
-      concat(this.fsService.mountAndSync(name), this.py.addToSysPath(name), this.checkAfterMount(name)))
+        concat(this.loadAndStore(name), this.checkAfterMount(name)), 
+        concat(this.fsService.mountAndSync(name), this.py.addToSysPath(name), this.checkAfterMount(name)))
      )
     ) 
   }
@@ -71,11 +72,13 @@ export class LessonManagementService {
   }
 
   public changeLesson(oldLesson: string, newLesson: string) {
-    console.log("change lesson: ", oldLesson, newLesson)
-    return concat(this.closeLesson(oldLesson), this.openLessonByName(newLesson));
+    return concat(
+      this.closeLesson(oldLesson), 
+      this.openLessonByName(newLesson)
+    );
   }
 
-  private checkAfterMount(name: string){
+  private checkAfterMount(name: string): Observable<void>{
     return this.fsService.getConfig(name).pipe(switchMap(config => {  
       if (config) {
         console.log("%c Config found!", "color: green", config)
@@ -84,7 +87,10 @@ export class LessonManagementService {
         this.fsService.READONLY_PATHS = new Set(this.filterPaths(name, config.readonly));
         this.fsService.EXTERNAL_PATHS = new Set(this.filterPaths(name, config.external));
   
-        return concat(this.fsService.checkPermissions(`/${name}`, false), of(this.lse.emitLessonOpened(config, name)));
+        return concat(
+          this.fsService.checkPermissions(`/${name}`, false),
+          of(this.lse.emitLessonOpened(config, name))
+        );
       } else {
         return throwError("No config found!")
       }

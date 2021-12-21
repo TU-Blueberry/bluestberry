@@ -1,0 +1,17 @@
+.lesson-label {
+    color: white;
+}
+
+#select-lesson {
+    width: 100%;
+    padding: 5px;
+
+    & > option {
+        padding: 5px;
+    }
+
+    &:focus-visible {
+        outline: none;
+        border: 2px solid rgb(0,104,179);
+    }
+}

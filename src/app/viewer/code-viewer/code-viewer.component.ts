@@ -38,8 +38,6 @@ export class CodeViewerComponent implements OnInit {
       }
     })
 
-    console.log("-- Init code viewer ---")
-
     this.saveSubject
       .pipe(
         debounceTime(1000),

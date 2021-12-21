@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { Observable } from 'rxjs';
+import { delay } from 'rxjs/operators';
 import { LessonManagementService } from '../lesson-management/lesson-management.service';
 
 @Component({
@@ -28,7 +29,6 @@ export class LessonSelectionComponent {
 
       if (this.selectedLesson !== '') {
         localStorage.setItem("lastLesson", this.selectedLesson);
-        console.log("[1]")
         this.lessonManagementService.openLessonByName(this.selectedLesson).subscribe();
       }
     });
@@ -37,13 +37,11 @@ export class LessonSelectionComponent {
   public onSelectChange(ev: Event) {
     const to = (ev.target as HTMLInputElement).value;
     this.isSwitching = true;
-    this.lessonManagementService.changeLesson(this.selectedLesson, to).subscribe(
+    this.lessonManagementService.changeLesson(this.selectedLesson, to).pipe(delay(1000)).subscribe(
       () => {}, (err: any) => { console.error(err); this.isSwitching = false }, () => {
         this.isSwitching = false;
         this.selectedLesson = to;
         localStorage.setItem("lastLesson", this.selectedLesson);
-
-       // TODO: Can't switch back
       }
     )
   }

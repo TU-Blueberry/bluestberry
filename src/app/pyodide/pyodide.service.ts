@@ -109,6 +109,8 @@ export class PyodideService {
   }
 
   public addToSysPath(lessonName: string): Observable<void> {
+    console.log("ADD TO SYS PATH!")
+
     const code = `
 import sys
 

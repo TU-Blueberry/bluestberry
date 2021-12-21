@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
 import { Observable, concat, forkJoin, of, throwError, EMPTY, defer, from } from 'rxjs';
-import { ignoreElements, map, switchMap, filter, mergeAll, tap } from 'rxjs/operators';
+import { ignoreElements, map, switchMap, filter, mergeAll, tap, mergeMap } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { ConfigObject } from './model/config';
@@ -55,15 +55,18 @@ export class FilesystemService {
     );
   }
 
-  // TODO: Glaube config wird aktuell noch zusätzlich in normales Verzeichnis geschrieben
   public getConfig(lessonName: string): Observable<ConfigObject> {
     const getConfigObservable = this.getFileAsBinary(`/configs/${lessonName}/config.json`)
       .pipe(map(config => <ConfigObject>JSON.parse(new TextDecoder().decode(config))))
 
     return concat(
       this.mountAndSync("configs").pipe(ignoreElements()), 
-      getConfigObservable, 
-      this.unmountAndSync("configs").pipe(ignoreElements())
+      getConfigObservable.pipe(switchMap(config => 
+        concat(
+          this.unmountAndSync("configs").pipe(ignoreElements()),
+          of(config)
+        )
+      ))
     )
   }
 
@@ -98,6 +101,7 @@ export class FilesystemService {
     });
   }
 
+  // workaround to fix sync issue for folders with no write permissions
   public sync(fromPersistentToVirtual: boolean): Observable<void> {
     if (fromPersistentToVirtual) {
       return concat(
@@ -154,16 +158,12 @@ export class FilesystemService {
       }))
   }
 
-  // loops over whole mountpoint and verifies that all modules, readonly and hidden paths have readonly permissions
+  // loops over whole mountpoint and verifies that all modules and readonly paths have readonly permissions
   // additionally verifies that no external path is present (or deletes it if found)
-
-  // TODO: Refactor so that mergedPaths is already passed as parameter
   public checkPermissions(mountpoint: string, onlyCheckExternalPermissions: boolean): Observable<void> {
     console.log("Check permissions for mountpoint " + mountpoint);
-
     const mergedPaths = new Set([...this.READONLY_PATHS, ...this.MODULE_PATHS]);
-    // return this.testCurrentPath(mountpoint, mergedPaths);
-
+    
     return this.getNodeByPath(mountpoint).pipe(
       switchMap(node => this.testCurrentPath(node, mountpoint, mergedPaths))
     )
@@ -192,33 +192,16 @@ export class FilesystemService {
   private testCurrentPath(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<void> {
     return of(Object.keys(node.contents).length).pipe(
       filter(length => length > 0),
-      tap(() => this.testCheck(currentPath, mergedPaths, node.contents instanceof Uint8Array)),
+      tap(() => this.setPermissionsReadExecute(currentPath, mergedPaths, node.contents instanceof Uint8Array)),
       switchMap(() => node.contents instanceof Uint8Array ? EMPTY : this.testElementsInCurrentFolder(node, currentPath, mergedPaths))
     );
   }
 
-  private testCheck(currentPath: string, mergedPaths: Set<string>, isFile: boolean): void{
+  private setPermissionsReadExecute(currentPath: string, mergedPaths: Set<string>, isFile: boolean): void{
     if (this.abstractCheck(mergedPaths, currentPath)) {
       isFile ? this.chmod(currentPath, 0o555) : (this.READONLY_FOLDERS.add(currentPath), this.chmod(currentPath, 0o555))
     }
   }
-
-  /* private permFile(path: string) {
-    try {
-     this.chmod(path, 0o555);
-    } catch(err) {
-      console.error(err);
-    }
-  }
-
-  private permFolder(path: string) {
-    try {
-      this.READONLY_FOLDERS.add(path);
-      this.chmod(path, 0o555);
-    } catch(err) {
-      console.error(err);
-    }
-  } */
 
   // TODO:
   // Die external sachen liegen dann im mountpoint /external/<lessonName>
@@ -321,28 +304,6 @@ export class FilesystemService {
       console.error(e);
     }
   }
-
-  // https://github.com/emscripten-core/emscripten/issues/2602
-  /* printRecursively(path: string, startDepth: number, offsetPerLevel: number): void {
-    try {
-      if (!this.isEmpty(path)) {
-        const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
-
-        for (const entry in entries) {
-          if (!this.isSystemDirectory(`${path}${entry}`) && !this.isHiddenPath(`${path}${entry}`) && !this.isModulePath(`${path}${entry}`)) {
-            if (this.isDirectory(`${path}${entry}`)) {
-              console.log("-".repeat(startDepth + offsetPerLevel) + ` ${entry}`);
-              this.printRecursively(`${path}${entry}/`, startDepth + offsetPerLevel, offsetPerLevel);
-            } else {
-              console.log("-".repeat(startDepth + offsetPerLevel) + ` ${entry}`);
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  } */
 
   private getFileAsBuffer(unzippedLesson: JSZip, file: string): Observable<ArrayBuffer>{
     return defer(() => of(unzippedLesson.file(file)?.internalStream("arraybuffer"))).
