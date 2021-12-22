@@ -22,7 +22,6 @@ export class UiEventsService {
   }
 
   changeUserInputLocation(path: string): void {
-    console.log("New userinput location: " + path)
     this.onNewUserInputLocation.emit(path);
   }
 

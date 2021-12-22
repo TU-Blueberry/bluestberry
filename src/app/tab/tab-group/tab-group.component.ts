@@ -101,7 +101,6 @@ export class TabGroupComponent implements AfterViewInit {
   }
 
   closeAllTabs(): void {
-    console.log("Close all tabs!")
     this.viewContainerRef?.clear();
     this.dataSource = [];
     this.dataSourceChange.emit(this.dataSource);

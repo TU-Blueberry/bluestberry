@@ -5,7 +5,7 @@ import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
 import {FileTabDirective} from 'src/app/tab/file-tab.directive';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service';
-import { FileType } from 'src/app/shared/filetypes.enum';
+import { FileType } from 'src/app/shared/files/filetypes.enum';
 
 @Component({
   selector: 'app-hint-viewer',
@@ -249,7 +249,7 @@ export class HintViewerComponent implements OnInit {
     console.log("opening glossary at " + path)
 
     this.fsService.getFileAsBinary(path).subscribe(node => {
-      this.fsEventService.onOpenFile.emit({path: path, byUser: true, fileContent: node, type: FileType.MD});
+      this.fsEventService.onOpenFile.emit({path: path, byUser: true, fileContent: node, type: FileType.MARKDOWN});
     });
   }
 }

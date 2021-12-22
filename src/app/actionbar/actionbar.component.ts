@@ -7,7 +7,8 @@ import { UiEventsService } from '../ui-events.service';
   styleUrls: ['./actionbar.component.scss']
 })
 export class ActionbarComponent implements OnInit {
-  showFiles = false;
+  showFiles = true;
+  showTerminal = true;
 
   constructor(private uiEv: UiEventsService) { }
 
@@ -24,6 +25,7 @@ export class ActionbarComponent implements OnInit {
   }
 
   toggleTerminal(): void {
+    this.showTerminal = !this.showTerminal;
     this.uiEv.toggleTerminal();
   }
 

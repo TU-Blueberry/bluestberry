@@ -19,24 +19,10 @@
   <div class="expand" [class.hidden]="searchTerm === '' || isBlurred">
     <ng-container *ngFor="let entry of matchingEntries; let i = index;">
       <a tabIndex="0" class="matching-entry expand-entry" (click)="clickSuggestion(entry)" [class.active]="i === highlightedIndex">
-        <ng-template [ngIf]="entry.type < 4">
-          <div class="type type-picture">Bild</div>
-          <div class="result-info">
-            <span>{{entry.file.name}}</span>
-          </div>
-        </ng-template>
-        <ng-template [ngIf]="entry.type == 4">
-          <div class="type type-markdown">Markdown</div>
-          <div class="result-info">
-            <span>{{entry.file.name}}</span>
-          </div>
-        </ng-template>
-        <ng-template [ngIf]="entry.type > 4">
-          <div class="type type-code">Code</div>
-          <div class="result-info">
-            <span>{{entry.file.name}}</span>
-          </div>
-        </ng-template>
+        <app-file-icons [data]="{path: entry.path}"></app-file-icons>
+        <div class="result-info">
+          <span>{{entry.file.name}}</span>
+        </div>
       </a>
     </ng-container>
   </div>

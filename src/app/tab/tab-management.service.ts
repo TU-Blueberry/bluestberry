@@ -87,12 +87,12 @@ export class TabManagementService {
   private mapFileTypeToTabGroup(fileType?: FileType): string {
     switch (fileType) {
       case FileType.PROGRAMMING_LANGUAGE:
-      case FileType.MARKDOWN:
       case FileType.JSON:
       case FileType.TEX:
       case FileType.DATA:
         return 'left';
       case FileType.IMAGE:
+      case FileType.MARKDOWN:
         return 'right';
       default:
         return 'left';

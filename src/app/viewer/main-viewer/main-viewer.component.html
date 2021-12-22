@@ -1,14 +1,18 @@
-<as-split direction="horizontal" class="main-split" [gutterSize]="4">
+<as-split direction="horizontal" class="main-split" [gutterSize]="4" [restrictMove]="true">
   <as-split-area
-    *ngIf="filetreeVisible"
+    [visible]="filetreeVisible"
     [order]="0"
-    [minSize]="10"
-    [size]="15"
-    [maxSize]="30">
+    [minSize]="minSizeFiletree"
+    [size]="currentSizeFiletree"
+    [maxSize]="maxSizeFiletree">
     <app-filetree></app-filetree>
   </as-split-area>
-  <as-split-area [order]="1" [minSize]="10" [size]="42.5">
-    <as-split direction="vertical" [gutterSize]="4">
+  <as-split-area 
+    [order]="1" 
+    [minSize]="minSizeLeftTab"
+    [size]="currentSizeLeftTab"
+    [maxSize]="maxSizeLeftTab">
+    <as-split direction="vertical" [gutterSize]="4" [restrictMove]="true">
       <as-split-area [order]="0" [minSize]="20">
         <app-tab-group-facade id="left"></app-tab-group-facade>
       </as-split-area>
@@ -17,7 +21,11 @@
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area [order]="2" [minSize]="10" [size]="42.5">
+  <as-split-area 
+    [order]="2" 
+    [minSize]="minSizeRightTab" 
+    [size]="currentSizeRightTab"
+    [maxSize]="maxSizeRightTab">
     <app-tab-group-facade id="right"></app-tab-group-facade>
   </as-split-area>
 </as-split>
