@@ -1,0 +1,17 @@
+<div *ngIf="isSwitching">
+    <app-loading-animation>Workspace wird gewechselt. Einen Moment bitte.</app-loading-animation>
+</div>
+
+<label class="lesson-label" for="select-lesson">Verfügbare Workspaces</label>
+<select (change)="onSelectChange($event)" id="select-lesson">
+    <!-- <option value="" disabled [selected]="selectedLesson === ''">Lektion wählen</option> -->
+    <option *ngFor="let lesson of lessons | async" 
+        [value]="lesson"
+        [selected]="lesson === selectedLesson">
+            {{lesson}}
+    </option>
+    <!-- <hr> -->
+    <!-- <option>+ Neuer Workspace</option> -->
+</select>
+
+<hr>

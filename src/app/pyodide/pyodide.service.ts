@@ -15,7 +15,6 @@ export class PyodideService {
   private stdOut$ = new ReplaySubject<string>(1000);
   private stdErr$ = new ReplaySubject<string>(1000);
   private afterExecution$ = new EventEmitter<void>();
-  private _modulePaths: string[] = [];
   pyodide = this.initPyodide();
 
   // Overwrite stderr and stdout. Sources:
@@ -60,7 +59,7 @@ export class PyodideService {
   runCode(code: string): Observable<any> {
     return this.pyodide.pipe(switchMap(pyodide => {
       pyodide.globals.set('editor_input', code);
-      return defer(() => concat(from(pyodide.runPythonAsync(this.addToSysPath())), from(pyodide.runPythonAsync('await run_code()'))))
+      return defer(() => from(pyodide.runPythonAsync('await run_code()')))
         .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
     }));
   }
@@ -103,27 +102,31 @@ export class PyodideService {
     return this.afterExecution$;
   }
 
-  set modulePaths(paths: string[]) {
-    this._modulePaths = paths;
+  private runCodeSilently(code: string): Observable<void> {
+    return this.pyodide.pipe(switchMap(pyodide => {
+      return defer(() => from(pyodide.runPythonAsync(code)));
+    }));
   }
 
-  private addToSysPath(): string {
-    let glueCode = '';
+  public addToSysPath(lessonName: string): Observable<void> {
+    console.log("ADD TO SYS PATH!")
 
-    for (const module of this._modulePaths) {
-      glueCode += `
+    const code = `
 import sys
 
-if "${module}" not in sys.path:
-    sys.path.append("${module}")
-      `
-    }
+if "${lessonName}" not in sys.path:
+    sys.path.append("/${lessonName}")`
 
-    // Only for the purpose of not screwing ourselves over in the presentation.
-    glueCode += `
-if "sortierroboter/" not in sys.path:
-    sys.path.append("/sortierroboter")
-`
-    return glueCode;
+    return this.runCodeSilently(code);
+  }
+
+  public removeFromSysPath(lessonName: string): Observable<void> {
+    const code = `
+import sys
+
+if "/${lessonName}" in sys.path:
+    sys.path.remove("/${lessonName}")`
+
+    return this.runCodeSilently(code);
   }
 }

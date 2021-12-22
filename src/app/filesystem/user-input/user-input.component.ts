@@ -24,6 +24,7 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
 
   @Output() onSubmit: EventEmitter<{newName: string, isFile: boolean}> = new EventEmitter();
   @Output() dismiss: EventEmitter<void> = new EventEmitter();
+  @Output() currentValue: EventEmitter<Event> = new EventEmitter();
 
   @ViewChild("userInput") inputElement!: ElementRef;
   constructor(private fsService: FilesystemService, private ref: ElementRef) {
@@ -63,6 +64,11 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
     if(!this.ref.nativeElement.contains(event.target)) {
       this.dismiss.emit();
     } 
+  }
+
+  @HostListener('document:keydown.escape', ['$event']) 
+  onEscapeHandler(event: KeyboardEvent) {
+    this.dismiss.emit();
   }
 
   onSubmitClicked(): void {

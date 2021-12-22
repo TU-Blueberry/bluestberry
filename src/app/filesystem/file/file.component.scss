@@ -9,7 +9,7 @@
     justify-content: space-between;
 
     &:hover {
-        background-color: hsl(220 12% 20%);
+        background-color: lighten(#262626, 5%); // Lighten bg color (TODO: Store bg color in global var?)
     }
 }
 
@@ -24,6 +24,7 @@
 .file-heading {
     padding-left: 16px;
     display: flex;
+    align-items: center;
 }
 
 .file:hover > .common-actions {
@@ -33,7 +34,6 @@
 .common-actions {
     display: none;
 }
-
 
 .file-type-image {
     color: green;
@@ -47,3 +47,4 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+

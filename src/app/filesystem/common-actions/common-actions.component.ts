@@ -15,7 +15,7 @@ export class CommonActionsComponent {
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
   @Input() set mode(mode: number) {
-      this.isReadonly = mode === 33088 || mode === 16704;
+      this.isReadonly = mode === 33133 || mode === 16749;
   }
 
   @Output() delete: EventEmitter<Event> = new EventEmitter();
@@ -33,18 +33,24 @@ export class CommonActionsComponent {
   }
 
   emitCreateFromUi(params: {ev: Event, isFile: boolean}): void {
+    this.stopPropagation(params.ev);
+
     if (!this.isReadonly) {
       this.createNewFromUI.emit(params);
     }
   }
 
   emitDelete(ev: Event): void {
+    this.stopPropagation(ev);
+
     if (!this.isReadonly) {
       this.delete.emit(ev);
     }
   }
 
   emitStartRenaming(ev: Event): void {
+    this.stopPropagation(ev);
+
     if (!this.isReadonly) {
       this.startRenaming.emit(ev);
     }

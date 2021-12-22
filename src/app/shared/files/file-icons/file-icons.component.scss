@@ -1,0 +1,23 @@
+.icon-text {
+    font-family: 'Roboto', sans-serif;
+    font-weight: 900;
+    font-size: 64px;
+}
+
+.folder-icon  {
+    width: 20px;
+    height: 20px;
+
+    & > .arrow {
+        color: #ffffff66;
+    }
+
+    & > .actual-folder {
+        fill: #0068b3;
+    }
+
+    & > .actual-folder-active {
+        fill: white;
+        color: white;
+    }
+}

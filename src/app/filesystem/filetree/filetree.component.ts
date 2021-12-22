@@ -1,15 +1,14 @@
 import { Component, ComponentFactoryResolver, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Observable, of, Subject, Subscription } from 'rxjs';
-import { PyodideService } from '../../pyodide/pyodide.service';
+import { concat, from, Observable, Subject, Subscription } from 'rxjs';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
-import { LessonManagementService } from '../lesson-management/lesson-management.service';
 import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
+import { LessonEventsService } from 'src/app/lesson/lesson-events.service';
 
 @Component({
   selector: 'app-filetree',
@@ -26,38 +25,36 @@ export class FiletreeComponent implements OnDestroy{
   selectedFile?: File;
   userResult$: Subject<boolean> = new Subject();
   lastCheck?: Subscription;
-
-  readonly SELECTED_LESSON = "sortierroboter"
+  SELECTED_LESSON = ""
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
-  constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
-    private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService) {
+  constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
+    private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
+    private lse: LessonEventsService) {
+      this.lse.onLessonOpened.subscribe((lesson) => {
+        this.SELECTED_LESSON = lesson.name;
+        this.kickstartTreeGeneration();
+      })
 
-    // TODO: error handling
-    concat(this.pys.pyodide, this.mgmtService.openLessonByName(this.SELECTED_LESSON))
-      .subscribe(
-        () => { },
-        err => { console.error(err) },
-        () => this.kickstartTreeGeneration());
+      this.lse.onLessonClosed.subscribe(() => {
+        this.listRef.clear();
+        console.log(this.listRef);
+      })
   }
 
-  kickstartTreeGeneration() {
-    console.log("kickstart trtee")
-
+  private kickstartTreeGeneration() {
+    this.listRef.clear();
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
-    const root = this.fsService.getNodeByPath(`/${this.SELECTED_LESSON}`).subscribe((node) => {
-      console.log("Got node: ", node)
-
+    this.fsService.getNodeByPath(`/${this.SELECTED_LESSON}`).subscribe((node) => {
       const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
       const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
       baseNode.path = "/";
-      folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, "Sortierroboter");
+      folderComp.node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, this.SELECTED_LESSON);
       this.rootComponent = folderComp;
     });
   }
 
   // TODO: Dateien laden bugg bei FF irgendwie
-  // TODO: Catch error
 
   // TODO: Config aus neuem Mountpoint laden und reinpacken
   // Gleiches gilt für external dateien
@@ -70,7 +67,6 @@ export class FiletreeComponent implements OnDestroy{
   }
 
   // TODO: Regular flow should be similar to this!
-
   // TODO: Additionally check whether zip is completely empty or only consists of config.json
   unpackCheckAndPossiblyImport(file: File) {
     this.checkInProgress = true;
@@ -106,19 +102,17 @@ export class FiletreeComponent implements OnDestroy{
     ev.preventDefault();
     this.selectedFile = undefined;
 
-    if (ev.dataTransfer) {
-      if (ev.dataTransfer.items) {
-        if (ev.dataTransfer.items.length === 1 && ev.dataTransfer.items[0].kind === "file") {
-          const file = ev.dataTransfer.items[0].getAsFile();
+    if (ev.dataTransfer && ev.dataTransfer.items) {
+      if (ev.dataTransfer.items.length === 1 && ev.dataTransfer.items[0].kind === "file") {
+        const file = ev.dataTransfer.items[0].getAsFile();
 
-          if (file) {
-            this.check(file);
-          } else {
-            // TODO: Error
-          }
+        if (file) {
+          this.check(file);
         } else {
           // TODO: Error
         }
+      } else {
+        // TODO: Error
       }
     }
   }

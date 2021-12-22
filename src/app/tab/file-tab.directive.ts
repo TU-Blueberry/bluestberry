@@ -2,7 +2,7 @@ import { Directive, EventEmitter, Input, OnInit, Output } from '@angular/core'
 import { Tab } from 'src/app/tab/model/tab.model'
 import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service'
 import { FilesystemService } from 'src/app/filesystem/filesystem.service'
-import { filter, map, switchMap } from 'rxjs/operators'
+import { filter, map, switchMap, tap } from 'rxjs/operators'
 import { EMPTY, Observable, ReplaySubject, Subject } from 'rxjs'
 
 @Directive({
@@ -48,6 +48,7 @@ export class FileTabDirective implements OnInit {
     this.filesystemEventService.onWriteToFile
       .pipe(
         filter((event) => this.tab?.data?.path === event.path),
+        tap(() => console.log("TAB DIRECTIVE!")),
         switchMap((event) =>
           this.filesystemService.getFileAsBinary(event.path)
         ),
