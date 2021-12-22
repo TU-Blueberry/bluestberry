@@ -2,6 +2,8 @@ import traceback
 import pyodide
 import pyodide_js
 import micropip
+import sys
+import os
 
 # Used to run code via the PyodideService
 editor_input = ""
@@ -42,6 +44,9 @@ async def load_packages():
 
 async def run_code():
   try:
+    print(sys.path)
+    print(os.listdir('/sortierroboter'))
+    print(os.listdir('/sortierroboter/libs/'))
     await load_packages()
     exec(editor_input, {})
   except:

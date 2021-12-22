@@ -65,7 +65,9 @@ export class FilesystemService {
       }
 
       try {
+        console.log('sync start');
         this.PyFS!.syncfs(fromPersistentToVirtual, err => {
+          console.log('sync complete');
           subscriber.complete();
           // TODO: Weird sync behaviour
          /*  if (err) {

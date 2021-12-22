@@ -18,6 +18,7 @@ import { MarkdownModule, MarkedOptions, MarkedRenderer } from "ngx-markdown";
 import { NgIconsModule } from '@ng-icons/core';
 import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
 import { SearchComponent } from './search/search.component';
+import {PyodideService} from 'src/app/pyodide/pyodide.service';
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -58,7 +59,7 @@ export function markedOptionsFactory(): MarkedOptions {
   bootstrap: [AppComponent],
 })
 export class AppModule {
-  constructor(private injector: Injector) {
-    setupPythonCalls(injector);
+  constructor(private injector: Injector, private pyodideService: PyodideService) {
+    setupPythonCalls(injector, pyodideService);
   }
 }
