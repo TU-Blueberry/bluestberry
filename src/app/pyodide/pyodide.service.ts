@@ -108,24 +108,26 @@ export class PyodideService {
     }));
   }
 
-  public addToSysPath(lessonName: string): Observable<void> {
+  public addToSysPath(path: string): Observable<void> {
     console.log("ADD TO SYS PATH!")
+    const fullPath = path.startsWith("/") ? path : `/${path}`;
 
     const code = `
 import sys
 
-if "${lessonName}" not in sys.path:
-    sys.path.append("/${lessonName}")`
+if "${fullPath}" not in sys.path:
+    sys.path.append("${fullPath}")`
 
     return this.runCodeSilently(code);
   }
 
-  public removeFromSysPath(lessonName: string): Observable<void> {
+  public removeFromSysPath(path: string): Observable<void> {
+    const fullPath = path.startsWith("/") ? path : `/${path}`;
     const code = `
 import sys
 
-if "/${lessonName}" in sys.path:
-    sys.path.remove("/${lessonName}")`
+if "${fullPath}" in sys.path:
+    sys.path.remove("${fullPath}")`
 
     return this.runCodeSilently(code);
   }

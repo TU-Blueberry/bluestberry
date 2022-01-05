@@ -27,12 +27,14 @@
     align-items: center;
 }
 
-.file:hover > .common-actions {
-    display: inline-block;
-}
-
 .common-actions {
     display: none;
+    position: absolute;
+    z-index: 99;
+}
+
+.show {
+    display: inline-block !important;
 }
 
 .file-type-image {

@@ -13,13 +13,23 @@
     }
 }
 
+.link {
+   color: #8f8f8f;
+   text-decoration: underline;
+
+   &:hover {
+       color: #afafaf;
+       cursor: pointer;
+   }
+}
+
 .folder-heading {
     display: flex;
     align-items: center;
 }
 
-.folder:hover > .common-actions {
-    display: inline-block;
+.show {
+    display: inline-block !important;
 }
 
 .root-folder {
@@ -28,6 +38,8 @@
 
 .common-actions {
     display: none;
+    position: absolute;
+    z-index: 99;
 }
 
 .active {
@@ -51,4 +63,8 @@
     width: 20px;
     height: 20px;
     color: #ffffff66;
+}
+
+.options {
+    margin: 10px 0px 10px 0px;
 }

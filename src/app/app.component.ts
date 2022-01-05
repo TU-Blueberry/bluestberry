@@ -12,7 +12,7 @@ export class AppComponent {
   isLoading = true;
 
   constructor(private lse: LessonEventsService) {
-    this.lse.onLessonOpened.pipe(delay(1000)).subscribe(
+    this.lse.onExperienceOpened.pipe(delay(1000)).subscribe(
       () => {this.isLoading = false}, 
       (err: any) => { console.error(err) }, 
       () => this.isLoading = false

@@ -2,16 +2,107 @@
     <app-loading-animation>Workspace wird gewechselt. Einen Moment bitte.</app-loading-animation>
 </div>
 
-<label class="lesson-label" for="select-lesson">Verfügbare Workspaces</label>
-<select (change)="onSelectChange($event)" id="select-lesson">
-    <!-- <option value="" disabled [selected]="selectedLesson === ''">Lektion wählen</option> -->
-    <option *ngFor="let lesson of lessons | async" 
-        [value]="lesson"
-        [selected]="lesson === selectedLesson">
-            {{lesson}}
-    </option>
-    <!-- <hr> -->
-    <!-- <option>+ Neuer Workspace</option> -->
-</select>
+<div class="wrapper" *ngIf="showCreationDialog">
+    <app-sandbox-creation (close)="onCreationDialogClose($event)"></app-sandbox-creation>
+</div>
 
-<hr>
+<div class="wrapper" *ngIf="showSandboxDeletionDialog">
+    <app-confirmation-dialog 
+        (choice)="onDeletionChoice($event)"
+        (close)="closeDeletionDialog()">
+            Bist du sicher, dass du die Sandbox <code>{{ sandboxToDelete?.name }}</code> endgültig löschen möchtest?
+            Dieser Schritt kann nicht rückgängig gemacht werden!
+    </app-confirmation-dialog>
+</div>
+
+<div class="main">
+    <div class="main-text">
+        Workspace:
+    </div>
+    <div id="select-lesson">
+        <div (click)="showOptions = !showOptions" class="current-selection">
+            <ng-template *ngIf="selectedLesson.name === ''; else showEntries">
+                <div class="current-selection-text">
+                    Kein Workspace gewählt
+                </div>
+            </ng-template>
+            <ng-template #showEntries>
+                <div class="current-selection-text">
+                    {{ selectedLesson.name }}
+                </div>
+            </ng-template>
+            <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
+                stroke-linejoin="miter" fill="none"> 
+                <title id="chevronDownIconTitle">Auswahl anzeigen</title>
+                <polyline points="6 10 12 16 18 10"/> 
+            </svg>
+        </div>
+        <div class="entry-wrapper" [hidden]="!showOptions">
+            <div *ngIf="(experiences$ | async)?.lessons?.length === 0" class="empty">
+                Keine Lektionen gefunden.
+            </div>
+            <div *ngFor="let lesson of (experiences$ | async)?.lessons"
+                class="entry" 
+                (click)="onSelectChange(lesson)"
+                title="Öffnen">
+                <img src="/assets/icons/industrial-robot.png">
+                <div class="content">
+                    <div class="content-heading">
+                        {{ lesson.name }}
+                    </div>
+                    <div class="content-description">
+                        <div class="status-indiciator available" title="Verfügbar"></div>
+                        <div class="link" title="Exportiere deinen Fortschritt">Export</div>
+                        <div class="link" title="Fortschritt zurücksetzen">Zurücksetzen</div>
+                    </div>
+                </div>
+                <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
+                    stroke-linejoin="miter" fill="none">
+                    <title id="chevronRightIconTitle">Öffnen</title>
+                    <polyline points="10 6 16 12 10 18 10 18" />
+                </svg>
+            </div>
+
+            <hr>
+
+            <div *ngFor="let sandbox of (experiences$ | async)?.sandboxes"
+                class="entry" 
+                (click)="onSelectChange(sandbox)"
+                title="Öffnen">
+                <img src="/assets/icons/industrial-robot.png">
+                <div class="content">
+                    <div class="content-heading">
+                        {{ sandbox.name }}
+                    </div>
+                    <div class="content-description">
+                        <div class="status-indiciator available" title="Verfügbar"></div>
+                        <div class="link" title="Sandbox exportieren">Export</div>
+                        <div class="link" title="Sandbox löschen" (click)="openSandboxDeletionDialog($event, sandbox)">Löschen</div>
+                    </div>
+                </div>
+                <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+                    aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
+                    stroke-linejoin="miter" fill="none">
+                    <title id="chevronRightIconTitle">Sandbox öffnen</title>
+                    <polyline points="10 6 16 12 10 18 10 18" />
+                </svg>
+            </div>
+            <div *ngIf="(experiences$ | async)?.sandboxes?.length === 0" class="empty empty-sandbox">
+                Keine Sandboxes gefunden.
+            </div>
+            <div class="sandbox-wrapper">
+                <div class="sandbox-button" (click)="openCreationDialog($event)">Neue Sandbox
+                    <svg xmlns="http://www.w3.org/2000/svg" class="plus" viewBox="0 0 24 24" 
+                    aria-labelledby="plusIconTitle" stroke="white" stroke-width="2" 
+                    stroke-linecap="square" stroke-linejoin="miter" fill="none">
+                        <title id="plusIconTitle">Neue Sandbox erstellen</title> 
+                        <path d="M20 12L4 12M12 4L12 20"/> 
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

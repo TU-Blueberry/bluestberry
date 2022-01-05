@@ -45,18 +45,36 @@ export class MainViewerComponent implements OnInit {
     private tabManagementService: TabManagementService
   ) { }
 
+
+  test(): void {
+    // assumption: lastSize has been set before calling this method
+    const hiddenElements = [this.currentSizeFiletree, this.currentSizeLeftTab, this.currentSizeRightTab].filter(size => size = 0).length;
+
+    // Würde erstmal objekte mit min, current und maxSize machen
+    // dann array von objekten
+    // vielleicht kann jedes objekt ne methode set haben, die neue größe und #anderer tabs kriegt und die difference zurückgibt
+  
+    // TODO: Muss auch maxSize anpassen (wenn rechter tab geschlossen wird kann linker z.B. größer werden)
+  }
+
   ngOnInit(): void {
     // TODO: Das muss vmtl auch berechnet werden, wenn tabs geschlossen/geöffnet werden
     // TODO: Collapse/expand?
     this.uiEv.onFiletreeToggle.subscribe(next => { 
       const currentSizes = this.splitEl.getVisibleAreaSizes(); 
 
+      // TODO: Store in localstorage (key: name der lektion)
+      // --> Service dafür anlegen
+      // on lesson open: load from localstorage
+      // on lesson close: store in localstorage
       if (currentSizes[0] !== '*') {
         let difference;
         const openTabGroups = Number(this.currentSizeLeftTab > 0) + Number(this.currentSizeRightTab > 0)
         this.currentSizeLeftTab = Number(currentSizes[1].valueOf())
         this.currentSizeRightTab = Number(currentSizes[2].valueOf())
 
+        // TODO: ablauf ist ja immer ähnlich, kann man vmtl verallgemeinern?
+        // Im Sinne von: nur currentSizeFileTree setzen, dann andere Methode aufrufen die neu verteilt
         if (next === false) { // wenn filetree gleich eingeklappt wird
           this.lastSizeFiletree = Number(currentSizes[0].valueOf()); // müsste bei close left/close right dann deren größe sein
           this.currentSizeFiletree = 0;

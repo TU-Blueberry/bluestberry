@@ -1,28 +1,57 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { forkJoin, from } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { forkJoin, from, fromEvent } from 'rxjs';
+import { filter, map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-common-actions',
   templateUrl: './common-actions.component.html',
   styleUrls: ['./common-actions.component.scss']
 })
-export class CommonActionsComponent {
-  READONLY_MESSAGE_FOLDER = "Nicht möglich (Order ist schreibgeschützt)";
-  READONLY_MESSAGE_FILE = "Nicht möglich (Datei ist schreibgeschützt)";
+export class CommonActionsComponent implements OnInit {
+  DELETE_MSG: string = '';
+  RENAME_MSG: string = '';
+  CREATE_FOLDER_MSG: string = 'Neuen Ordner erstellen';
+  CREATE_FILE_MSG: string = 'Neuen Datei erstellen';
+  UPLOAD_MSG: string = "Dateien hochladen"
+  READONLY_MSG = '';
+
   isReadonly = false;
 
+  @Input() offsetX: number = 0;
+  @Input() offsetY: number = 0;
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
   @Input() set mode(mode: number) {
-      this.isReadonly = mode === 33133 || mode === 16749;
+      this.isReadonly = mode === 33133 || mode === 16749; // TODO: noch aktuell?
+      this.setMessages();
   }
 
   @Output() delete: EventEmitter<Event> = new EventEmitter();
   @Output() startRenaming: EventEmitter<Event> = new EventEmitter();
   @Output() createNewFromUI: EventEmitter<{ev: Event, isFile: boolean}> = new EventEmitter();
   @Output() selectedFiles: EventEmitter<{name: string, convertedFile: Uint8Array}[]> = new EventEmitter();
-  constructor() { }
+  @Output() close: EventEmitter<void> = new EventEmitter();
+  constructor(private ref: ElementRef) { }
+
+  private setMessages() {
+    this.DELETE_MSG = `${this.isFile ? 'Datei' : 'Ordner'} löschen`;
+    this.RENAME_MSG = `${this.isFile ? 'Datei' : 'Ordner'} umbenennen`; 
+    this.READONLY_MSG = `${this.isFile ? 'Datei' : 'Ordner'} ist schreibgeschützt`; 
+  }
+
+  ngOnInit(): void {
+    this.setMessages();
+
+    fromEvent(document, 'keydown').pipe(
+      filter(ev => (ev as KeyboardEvent).key === 'Escape'),
+      tap(() => this.close.emit())
+    ).subscribe();
+
+    fromEvent(document, 'click').pipe(
+      filter(ev => !this.ref.nativeElement.contains(ev.target)),
+      tap(() => this.close.emit())
+    ).subscribe();
+  }
 
   stopPropagation(ev: Event): void {
     ev.stopPropagation();
@@ -37,6 +66,7 @@ export class CommonActionsComponent {
 
     if (!this.isReadonly) {
       this.createNewFromUI.emit(params);
+      this.close.emit();
     }
   }
 
@@ -45,6 +75,7 @@ export class CommonActionsComponent {
 
     if (!this.isReadonly) {
       this.delete.emit(ev);
+      this.close.emit();
     }
   }
 
@@ -53,6 +84,7 @@ export class CommonActionsComponent {
 
     if (!this.isReadonly) {
       this.startRenaming.emit(ev);
+      this.close.emit();
     }
   }
 
@@ -71,11 +103,13 @@ export class CommonActionsComponent {
       // konnten und welche nicht (z.B. weil sie schon existieren)
       forkJoin(Array.from(fileList).map(file => this.createUint8ArrayFromFile(file)))
       .subscribe(
-        (arrs) => { this.selectedFiles.emit(arrs)}, 
+        (arrs) => this.selectedFiles.emit(arrs), 
         (err) => console.error(err))     
     } else {
       // TODO: Error
     }
+
+    this.close.emit();
   } 
 
   createUint8ArrayFromFile(file: File) {

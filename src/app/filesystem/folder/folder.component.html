@@ -1,4 +1,8 @@
-  <div class="folder" [style.padding-left.px]="(node.isTentativeNode) ? 10 * node.depth + 20 : 10 * node.depth" [class.root-folder]="node.isRoot" [class.active]="node.isActive" (click)="toggleSubfolders($event)">
+  <div class="folder" [style.padding-left.px]="(node.isTentativeNode) ? 10 * node.depth + 20 : 10 * node.depth" 
+    [class.root-folder]="node.isRoot" 
+    [class.active]="node.isActive" 
+    (click)="toggleSubfolders($event)"
+    (contextmenu)="toggleContextMenu($event)">
     <div class="folder-heading">
       <div class="folder-icon">
         <svg class="arrow" *ngIf="!showSubfolders && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -23,15 +27,24 @@
           [currentName]="node?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
       </div>
     </div>
-    <div *ngIf="!isRenaming" class="common-actions">
-      <app-common-actions [isRoot]="node.isRoot" [isFile]="false" [mode]="node?.mode || -1"
+    <div *ngIf="!isRenaming" class="common-actions" [class.show]="showContextMenu">
+      <app-common-actions [isRoot]="node.isRoot" [isFile]="false" [mode]="node?.mode || -1" (close)="closeContextMenu()"
+      [offsetX]="offsetX" [offsetY]="offsetY"
       (createNewFromUI)="this.createNewFromUI($event)" (delete)="this.deleteFolder($event)" 
-      (startRenaming)="this.startRenaming($event)" (selectedFiles)="this.onNewFile($event)" ></app-common-actions>
+      (startRenaming)="this.startRenaming($event)" (selectedFiles)="this.onNewFile($event)"></app-common-actions>
     </div>
 </div>
 
-<div [class.invisible]="!showSubfolders">
-    <div *ngIf="node.isEmptyNode && !node.isTentativeNode && tentativeNode === undefined" [style.padding-left.px]="10 * node.depth + 20">Leerer Ordner</div>
-    <div #subfolders></div>
-    <div #files></div>      
+<div [class.invisible]="!showSubfolders" class="options">
+  <div *ngIf="node.isEmptyNode && !node.isTentativeNode && tentativeNode === undefined" [style.padding-left.px]="10 * node.depth + 20">
+    <div *ngIf="node.isRoot && !isRenaming">
+      <div class="link" (click)="this.createNewFromUI({ ev: $event, isFile: false })">Ordner erstellen</div>
+      <div class="link" (click)="this.createNewFromUI({ ev: $event, isFile: true })">Datei erstellen</div>
+    </div>
+    <div *ngIf="!node.isRoot">
+      Leerer Ordner
+    </div>
+  </div>
+  <div #subfolders></div>
+  <div #files></div>      
 </div>  

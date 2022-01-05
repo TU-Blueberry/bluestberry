@@ -10,6 +10,7 @@ export class UiEventsService {
   onHintChange: EventEmitter<void> = new EventEmitter();
   onToggleTerminal: EventEmitter<void> = new EventEmitter();
   onStartTour: EventEmitter<void> = new EventEmitter();
+  onCloseAllContextMenues: EventEmitter<void> = new EventEmitter();
 
   constructor() { }
 
@@ -35,5 +36,9 @@ export class UiEventsService {
 
   startTour(): void {
     this.onStartTour.emit();
+  }
+
+  closeAllContextMenues(): void {
+    this.onCloseAllContextMenues.emit();
   }
 }

@@ -1,21 +1,23 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { ConfigObject } from '../filesystem/model/config';
+import { ExperienceType } from './model/experience-type';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LessonEventsService {
-  onLessonOpened: EventEmitter<{open: {path: string, on: string}[], name: string}> = new EventEmitter();
-  onLessonClosed: EventEmitter<string> = new EventEmitter();
+  onExperienceOpened: EventEmitter<{open: {path: string, on: string}[], name: string, type: ExperienceType, tabSizes: number[]}> = new EventEmitter();
+  onExperienceClosed: EventEmitter<string> = new EventEmitter();
 
   constructor() { }
 
-  emitLessonOpened(config: ConfigObject, name: string): void {
+  emitExperienceOpened(config: ConfigObject): void {
     console.log("emit lesson opened ", config)
-    this.onLessonOpened.emit({open: config.open.map(({path, on}) => ({path: `${config.name}/${path}`, on})), name: name});
+    const fullPath = config.type === 'LESSON' ? `/${config.name}` : `/sandboxes/${config.name}`;
+    this.onExperienceOpened.emit({open: config.open.map(({path, on}) => ({path: `${fullPath}/${path}`, on})), name: config.name, type: config.type, tabSizes: config.tabSizes});
   }
 
-  emitLessonClosed(name: string): void {
-    this.onLessonClosed.emit(name);
+  emitExperienceClosed(name: string): void {
+    this.onExperienceClosed.emit(name);
   }
 }

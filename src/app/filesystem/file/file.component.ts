@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FilesystemService } from '../filesystem.service';
@@ -9,10 +10,14 @@ import { TreeNode } from '../model/tree-node';
   templateUrl: './file.component.html',
   styleUrls: ['./file.component.scss']
 })
-export class FileComponent implements OnInit {
+export class FileComponent implements OnInit, OnDestroy {
   isRenaming = false;
   isActive = false;
   tentativeName = '';
+  showContextMenu = false;
+  offsetX = 0;
+  offsetY = 0;
+  closeContextMenuSubscription: Subscription;
   
   private _node: TreeNode;
 
@@ -40,6 +45,7 @@ export class FileComponent implements OnInit {
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
   constructor(private fsService: FilesystemService, private ev: FilesystemEventService, private uiEv: UiEventsService) {
     this._node = new TreeNode(this.uiEv, this.fsService, this.ev);
+    this.closeContextMenuSubscription = this.uiEv.onCloseAllContextMenues.subscribe(() => this.showContextMenu = false);
   }
 
   // TODO: this isn't a UUID but a random gist i found
@@ -50,6 +56,10 @@ export class FileComponent implements OnInit {
 
   ngOnInit(): void {
     this.isRenaming = this._node.isTentativeNode;
+  }
+  
+  ngOnDestroy(): void {
+    this.closeContextMenuSubscription.unsubscribe();
   }
 
   deleteFile(ev: Event) {
@@ -108,5 +118,26 @@ export class FileComponent implements OnInit {
   getExtensionFromTentativeName(): string {
     const extension = this.tentativeName.split(".");
     return extension.length > 1 ? extension[extension.length - 1].toUpperCase() : "UNKNOWN";
+  }
+
+  closeContextMenu(): void {
+    this.showContextMenu = false;
+  }
+
+  toggleContextMenu(ev: MouseEvent): void {
+    ev.stopPropagation();
+    ev.preventDefault();
+
+    const rect = (ev.target as HTMLElement)?.getBoundingClientRect();
+    this.offsetX = ev.clientX - rect.left;
+    this.offsetY = ev.clientY - rect.top;
+
+    if (!this.isRenaming) {
+      if (!this.showContextMenu) {
+        this.uiEv.closeAllContextMenues();
+      }
+
+      this.showContextMenu = !this.showContextMenu;
+    }
   }
 }

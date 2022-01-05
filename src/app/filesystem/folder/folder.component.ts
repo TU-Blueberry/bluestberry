@@ -1,6 +1,7 @@
 import { Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { LessonManagementService } from 'src/app/lesson/lesson-management/lesson-management.service';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FileComponent } from '../file/file.component';
@@ -24,6 +25,10 @@ export class FolderComponent implements OnInit, OnDestroy {
 
   showSubfolders = false;
   isRenaming = false;
+  showContextMenu = false;
+
+  offsetX = 0;
+  offsetY = 0;
 
   private _node: TreeNode;
 
@@ -38,7 +43,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
   @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef;
   @ViewChild('files', { read: ViewContainerRef, static: true }) filesRef!: ViewContainerRef;
-  constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private ev: FilesystemEventService, private componentFactoryResolver: ComponentFactoryResolver) {
+  constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private ev: FilesystemEventService, private componentFactoryResolver: ComponentFactoryResolver, private lsm: LessonManagementService) {
     this.folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     this.fileFactory = this.componentFactoryResolver.resolveComponentFactory(FileComponent);
     this._node = new TreeNode(this.uiEv, this.fsService, this.ev);
@@ -82,9 +87,10 @@ export class FolderComponent implements OnInit, OnDestroy {
         this.tentativeNodeDismissal(this.tentativeNodeIsFile);
       }
     });
+    const closeContextMenuSubscription = this.uiEv.onCloseAllContextMenues.subscribe(() => this.showContextMenu = false);
 
     this.subscriptions = [deleteSubscription, newFileSubscription, afterCodeSubscription, moveOldPathSubscription, pathMoveSubscription,
-    newNodeByUserSubscription, newNodeByUserSyncedSubscription, failedChildSubscription, newUserInputSubscription];
+    newNodeByUserSubscription, newNodeByUserSyncedSubscription, failedChildSubscription, newUserInputSubscription, closeContextMenuSubscription];
   }
 
   // sadly, emscripten only uses its "onMakeDirectory" callback if it was compiled in debug mode (which pyodide isn't)
@@ -182,7 +188,7 @@ export class FolderComponent implements OnInit, OnDestroy {
       this.folders.set(path, [...currentContent, <ComponentRef<FolderComponent>>nodeComponentRef]);
     }
 
-    if (!path) {
+    if (path === undefined) {
       this.tentativeNodeSubscription = nodeComponentRef.instance.onDeleteRequested.subscribe(isFile => this.tentativeNodeDismissal(isFile));
       this.tentativeNode = nodeComponentRef;
       this.tentativeNodeIsFile = isFile;
@@ -211,16 +217,16 @@ export class FolderComponent implements OnInit, OnDestroy {
     const allElements = isFile ? this.files : this.folders;
     const ref = isFile ? this.filesRef : this.foldersRef;
     const elements = allElements.get(path);
-  
+
     if (elements) {
       elements.forEach(element => ref.remove(ref.indexOf(element.hostView)));
       allElements.delete(path);
     }
   }
 
-  createNewFromUI(params: {ev: Event, isFile: boolean}): void {
-    params.ev.stopPropagation();
-    params.ev.preventDefault();
+  createNewFromUI(params: {ev?: Event, isFile: boolean}): void {
+    params.ev?.stopPropagation();
+    params.ev?.preventDefault();
     this.showSubfolders = true;
     
     // delete current tentative node if it exists (--> only one tentative node at a time allowed)
@@ -288,8 +294,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.onDeleteRequested.emit(false);
   }
 
-  onNewFile(files: {name: string, convertedFile: Uint8Array}[]) {
-
+  onNewFile(files: { name: string, convertedFile: Uint8Array }[]) {
     forkJoin(files.map(file => this.fsService.createFile(`${this._node.path}/${file.name}`, file.convertedFile, false)))
     .pipe(switchMap(res => this.fsService.sync(false)))
       .subscribe(
@@ -301,5 +306,26 @@ export class FolderComponent implements OnInit, OnDestroy {
         });
 
       // catchError(error => of(error)
+  }
+
+  closeContextMenu(): void {
+    this.showContextMenu = false;
+  }
+
+  toggleContextMenu(ev: MouseEvent): void {
+    ev.stopPropagation();
+    ev.preventDefault();
+
+    const rect = (ev.target as HTMLElement)?.getBoundingClientRect();
+    this.offsetX = ev.clientX - rect.left;
+    this.offsetY = ev.clientY - rect.top;
+
+    if (!this.isRenaming) {
+      if (!this.showContextMenu) {
+        this.uiEv.closeAllContextMenues();
+      }
+
+      this.showContextMenu = !this.showContextMenu;
+    }
   }
 }

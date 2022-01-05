@@ -9,6 +9,7 @@ import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { LessonEventsService } from 'src/app/lesson/lesson-events.service';
+import { Experience } from 'src/app/lesson/model/experience';
 
 @Component({
   selector: 'app-filetree',
@@ -25,31 +26,32 @@ export class FiletreeComponent implements OnDestroy{
   selectedFile?: File;
   userResult$: Subject<boolean> = new Subject();
   lastCheck?: Subscription;
-  SELECTED_LESSON = ""
+  SELECTED_LESSON?: Experience;
 
   @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
   constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
     private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
     private lse: LessonEventsService) {
-      this.lse.onLessonOpened.subscribe((lesson) => {
-        this.SELECTED_LESSON = lesson.name;
-        this.kickstartTreeGeneration();
-      })
 
-      this.lse.onLessonClosed.subscribe(() => {
-        this.listRef.clear();
-        console.log(this.listRef);
-      })
+    // TODO: das + kickstart muss wg. pfaden angepasst werden
+    this.lse.onExperienceOpened.subscribe((lesson) => {
+      this.SELECTED_LESSON = lesson;
+      this.kickstartTreeGeneration();
+    })
+
+    this.lse.onExperienceClosed.subscribe(() => {
+      this.listRef.clear();
+    })
   }
 
   private kickstartTreeGeneration() {
     this.listRef.clear();
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
-    this.fsService.getNodeByPath(`/${this.SELECTED_LESSON}`).subscribe((node) => {
+    this.fsService.getNodeByPath(`/${this.SELECTED_LESSON?.name}`).subscribe((node) => {
       const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
       const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
       baseNode.path = "/";
-      folderComp.node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, this.SELECTED_LESSON);
+      folderComp.node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON?.name}`, node, this.SELECTED_LESSON?.name);
       this.rootComponent = folderComp;
     });
   }
