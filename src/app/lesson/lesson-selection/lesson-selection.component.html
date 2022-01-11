@@ -2,18 +2,24 @@
     <app-loading-animation>Workspace wird gewechselt. Einen Moment bitte.</app-loading-animation>
 </div>
 
-<div class="wrapper" *ngIf="showCreationDialog">
-    <app-sandbox-creation (close)="onCreationDialogClose($event)"></app-sandbox-creation>
-</div>
+<app-modal *ngIf="showCreationDialog" 
+    (close)="closeCreationDialog()" >
+    <app-sandbox-creation 
+        (cancel)="closeCreationDialog()"
+        (create)="createNewSandbox($event)">
+    </app-sandbox-creation>
+</app-modal>
 
-<div class="wrapper" *ngIf="showSandboxDeletionDialog">
+<app-modal *ngIf="showSandboxDeletionDialog"
+    (close)="closeDeletionDialog()">
     <app-confirmation-dialog 
         (choice)="onDeletionChoice($event)"
         (close)="closeDeletionDialog()">
-            Bist du sicher, dass du die Sandbox <code>{{ sandboxToDelete?.name }}</code> endgültig löschen möchtest?
-            Dieser Schritt kann nicht rückgängig gemacht werden!
+        <h1 class="mt-0">Sandbox löschen</h1>
+        Bist du sicher, dass du die Sandbox <code>{{ sandboxToDelete?.name }}</code> endgültig löschen möchtest?
+        Dieser Schritt kann nicht rückgängig gemacht werden!
     </app-confirmation-dialog>
-</div>
+</app-modal>
 
 <div class="main">
     <div class="main-text">
@@ -53,8 +59,8 @@
                     </div>
                     <div class="content-description">
                         <div class="status-indiciator available" title="Verfügbar"></div>
-                        <div class="link" title="Exportiere deinen Fortschritt">Export</div>
-                        <div class="link" title="Fortschritt zurücksetzen">Zurücksetzen</div>
+                        <div class="link disabled" title="Exportiere deinen Fortschritt">Export (bald)</div>
+                        <div class="link disabled" title="Fortschritt zurücksetzen">Zurücksetzen (bald)</div>
                     </div>
                 </div>
                 <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -78,8 +84,8 @@
                     </div>
                     <div class="content-description">
                         <div class="status-indiciator available" title="Verfügbar"></div>
-                        <div class="link" title="Sandbox exportieren">Export</div>
-                        <div class="link" title="Sandbox löschen" (click)="openSandboxDeletionDialog($event, sandbox)">Löschen</div>
+                        <div class="link" title="Sandbox exportieren">Export (bald)</div>
+                        <div class="link" title="Sandbox löschen" (click)="openSandboxDeletionDialog($event, sandbox)">Löschen (bald)</div>
                     </div>
                 </div>
                 <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"

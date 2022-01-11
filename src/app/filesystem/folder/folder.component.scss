@@ -59,6 +59,11 @@
     margin-left: 5px;
 }
 
+.root-text {
+    text-transform: uppercase;
+    font-size: 0.875rem;
+}
+
 .folder-icon > .arrow{
     width: 20px;
     height: 20px;
@@ -66,5 +71,5 @@
 }
 
 .options {
-    margin: 10px 0px 10px 0px;
+    margin: 0px;
 }

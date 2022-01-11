@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2 } from '@angular/core';
 import { forkJoin, from, fromEvent } from 'rxjs';
 import { filter, map, tap } from 'rxjs/operators';
 
@@ -17,12 +17,10 @@ export class CommonActionsComponent implements OnInit {
 
   isReadonly = false;
 
-  @Input() offsetX: number = 0;
-  @Input() offsetY: number = 0;
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
   @Input() set mode(mode: number) {
-      this.isReadonly = mode === 33133 || mode === 16749; // TODO: noch aktuell?
+      this.isReadonly = mode === 33133 || mode === 16749;
       this.setMessages();
   }
 
@@ -31,7 +29,7 @@ export class CommonActionsComponent implements OnInit {
   @Output() createNewFromUI: EventEmitter<{ev: Event, isFile: boolean}> = new EventEmitter();
   @Output() selectedFiles: EventEmitter<{name: string, convertedFile: Uint8Array}[]> = new EventEmitter();
   @Output() close: EventEmitter<void> = new EventEmitter();
-  constructor(private ref: ElementRef) { }
+  constructor(private ref: ElementRef, private cd: ChangeDetectorRef, private zone: NgZone, private r2: Renderer2) { }
 
   private setMessages() {
     this.DELETE_MSG = `${this.isFile ? 'Datei' : 'Ordner'} löschen`;
@@ -42,15 +40,23 @@ export class CommonActionsComponent implements OnInit {
   ngOnInit(): void {
     this.setMessages();
 
-    fromEvent(document, 'keydown').pipe(
-      filter(ev => (ev as KeyboardEvent).key === 'Escape'),
-      tap(() => this.close.emit())
-    ).subscribe();
+    // see https://stackoverflow.com/questions/39729846/angular-2-click-event-callback-without-triggering-change-detection
+    // listening to document.click inside the zone would trigger change detection on every component, even if detached
+    // running it outside of angulars zone should circumvent change detection (it still looks like it's doing some sort of 
+    // change detection, but it's way faster at least)
+    this.zone.runOutsideAngular(() => {
+      fromEvent(document, 'click').pipe(
+        tap(ev => (this.stopPropagation(ev), ev.preventDefault())),
+        filter(ev => !this.ref.nativeElement.contains(ev.target)),
+        tap(() => this.close.emit())
+      ).subscribe()
 
-    fromEvent(document, 'click').pipe(
-      filter(ev => !this.ref.nativeElement.contains(ev.target)),
-      tap(() => this.close.emit())
-    ).subscribe();
+      fromEvent(document, 'keydown').pipe(
+        filter(ev => (ev as KeyboardEvent).key === 'Escape'),
+        tap(ev => (this.stopPropagation(ev), ev.preventDefault)),
+        tap(() => this.close.emit())
+      ).subscribe();
+    });
   }
 
   stopPropagation(ev: Event): void {

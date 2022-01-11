@@ -1,8 +1,8 @@
 <div class="file" [style.padding-left.px] = "node.depth * 10" (click)="onClick()" 
-    [class.active]="node.isActive"
+    [class.active]="isActive"
     (contextmenu)="toggleContextMenu($event)">
     <div class="file-heading">
-        <app-file-icons [data]="isRenaming ? {path: tentativeName} : {path: node.path}" [isTentativeFile]="node.isTentativeNode"></app-file-icons>
+        <app-file-icons class="file-icons" [data]="isRenaming ? {path: tentativeName} : {path: node.path}" [isTentative]="node.isTentativeNode"></app-file-icons>
         <ng-container class="file-name" *ngIf="!isRenaming">
             {{ node.name }}
         </ng-container> 
@@ -12,9 +12,8 @@
             (currentValue)="updateTentativeName($event)"></app-user-input>
         </div>
     </div>
-    <div *ngIf="!isRenaming" class="common-actions" [class.show]="showContextMenu">
-        <app-common-actions [isRoot]="node.isRoot" [isFile]="true" [mode]="node.mode || -1 "
-        [offsetX]="offsetX" [offsetY]="offsetY" (close)="closeContextMenu()"
+    <div *ngIf="!isRenaming" class="common-actions" [class.show]="showContextMenu" [style.top.px]="offsetY - 20" [style.left.px]="offsetX">
+        <app-common-actions [isRoot]="node.isRoot" [isFile]="true" [mode]="node.mode || -1 "(close)="closeContextMenu()"
         (delete)="this.deleteFile($event)" (startRenaming)="this.startRenaming($event)"></app-common-actions>
     </div>
 </div>

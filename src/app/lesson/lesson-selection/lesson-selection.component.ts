@@ -1,7 +1,6 @@
-import { Component, ElementRef, HostListener } from '@angular/core';
-import { Observable } from 'rxjs';
-import { delay } from 'rxjs/operators';
-import { FilesystemService } from 'src/app/filesystem/filesystem.service';
+import { Component, ElementRef, HostListener, OnInit } from '@angular/core';
+import { fromEvent, Observable } from 'rxjs';
+import { delay, filter, tap } from 'rxjs/operators';
 import { LessonManagementService } from '../lesson-management/lesson-management.service';
 import { Experience } from '../model/experience';
 
@@ -10,7 +9,7 @@ import { Experience } from '../model/experience';
   templateUrl: './lesson-selection.component.html',
   styleUrls: ['./lesson-selection.component.scss']
 })
-export class LessonSelectionComponent {
+export class LessonSelectionComponent implements OnInit {
   experiences$: Observable<{lessons: Experience[], sandboxes: Experience[], switchTo?: Experience}>;
   selectedLesson: Experience = { name: '', type: "LESSON"};
   isSwitching = false;
@@ -19,7 +18,7 @@ export class LessonSelectionComponent {
   showSandboxDeletionDialog = false;
   sandboxToDelete?: Experience;
 
-  constructor(private lessonManagementService: LessonManagementService, private ref: ElementRef, private fs: FilesystemService) {
+  constructor(private lessonManagementService: LessonManagementService, private ref: ElementRef) {
     this.experiences$ = this.lessonManagementService.experiences$;
     this.experiences$.subscribe(elements => {
       let ls = localStorage.getItem("lastLesson");
@@ -30,7 +29,6 @@ export class LessonSelectionComponent {
       } else {
         // TODO: Löschen berücksichtigen!
         // Kann sowohl aktive als auch andere sandboxes löschen!
-
 
         if (preference !== null && (elements.lessons.find(element => element.name === preference?.name) !== undefined 
                                    || elements.sandboxes.find(element => element.name === preference?.name) !== undefined)) {
@@ -50,6 +48,18 @@ export class LessonSelectionComponent {
         }
       }
     });
+  }
+
+  ngOnInit(): void {
+    fromEvent(document, 'click').pipe(
+      filter(event => !this.ref.nativeElement.contains(event.target)),
+      tap(ev => this.closeOptions(ev))
+    ).subscribe()
+
+   fromEvent(document, 'keydown').pipe(
+      filter(ev => (ev as KeyboardEvent).key === 'Escape'),
+      tap(ev => this.closeOptions(ev))
+    ).subscribe()
   }
 
   public onSelectChange(to: Experience) {
@@ -75,16 +85,8 @@ export class LessonSelectionComponent {
     this.showCreationDialog = true;
   }
 
-  public onCreationDialogClose(name: string): void {
+  public closeCreationDialog(): void {
     this.showCreationDialog = false;
-    
-    if (name !== '') {
-      this.lessonManagementService.createAndStoreSandbox(name).subscribe(
-        () => {},
-        (err) => console.error(err),
-        () => console.log(`%c Successfully created new sandbox ${name}`, "color: green")
-      )
-    }
   }
 
   public openSandboxDeletionDialog(ev: Event, sandbox: Experience): void {
@@ -101,10 +103,6 @@ export class LessonSelectionComponent {
 
   public onDeletionChoice(choice: boolean): void {
     if (choice === true && this.sandboxToDelete !== undefined) {
-      console.log("delete choice")
-      console.log(this.selectedLesson)
-      console.log(this.sandboxToDelete)
-
       this.lessonManagementService.deleteSandbox(this.sandboxToDelete.name !== this.selectedLesson.name, this.sandboxToDelete,).subscribe(
         () => {},
         (err) => console.error(err),
@@ -120,15 +118,21 @@ export class LessonSelectionComponent {
     this.showSandboxDeletionDialog = false;
   }
 
-  @HostListener('document:click', ['$event'])
-  clickOutside(event: Event) {
-    if(!this.ref.nativeElement.contains(event.target)) {
-      this.showOptions = false;
-    } 
+  public createNewSandbox(name: string): void {
+    this.closeCreationDialog();
+    
+    if (name !== '') {
+      this.lessonManagementService.createAndStoreSandbox(name).subscribe(
+        () => {},
+        (err) => console.error(err),
+        () => console.log(`%c Successfully created new sandbox ${name}`, "color: green")
+      )
+    }
   }
 
-  @HostListener('document:keydown.escape', ['$event']) 
-  onEscapeHandler() {
+  private closeOptions(ev: Event): void {
+    ev.preventDefault();
+    ev.stopPropagation();
     this.showOptions = false;
   }
 }

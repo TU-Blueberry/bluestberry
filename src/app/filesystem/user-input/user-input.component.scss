@@ -19,6 +19,8 @@ input, input:focus-visible, input:focus {
     color: white;
     max-width: 80%;
     text-overflow: ellipsis;
+    font-size: 16px;
+    margin-left: 5px;
 }
 
 button {
@@ -30,11 +32,7 @@ button {
     }
 }
 
-form, .input {
-    display: flex;
-}
-
 form {
+    display: flex;
     flex-direction: column; 
 }
-

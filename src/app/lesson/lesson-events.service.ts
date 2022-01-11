@@ -12,7 +12,6 @@ export class LessonEventsService {
   constructor() { }
 
   emitExperienceOpened(config: ConfigObject): void {
-    console.log("emit lesson opened ", config)
     const fullPath = config.type === 'LESSON' ? `/${config.name}` : `/sandboxes/${config.name}`;
     this.onExperienceOpened.emit({open: config.open.map(({path, on}) => ({path: `${fullPath}/${path}`, on})), name: config.name, type: config.type, tabSizes: config.tabSizes});
   }

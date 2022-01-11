@@ -4,6 +4,7 @@ import { LessonSelectionComponent } from './lesson-selection/lesson-selection.co
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../shared/shared.module';
 import { SandboxCreationComponent } from './sandbox-creation/sandbox-creation.component';
+import { ModalComponent } from '../shared/modal/modal.component';
 
 @NgModule({
   declarations: [LessonSelectionComponent, SandboxCreationComponent],

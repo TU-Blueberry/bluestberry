@@ -1,32 +1,23 @@
-import { Component, ElementRef, EventEmitter, OnInit, Output } from '@angular/core';
-import { fromEvent } from 'rxjs';
-import { filter, tap } from 'rxjs/operators';
+import { Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@angular/core';
 
 @Component({
   selector: 'app-confirmation-dialog',
   templateUrl: './confirmation-dialog.component.html',
   styleUrls: ['./confirmation-dialog.component.scss']
 })
-export class ConfirmationDialogComponent implements OnInit {
+export class ConfirmationDialogComponent {
+  _okText = 'Ja'
+
+  @Input() set
+  okText(text: string) {
+    this._okText = text;
+  }
 
   @Output() choice: EventEmitter<boolean> = new EventEmitter();
-  @Output() close: EventEmitter<void> = new EventEmitter();
-  constructor(private ref: ElementRef) { }
-
-  ngOnInit(): void {
-    fromEvent(document, 'click').pipe(
-      filter(event => !this.ref.nativeElement.contains(event.target)),
-      tap(() => this.close.emit())
-    ).subscribe()
-
-    fromEvent(document, 'keydown').pipe(
-      filter(ev => (ev as KeyboardEvent).key === 'Escape'),
-      tap(() => this.close.emit())
-    ).subscribe()
-  }
+  @Output() closed: EventEmitter<void> = new EventEmitter();
+  constructor() { }
 
   public emit(selectedChoice: boolean): void {
     this.choice.emit(selectedChoice)
   }
-
 }

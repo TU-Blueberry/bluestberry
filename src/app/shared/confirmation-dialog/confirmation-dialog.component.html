@@ -1,9 +1,11 @@
-<div class="dialog">
-    <div class="text">
-        <ng-content></ng-content>
-    </div>
-    <div class="choices">
-        <button (click)="emit(true)">Ja</button>
-        <button (click)="emit(false)">Nein</button>
+<div class="wrapper">
+    <div class="modal">
+        <div class="text">
+            <ng-content></ng-content>
+        </div>
+        <div class="choices">
+            <button (click)="emit(true)">{{_okText}}</button>
+            <button (click)="emit(false)">Abbrechen</button>
+        </div>
     </div>
 </div>

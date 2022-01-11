@@ -9,6 +9,7 @@ import { LessonEventsService } from '../lesson-events.service';
 import { Injectable } from '@angular/core';
 import { Experience } from '../model/experience';
 import { ConfigObject } from 'src/app/filesystem/model/config';
+import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,9 +20,10 @@ export class LessonManagementService {
   public experiences$ = new ReplaySubject<{lessons: Experience[], sandboxes: Experience[], switchTo?: Experience, deleted?: Experience}>();
 
   constructor(private http: HttpClient, private zipService: ZipService, private fsService: FilesystemService, 
-    private location: Location, private py: PyodideService, private lse: LessonEventsService) {
+    private location: Location, private py: PyodideService, private lse: LessonEventsService, private gs: GlossaryService) {
       concat(
         this.fsService.test,
+        this.gs.loadGlobalGlossaryEntries(),
         this.getAllOptions()
       ).subscribe(() => {}) // TODO: Probably display errors
     }
@@ -78,9 +80,6 @@ export class LessonManagementService {
   // TODO: Doesn't work properly yet!
   // TODO: Config löschen!
   public deleteSandbox(needsMount: boolean, sandbox?: Experience, ): Observable<void> {
-    console.log("delete sandbox called", sandbox);
-    console.log("needs mount? ", needsMount)
-
     if (!sandbox) {
       return throwError("Fehler: Es wurde keine Sandbox zum Löschen übergeben");
     }
@@ -209,13 +208,15 @@ export class LessonManagementService {
     return this.fsService.getConfigByExperience(exp).pipe(switchMap(config => {  
       if (config) {
         console.log("%c Config found!", "color: green", config)
-        this.fsService.HIDDEN_PATHS = new Set(this.filterPaths(fullPath, config.hidden));
-        this.fsService.MODULE_PATHS = new Set(this.filterPaths(fullPath, config.modules || []));
-        this.fsService.READONLY_PATHS = new Set(this.filterPaths(fullPath, config.readonly));
-        this.fsService.EXTERNAL_PATHS = new Set(this.filterPaths(fullPath, config.external));
+        this.fsService.EXP_HIDDEN_PATHS = new Set(this.filterPaths(fullPath, config.hidden));
+        this.fsService.EXP_MODULE_PATHS = new Set(this.filterPaths(fullPath, config.modules || []));
+        this.fsService.EXP_READONLY_PATHS = new Set(this.filterPaths(fullPath, config.readonly));
+        this.fsService.EXP_EXTERNAL_PATHS = new Set(this.filterPaths(fullPath, config.external));
+        this.fsService.EXP_GLOSSARY_PATH = `${fullPath}/glossary`;
   
         return concat(
-          this.fsService.checkPermissions(fullPath, false),
+          this.fsService.checkPermissionsForExperience(fullPath),
+          this.fsService.checkPermissionsForGlossary(),
           this.fsService.sync(false),
           of(this.lse.emitExperienceOpened(config))
         );

@@ -14,14 +14,17 @@ import { Experience } from '../lesson/model/experience';
 })
 export class FilesystemService {
   readonly SYSTEM_FOLDERS = new Set(['/dev', '/home', '/lib', '/proc', '/tmp', '/bin']);
-  readonly CUSTOM_FOLDERS = new Set(['/configs', '/sandboxes', '/external'])
-  HIDDEN_PATHS = new Set<string>();
-  EXTERNAL_PATHS = new Set<string>();
-  READONLY_PATHS = new Set<string>();
-  MODULE_PATHS = new Set<string>();
-  private READONLY_FOLDERS = new Set<string>();
-  public test = this.init();
+  readonly CUSTOM_FOLDERS = new Set(['/configs', '/sandboxes', '/external', '/glossary'])
+  EXP_HIDDEN_PATHS = new Set<string>();
+  EXP_EXTERNAL_PATHS = new Set<string>();
+  EXP_READONLY_PATHS = new Set<string>();
+  EXP_MODULE_PATHS = new Set<string>();
+  EXP_GLOSSARY_PATH = '';
 
+  // Keep track of readonly folders as they need to be adjusted before and after syncing 
+  private READONLY_FOLDERS = new Set<string>(); 
+  
+  public test = this.init();
   PyFS?: typeof FS & MissingInEmscripten;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
 
@@ -33,7 +36,7 @@ export class FilesystemService {
     return this.fsSubject;
   }
 
-  // wait for pyodide and create all basic folders
+  // wait for pyodide and create basic folders for configs
   private init() {
     return concat(
       this.pyService.pyodide.pipe(tap(py => { 
@@ -41,6 +44,7 @@ export class FilesystemService {
         console.log("FS: ", this.PyFS)
         this.fsSubject.next(this.PyFS);
       }), ignoreElements()),
+      this.mountAndSync("glossary").pipe(ignoreElements()),
       this.mountAndSync("configs").pipe(ignoreElements()),
       this.exists('/configs/lessons').pipe(
         filter(exists => !exists),
@@ -56,11 +60,12 @@ export class FilesystemService {
 
   public reset(): Observable<void> {
     return defer(() => {
-      this.HIDDEN_PATHS = new Set();
-      this.EXTERNAL_PATHS = new Set();
-      this.READONLY_PATHS = new Set();
-      this.MODULE_PATHS = new Set();
+      this.EXP_HIDDEN_PATHS = new Set();
+      this.EXP_EXTERNAL_PATHS = new Set();
+      this.EXP_READONLY_PATHS = new Set();
+      this.EXP_MODULE_PATHS = new Set();
       this.READONLY_FOLDERS = new Set();
+      this.EXP_GLOSSARY_PATH = '';
     });
   }
 
@@ -152,7 +157,7 @@ export class FilesystemService {
   private _sync(fromPersistentToVirtual: boolean): Observable<void> {
     return new Observable(subscriber => {
       let r = (Math.random() + 1).toString(36).substring(7);
-      console.log("Sync start! " + r)
+      console.log("Sync start! " + r + `(${fromPersistentToVirtual ? 'persistent':'virtual'}---->${fromPersistentToVirtual ? 'virtual':'persistent'})`)
 
       if (!this.PyFS) {
         subscriber.error("FS error");
@@ -231,22 +236,22 @@ export class FilesystemService {
     });
   }
 
+  public checkPermissionsForExperience(mountpoint: string): Observable<void> {
+    const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, this.EXP_GLOSSARY_PATH]); 
+    return this.checkPermissions(mountpoint, mergedPaths);
+  }
+
+  public checkPermissionsForGlossary(): Observable<void> {
+    return this.checkPermissions('/glossary', new Set(['/glossary']));
+  }
+
   // loops over whole mountpoint and verifies that all modules and readonly paths have readonly permissions
-  // additionally verifies that no external path is present (or deletes it if found)
-  public checkPermissions(mountpoint: string, onlyCheckExternalPermissions: boolean): Observable<void> {
-    console.log("Check permissions for mountpoint " + mountpoint);
-    const mergedPaths = new Set([...this.READONLY_PATHS, ...this.MODULE_PATHS]);
-    
+  private checkPermissions(mountpoint: string, paths: Set<string>): Observable<void> {  
     return this.getNodeByPath(mountpoint).pipe(
-      switchMap(node => this.testCurrentPath(node, mountpoint, mergedPaths))
+      switchMap(node => this.testCurrentPath(node, mountpoint, paths))
     )
 
-    // muss es halt wieder rekursiv machen nech
     // for all folders, subfolders and files
-    //    if abstractCheck(mergedPaths) === true: check if permissions are set
-    //        if yes: continue
-    //        if no: set permission to readonly (rx)
-
     //    if is external path: delete
     //    (kann dafür auch abstractCheck nutzen; new Set('/external/' + lessonName))
   }
@@ -262,11 +267,11 @@ export class FilesystemService {
     return forkJoin(obsv).pipe(mergeAll());
   }
 
-  private testCurrentPath(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<void> {
-    return of(Object.keys(node.contents).length).pipe(
+  private testCurrentPath(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<void> {  
+    return of(Object.keys(node.contents || {}).length).pipe(
       filter(length => length > 0),
-      tap(() => this.setPermissionsReadExecute(currentPath, mergedPaths, node.contents instanceof Uint8Array)),
-      switchMap(() => node.contents instanceof Uint8Array ? EMPTY : this.testElementsInCurrentFolder(node, currentPath, mergedPaths))
+      tap(() => this.setPermissionsReadExecute(currentPath, mergedPaths, this.N_isFile(node))),
+      switchMap(() => this.N_isFile(node) ? EMPTY : this.testElementsInCurrentFolder(node, currentPath, mergedPaths))
     );
   }
 
@@ -294,11 +299,21 @@ export class FilesystemService {
   }
 
   public isHiddenPath(path: string): boolean {
-    return this.abstractCheck(this.HIDDEN_PATHS, path);
+    return this.abstractCheck(this.EXP_HIDDEN_PATHS, path);
   }
 
   public isModulePath(path: string): boolean {
-    return this.abstractCheck(this.MODULE_PATHS, path);
+    return this.abstractCheck(this.EXP_MODULE_PATHS, path);
+  }
+
+  private checkPathAndFS(path: string): string {
+    const fullPath = path.startsWith("/") ? path : `/${path}`;
+
+    if (!this.PyFS) {
+      throw new Error("FS");
+    }
+
+    return fullPath;
   }
 
   public unmountAndSync(name: string): Observable<void> {
@@ -317,7 +332,7 @@ export class FilesystemService {
   /* Returns all non-hidden and non-module subfolders and - if requested - files of the given path as seperate arrays */
   public scan(path: string, depth: number, includeFiles: boolean, includeHidden: boolean = false): Observable<FSNode[][]> {
     return this.getNodeByPath(path).pipe(switchMap(node => {
-      return node.contents instanceof Uint8Array ? of([]) : this.scanWithoutFetch(node.contents, path, depth, includeFiles, includeHidden);
+      return this.N_isFile(node) ? of([]) : this.scanWithoutFetch((node.contents as FSNode), path, depth, includeFiles, includeHidden);
     }))
   }
 
@@ -432,8 +447,8 @@ export class FilesystemService {
     );
   }
 
-  public writeFileTest(path: string, content: Uint8Array | string) {
-    return this.basicFactory<void>(path, "Error writing to file", (_) => this.N_writeFile(path, content), false);
+  public writeFileTest(path: string, content: Uint8Array | string, mode?: number) {
+    return this.basicFactory<void>(path, "Error writing to file", (_) => this.N_writeFile(path, content, mode), false);
   }
 
   // TODO: Könnte ich das mit dem neuen "needsToExist" param der factory nicht auch lösen?
@@ -479,19 +494,26 @@ export class FilesystemService {
       !exists ? throwError(`Couldn't change working directory (path ${to} doesn't exist)`) : defer(() => this.N_changeWorkingDirectory(to))))
   }
 
-  public writeToFile(path: string, content: Uint8Array | string): Observable<void> {
+  public writeToFile(path: string, content: Uint8Array | string, mode?: number): Observable<void> {
     const writeObservable =  this.exists(path).pipe(switchMap(exists =>
       !exists ? throwError("File doesn't yet exist. Use createFile instead") :
-        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content)) : throwError("Can't write to system files"))
+        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content, mode)) : throwError("Can't write to system files"))
       ));
 
     return concat(writeObservable, this.sync(false));
   }
 
-  public createFile(path: string, content: Uint8Array | string, withSync: boolean): Observable<void> {
+  public overwriteFile(path: string, content: Uint8Array | string, mode?: number): Observable<void> {
+    return !this.isSystemDirectory(path) ? defer(() => {
+      this.chmod(path, 0o777);
+      this.N_writeFile(path, content, mode);
+    }) : throwError("Can't write to system files");
+  }
+
+  public createFile(path: string, content: Uint8Array | string, withSync: boolean, mode?: number): Observable<void> {
     const createFileObservable =  this.exists(path).pipe(switchMap(exists =>
       exists ? throwError(`File ${path} already exists. Use writeFile instead`) :
-        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content)) : throwError("Can't create file in system directory"))
+        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content, mode)) : throwError("Can't create file in system directory"))
       ));
 
     return withSync === true ? concat(createFileObservable, this.sync(false)) : createFileObservable;
@@ -597,14 +619,18 @@ export class FilesystemService {
     return this.PyFS!.analyzePath(path, false);
   }
 
-  private N_isFile(node: FSNode) {
+  public N_isFile(node: FSNode) {
     this.checkFilesystem();
     return this.PyFS!.isFile(node.mode);
   }
 
-  private N_writeFile(path: string, data: Uint8Array | string) {
+  private N_writeFile(path: string, data: Uint8Array | string, mode?: number) {
     this.checkFilesystem();
     this.PyFS?.writeFile(path, data);
+    
+    if (mode !== undefined) {
+      this.chmod(path, mode);
+    }
   }
 
   private N_readFileAsString(path: string) {
@@ -625,6 +651,7 @@ export class FilesystemService {
   private N_mkdir(path: string, mode?: number) {
     this.checkFilesystem();
     mode ? this.PyFS?.mkdir(path, mode) : this.PyFS?.mkdir(path);
+    console.log("folder created: " + path)
   }
 
   private mount(path: string) {

@@ -11,6 +11,8 @@ export class UiEventsService {
   onToggleTerminal: EventEmitter<void> = new EventEmitter();
   onStartTour: EventEmitter<void> = new EventEmitter();
   onCloseAllContextMenues: EventEmitter<void> = new EventEmitter();
+  onClickOutsideOfFiltree: EventEmitter<{ev: MouseEvent, isGlossary: boolean}> = new EventEmitter();
+  onAboutToggle: EventEmitter<boolean> = new EventEmitter();
 
   constructor() { }
 
@@ -40,5 +42,13 @@ export class UiEventsService {
 
   closeAllContextMenues(): void {
     this.onCloseAllContextMenues.emit();
+  }
+
+  clickOutsideOfFiletree(ev: MouseEvent, isGlossary: boolean) {
+    this.onClickOutsideOfFiltree.emit({ev: ev, isGlossary: isGlossary});
+  }
+
+  toggleAbout(visible: boolean) {
+    this.onAboutToggle.emit(visible);
   }
 }

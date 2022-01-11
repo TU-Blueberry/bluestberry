@@ -11,7 +11,8 @@ import { FileType, FileTypes } from '../filetypes.enum';
 export class FileIconsComponent implements OnInit {
   private _fileType?: FileType;
   private _isActive = false;
-  private _isTentativeFile = false;
+  private _isTentative = false;
+  private _isRenaming = false;
   
   public _tabType?: TabType;
   public fileTypeEnum = FileType;
@@ -28,9 +29,9 @@ export class FileIconsComponent implements OnInit {
     } 
   }
 
-  @Input('isTentativeFile')
-  set isTentativeFile(isTentativeFile: boolean) {
-    this._isTentativeFile = isTentativeFile;
+  @Input('isTentative')
+  set isTentative(isTentativeFile: boolean) {
+    this._isTentative = isTentativeFile;
   }
 
   @Input('tabType') 
@@ -43,6 +44,11 @@ export class FileIconsComponent implements OnInit {
     this._isActive = active;
   }
 
+  @Input('isRenaming')
+  set isRenaming(isRenaming: boolean) {
+    this._isRenaming = isRenaming
+  }
+
   get fileType(): FileType | undefined {
     return this._fileType;
   }
@@ -51,8 +57,12 @@ export class FileIconsComponent implements OnInit {
     return this._isActive;
   }
 
-  get isTentativeFile(): boolean {
-    return this._isTentativeFile;
+  get isTentative(): boolean {
+    return this._isTentative;
+  }
+
+  get isRenaming(): boolean {
+    return this._isRenaming;
   }
 
   constructor(public fsService: FilesystemService) { }

@@ -1,7 +1,5 @@
-import { Component, ElementRef, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors } from '@angular/forms';
-import { fromEvent } from 'rxjs';
-import { filter, tap } from 'rxjs/operators';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { LessonManagementService } from '../lesson-management/lesson-management.service';
 import { Experience } from '../model/experience';
@@ -11,13 +9,14 @@ import { Experience } from '../model/experience';
   templateUrl: './sandbox-creation.component.html',
   styleUrls: ['./sandbox-creation.component.scss']
 })
-export class SandboxCreationComponent implements OnInit {
+export class SandboxCreationComponent {
   public nameFormControl: FormControl;
   public formGroup: FormGroup;
   private availableSandboxes: Experience[] = [];
 
-  @Output() close = new EventEmitter<string>();
-  constructor(private ref: ElementRef, public lessonMgmt: LessonManagementService, private fsService: FilesystemService) { 
+  @Output() cancel = new EventEmitter<void>();
+  @Output() create = new EventEmitter<string>();
+  constructor(public lessonMgmt: LessonManagementService, private fsService: FilesystemService) { 
     this.nameFormControl = new FormControl('', { updateOn: "change", validators: this.validateInput.bind(this) });
     this.formGroup = new FormGroup({
       nameFormControl: this.nameFormControl 
@@ -28,25 +27,13 @@ export class SandboxCreationComponent implements OnInit {
     });
   }
 
-  ngOnInit(): void {
-    fromEvent(document, 'click').pipe(
-      filter(event => !this.ref.nativeElement.contains(event.target)),
-      tap(() => this.close.emit(''))
-    ).subscribe()
-
-    fromEvent(document, 'keydown').pipe(
-      filter(ev => (ev as KeyboardEvent).key === 'Escape'),
-      tap(() => this.close.emit(''))
-    ).subscribe()
-  }
-
-  public cancel(): void {
-    this.close.emit('');
+  public onCancel(): void {
+    this.cancel.emit();
   }
 
   public onSubmit(): void {
     if (!this.formGroup.invalid) {
-      this.close.emit(this.nameFormControl.value);
+      this.create.emit(this.nameFormControl.value);
     }
   }
 
@@ -67,6 +54,10 @@ export class SandboxCreationComponent implements OnInit {
     
     if(value.trim().startsWith("sandbox")) {
       return { error: "Name darf nicht mit 'sandbox' beginnen" };
+    }
+
+    if (value.trim().startsWith("glossary")) {
+      return { error: "Name darf nicht mit 'glossary' beginnen" }; 
     }
     
     if (this.fsService.SYSTEM_FOLDERS.has(`/${value.trim()}`) || this.fsService.CUSTOM_FOLDERS.has(`/${value.trim()}`)) {

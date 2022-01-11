@@ -1,18 +1,25 @@
-<as-split direction="horizontal" class="main-split" [gutterSize]="4" [restrictMove]="true">
+<as-split direction="horizontal" class="main-split" [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
   <as-split-area
     [visible]="filetreeVisible"
     [order]="0"
     [minSize]="minSizeFiletree"
     [size]="currentSizeFiletree"
     [maxSize]="maxSizeFiletree">
-    <app-filetree></app-filetree>
+    <as-split direction="vertical" [gutterSize]="4" [unit]="'pixel'" [useTransition]="true">
+      <as-split-area [order]="0" [minSize]="200" [size]="400" (contextmenu)="onRightClick($event, false)">
+        <app-filetree [isGlossary]="false" #data (expandChange)="onFilesExpandChange($event)"></app-filetree>
+      </as-split-area>
+      <as-split-area [order]="1" [minSize]="200" (contextmenu)="onRightClick($event, true)">
+        <app-filetree [isGlossary]="true" #glossary (expandChange)="onGlossaryExpandChange($event)"></app-filetree>
+      </as-split-area>
+    </as-split>
   </as-split-area>
   <as-split-area 
     [order]="1" 
     [minSize]="minSizeLeftTab"
     [size]="currentSizeLeftTab"
     [maxSize]="maxSizeLeftTab">
-    <as-split direction="vertical" [gutterSize]="4" [restrictMove]="true">
+    <as-split direction="vertical" [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
       <as-split-area [order]="0" [minSize]="20">
         <app-tab-group-facade id="left"></app-tab-group-facade>
       </as-split-area>
