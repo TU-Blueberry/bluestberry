@@ -8,6 +8,11 @@
   [doneText]="'Fertig'"
   [skipText]="'x'"
 ></ngx-guided-tour>
+
+<app-modal *ngIf="showAbout" (close)="closeAbout()">
+  <app-about></app-about>
+</app-modal>
+
 <div class="container">
   <app-navbar></app-navbar>
 

@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { filter } from 'rxjs/operators';
 import { UiEventsService } from '../ui-events.service';
 
 @Component({
@@ -31,5 +32,10 @@ export class ActionbarComponent implements OnInit {
 
   startTour(): void {
     this.uiEv.startTour();
+  }
+
+  openAbout(ev: Event): void {
+    ev.stopPropagation();
+    this.uiEv.toggleAbout(true);
   }
 }

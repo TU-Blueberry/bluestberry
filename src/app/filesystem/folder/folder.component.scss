@@ -13,13 +13,23 @@
     }
 }
 
+.link {
+   color: #8f8f8f;
+   text-decoration: underline;
+
+   &:hover {
+       color: #afafaf;
+       cursor: pointer;
+   }
+}
+
 .folder-heading {
     display: flex;
     align-items: center;
 }
 
-.folder:hover > .common-actions {
-    display: inline-block;
+.show {
+    display: inline-block !important;
 }
 
 .root-folder {
@@ -28,6 +38,8 @@
 
 .common-actions {
     display: none;
+    position: absolute;
+    z-index: 99;
 }
 
 .active {
@@ -47,8 +59,17 @@
     margin-left: 5px;
 }
 
+.root-text {
+    text-transform: uppercase;
+    font-size: 0.875rem;
+}
+
 .folder-icon > .arrow{
     width: 20px;
     height: 20px;
     color: #ffffff66;
+}
+
+.options {
+    margin: 0px;
 }

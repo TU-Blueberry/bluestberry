@@ -1,0 +1,55 @@
+.form {
+    display: flex;
+    flex-direction: column;
+}
+
+.tooltip {
+    position: relative;
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    stroke: #0068b3;
+    margin-left: 5px;
+
+    &:hover {
+        cursor: pointer;
+    }
+}
+
+input {
+    padding: 5px;
+}
+
+.buttons {
+    display: flex;
+    justify-content: flex-end;
+
+    button {
+      margin-left: 10px;  
+
+      &:hover:enabled{
+          cursor: pointer;
+      }
+    }
+}
+
+.path {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.errors {
+    color: red;
+}
+
+ul {
+    margin-top: 0px;
+}
+
+.prereq {
+    margin-top: 20px;
+}
+
+.row {
+    display: flex;
+}

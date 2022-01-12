@@ -87,7 +87,7 @@ export class TabGroupComponent implements AfterViewInit {
         this.activeTab = existingTab;
       }
     });
-    this.lessonEventService.onLessonClosed.subscribe(() => this.closeAllTabs());    
+    this.lessonEventService.onExperienceClosed.subscribe(() => this.closeAllTabs());    
   }
 
   handleScroll(event: WheelEvent) {

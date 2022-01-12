@@ -24,7 +24,7 @@ export class TabManagementService {
     private filesystemService: FilesystemService,
     private lessonEventService: LessonEventsService
   ) {
-    const lesson$ = lessonEventService.onLessonOpened.pipe(
+    const lesson$ = lessonEventService.onExperienceOpened.pipe(
         switchMap(({open}) => concat(...open.map(file => {
           if (file.path.toLowerCase().endsWith('unity')) {
             return of({

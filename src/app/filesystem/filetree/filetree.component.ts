@@ -1,22 +1,24 @@
-import { Component, ComponentFactoryResolver, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { concat, from, Observable, Subject, Subscription } from 'rxjs';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
-import { switchMap, tap } from 'rxjs/operators';
+import { filter, switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
 import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { LessonEventsService } from 'src/app/lesson/lesson-events.service';
+import { Experience } from 'src/app/lesson/model/experience';
+import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
 
 @Component({
   selector: 'app-filetree',
   templateUrl: './filetree.component.html',
   styleUrls: ['./filetree.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FiletreeComponent implements OnDestroy{
-  rootComponent?: FolderComponent;
   showImportWindow = false;
   dragOver = false;
   tempZip?: JSZip;
@@ -25,33 +27,71 @@ export class FiletreeComponent implements OnDestroy{
   selectedFile?: File;
   userResult$: Subject<boolean> = new Subject();
   lastCheck?: Subscription;
-  SELECTED_LESSON = ""
+  SELECTED_LESSON?: Experience;
+  _isGlossary = false;
+  toggleSubscription?: Subscription;
+  outsideClickSubscription?: Subscription;
 
-  @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
+  @Input() set isGlossary(isGlossary: boolean) {
+    this._isGlossary = isGlossary;
+    this.init();
+  }
+
+  @Output() expandChange: EventEmitter<boolean> = new EventEmitter();
+  @ViewChild('content', { read: ViewContainerRef }) ref!: ViewContainerRef;
   constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
     private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
-    private lse: LessonEventsService) {
-      this.lse.onLessonOpened.subscribe((lesson) => {
-        this.SELECTED_LESSON = lesson.name;
+    private lse: LessonEventsService, private gs: GlossaryService, private cd: ChangeDetectorRef) { }
+
+  private init(): void {
+    if (!this._isGlossary) {
+      this.lse.onExperienceOpened.subscribe((lesson) => {
+        this.SELECTED_LESSON = lesson;
         this.kickstartTreeGeneration();
       })
 
-      this.lse.onLessonClosed.subscribe(() => {
-        this.listRef.clear();
-        console.log(this.listRef);
+      this.lse.onExperienceClosed.subscribe(() => {
+        this.ref.clear();
       })
+    }
+
+    if (this._isGlossary) {
+      this.gs.glossaryEntries$.subscribe(entries => {
+        this.kickstartTreeGeneration(entries);
+      });   
+    }
   }
 
-  private kickstartTreeGeneration() {
-    this.listRef.clear();
+  // possible further optimization: only delete and create new components for glossary entries which changed
+  private kickstartTreeGeneration(additionalGlossaryEntries?: { path: string; node: FSNode; }[]) {  
+    this.ref.clear();
+
+    const path = this._isGlossary ? '/glossary' : `/${this.SELECTED_LESSON?.name}`;
+    const name = this._isGlossary ? 'Glossar' : this.SELECTED_LESSON?.name;
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
-    this.fsService.getNodeByPath(`/${this.SELECTED_LESSON}`).subscribe((node) => {
-      const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
-      const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
-      baseNode.path = "/";
-      folderComp.node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, this.SELECTED_LESSON);
-      this.rootComponent = folderComp;
+    const folderComp = this.ref.createComponent(folderFactory).instance;
+    const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
+    baseNode.path = "/";
+
+    this.outsideClickSubscription = this.uiEv.onClickOutsideOfFiltree.pipe(
+      filter(click => click.isGlossary === (additionalGlossaryEntries !== undefined))
+    ).subscribe(click => {
+      folderComp.closeContextMenu();
+      folderComp.toggleContextMenu(click.ev);
     });
+
+
+    this.fsService.getNodeByPath(path).subscribe((node) => {
+      folderComp.node = baseNode.generateTreeNode(0, path, node, name);
+      folderComp.node.isRoot = true; 
+      this.toggleSubscription = folderComp.onExpandToggle.subscribe(next => this.expandChange.emit(next));
+
+      additionalGlossaryEntries?.forEach(entry => 
+        folderComp.createSubcomponent(true, entry.path, entry.node)
+      )
+
+      this.cd.markForCheck()
+    }); 
   }
 
   // TODO: Dateien laden bugg bei FF irgendwie
@@ -151,7 +191,7 @@ export class FiletreeComponent implements OnDestroy{
       err => console.error(err), 
       () => {
         console.log("Import complete!");
-        this.listRef.clear();
+        this.ref.clear();
         this.kickstartTreeGeneration();
         this.checkInProgress = false;
         this.conflictDetected = false;
@@ -177,5 +217,7 @@ export class FiletreeComponent implements OnDestroy{
 
   ngOnDestroy(): void {
     this.lastCheck?.unsubscribe();
+    this.toggleSubscription?.unsubscribe();
+    this.outsideClickSubscription?.unsubscribe();
   }
 }

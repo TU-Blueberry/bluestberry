@@ -61,6 +61,9 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
 
   @HostListener('document:click', ['$event'])
   clickOutside(event: Event) {
+    event.preventDefault();
+    event.stopPropagation();
+
     if(!this.ref.nativeElement.contains(event.target)) {
       this.dismiss.emit();
     } 
@@ -68,8 +71,10 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
 
   @HostListener('document:keydown.escape', ['$event']) 
   onEscapeHandler(event: KeyboardEvent) {
+    event.preventDefault();
+    event.stopPropagation();
     this.dismiss.emit();
-  }
+  } 
 
   onSubmitClicked(): void {
     if (this.formGroup.valid) {
