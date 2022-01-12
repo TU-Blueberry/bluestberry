@@ -6,6 +6,9 @@
 
   <app-unity-viewer *appTabTemplate="let tab = tab; type: 'UNITY'">
   </app-unity-viewer>
+  
+  <app-pyodide-animation *appTabTemplate="let tab = tab; type: 'ANIMATION'">
+  </app-pyodide-animation>
 
   <div *appTabTemplate="let tab = tab; let close = close; type: 'IMAGE'">
     <app-image-viewer [appFileTab]="tab" (close)="close()"></app-image-viewer>
