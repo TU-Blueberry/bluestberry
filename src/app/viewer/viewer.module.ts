@@ -17,6 +17,7 @@ import { MarkdownViewerComponent } from "./markdown-viewer/markdown-viewer.compo
 import { MarkdownModule } from "ngx-markdown";
 import { TabModule } from 'src/app/tab/tab.module';
 import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group-facade.component';
+import { PyodideAnimationComponent } from './pyodide-animation/pyodide-animation.component';
 
 /**
  * Module used for all the Viewer-Components.
@@ -42,6 +43,7 @@ import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group
     HintViewerComponent,
     MarkdownViewerComponent,
     TabGroupFacadeComponent,
+    PyodideAnimationComponent,
   ],
   imports: [
     CommonModule,
@@ -61,6 +63,7 @@ import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group
     ImageViewerComponent,
     HintViewerComponent,
     MainViewerComponent,
+    PyodideAnimationComponent,
   ],
 })
 export class ViewerModule {
