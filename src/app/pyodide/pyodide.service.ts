@@ -58,9 +58,16 @@ export class PyodideService {
   // see https://pyodide.org/en/stable/usage/api/js-api.html
   runCode(code: string): Observable<any> {
     return this.pyodide.pipe(switchMap(pyodide => {
+      console.log(pyodide);
       pyodide.globals.set('editor_input', code);
-      return defer(() => from(pyodide.runPythonAsync('await run_code()')))
-        .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
+      return defer(() => concat(from(pyodide.runPythonAsync(this.addToSysPath())), from(pyodide.runPythonAsync('await run_code()'))))
+        .pipe(tap(res => {
+          this.results$.next(res)
+          console.log("res " + res)
+        }), tap(() => {
+          console.log("after execution")
+          this.afterExecution$.emit()}
+        ));
     }));
   }
 
@@ -99,6 +106,8 @@ export class PyodideService {
   }
 
   getAfterExecution(): EventEmitter<void> {
+    console.log("getafterexecution " + this.results$)
+    console.log("getafterexecution " + this.getResults())
     return this.afterExecution$;
   }
 

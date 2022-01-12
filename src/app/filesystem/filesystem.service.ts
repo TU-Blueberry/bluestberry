@@ -241,9 +241,8 @@ export class FilesystemService {
     return this.checkPermissions(mountpoint, mergedPaths);
   }
 
-  public checkPermissionsForGlossary(): Observable<void> {
-    return this.checkPermissions('/glossary', new Set(['/glossary']));
-  }
+    const mergedPaths = new Set([...this.HIDDEN_PATHS, ...this.READONLY_PATHS, ...this.MODULE_PATHS]);
+    return this.testCurrentPath(mountpoint, mergedPaths);
 
   // loops over whole mountpoint and verifies that all modules and readonly paths have readonly permissions
   private checkPermissions(mountpoint: string, paths: Set<string>): Observable<void> {  

@@ -24,6 +24,7 @@ export class UnityComponent implements OnInit, OnChanges, AfterViewInit {
    * In case we want to update Unity with a binding I have included an example.
    */
   ngOnChanges(): void {
+    console.log("bla on changes")
     console.log(this.updateMessage)
     this.unityService.updateUnity(this.updateMessage)
   }
@@ -33,10 +34,12 @@ export class UnityComponent implements OnInit, OnChanges, AfterViewInit {
 
   // Initialize Unity with our standard Scene.
   ngOnInit(): void {
+    console.log("bla on init")
     this.gameInstance = this.unityService.initUnity(UnityScenes.BerrySorter)
   }
 
   startUnity() {
+    console.log("bla start unity")
     this.isEnabled = true
   }
 
