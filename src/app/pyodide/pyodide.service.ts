@@ -67,8 +67,11 @@ export class PyodideService {
   // We use python globals() to store the result from matplotlib
   getGlobal(key: string): Observable<string[]> {
     return this.pyodide.pipe(map(pyodide => {
-      const strings = pyodide.globals.get(key)?.toJs();
-      return strings !== undefined ? strings : [];
+      if(pyodide.globals.has(key)) {
+        return pyodide.globals.get(key);
+      } else {
+        return []
+      }
     }));
   }
 
@@ -85,6 +88,26 @@ export class PyodideService {
       }
     }));
   }
+
+
+  tempTests(): void {
+    console.log("temp tests")
+    this.pyodide.subscribe(py => {
+
+      console.log(py);
+      console.log("has bla " + py.globals.has("bla"));
+      console.log("has huhu " + py.globals.has("huhu"));
+      console.log("has html " + py.globals.has("htmlOutput"));
+      console.log("has ownKeys " + py.globals.has("ownKeys"));
+      console.log(py.globals.get("editor_input"));
+      console.log(py.globals.get("plotly_output"));
+      console.log(py.globals.get("my_output"));
+
+      console.log(py.globals.keys());
+
+    });
+  }
+
 
   getResults(): Observable<any> {
     return this.results$.asObservable();

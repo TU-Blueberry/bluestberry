@@ -54,7 +54,22 @@ export class CodeViewerComponent implements OnInit {
   }
 
   executeCode(): void {
-    this.pyodideService.runCode(this.code).subscribe()
+    
+    this.pyodideService.runCode(this.code).subscribe(_ => {
+      
+      this.pyodideService.getGlobal('plotly_output').subscribe(plotlyOutput => {
+        
+        if(plotlyOutput.length > 0) {
+
+          const html = plotlyOutput[0];
+          console.log(plotlyOutput);
+        }
+
+
+      });
+    });
+ 
+
   }
 
   editorInit(editor: any) {
