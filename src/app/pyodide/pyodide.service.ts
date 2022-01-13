@@ -76,6 +76,34 @@ export class PyodideService {
     );
   }
 
+  deleteGlobal(key: string): Observable<void> {
+    return this.pyodide.pipe(map(pyodide => {
+      if (pyodide.globals.has(key)) {
+        pyodide.globals.delete(key);
+      }
+    }));
+  }
+
+
+  tempTests(): void {
+    console.log("temp tests")
+    this.pyodide.subscribe(py => {
+
+      console.log(py);
+      console.log("has bla " + py.globals.has("bla"));
+      console.log("has huhu " + py.globals.has("huhu"));
+      console.log("has html " + py.globals.has("htmlOutput"));
+      console.log("has ownKeys " + py.globals.has("ownKeys"));
+      console.log(py.globals.get("editor_input"));
+      console.log(py.globals.get("plotly_output"));
+      console.log(py.globals.get("my_output"));
+
+      console.log(py.globals.keys());
+
+    });
+  }
+
+
   getResults(): Observable<any> {
     return this.onMessageListener$.pipe(
       filter(message => message.type === MessageType.RESULT),

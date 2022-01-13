@@ -7,6 +7,14 @@
   <app-unity-viewer *appTabTemplate="let tab = tab; type: 'UNITY'">
   </app-unity-viewer>
 
+  <app-plotly-viewer *appTabTemplate="let tab = tab; type: 'PLOTLY'">
+  </app-plotly-viewer>
+
+  
+  <!-- <div *appTabTemplate="let tab = tab; let close = close; type: 'PLOTLY'">
+    <app-plotly-viewer [appFileTab]="tab" (close)="close()"></app-plotly-viewer>
+  </div> -->
+
   <div *appTabTemplate="let tab = tab; let close = close; type: 'IMAGE'">
     <app-image-viewer [appFileTab]="tab" (close)="close()"></app-image-viewer>
   </div>
@@ -14,6 +22,7 @@
   <div *appTabTemplate="let tab = tab; let close = close; type: 'HINT'">
     <app-hint-viewer [appFileTab]="tab" (close)="close()"></app-hint-viewer>
   </div>
+
 
   <div *appTabTemplate="let tab = tab; let close = close; type: 'MARKDOWN'">
     <app-markdown-viewer [appFileTab]="tab" (close)="close()"></app-markdown-viewer>
