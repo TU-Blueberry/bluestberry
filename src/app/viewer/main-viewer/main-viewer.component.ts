@@ -4,11 +4,9 @@ import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { TabManagementService } from 'src/app/tab/tab-management.service';
 import { GuidedTourService } from "ngx-guided-tour";
-import { tour } from "../../../assets/guided-tour/guided-tour.data";
+import { tour } from 'src/assets/guided-tour/guided-tour.data';
 import { SplitAreaDirective, SplitComponent } from 'angular-split';
 import { IArea } from 'angular-split/lib/interface';
-import { GuidedTourService } from "ngx-guided-tour";
-import { tour } from "../../../assets/guided-tour/guided-tour.data";
 
 @Component({
   selector: 'app-main-viewer',

@@ -14,6 +14,12 @@ export class PyodideService {
 
   onMessageListener$ = new Subject<PyodideWorkerMessage>();
 
+  _modulePaths: string[] = [];
+  set modulePaths(paths: string[]) {
+    this._modulePaths = paths;
+    this.worker.postMessage({ type: MessageType.SET_SYSPATH, data: paths })
+  }
+
   constructor(private location: Location) {
     if (typeof Worker !== 'undefined') {
       this.worker = new Worker(new URL('./pyodide.worker', import.meta.url));
@@ -96,21 +102,19 @@ export class PyodideService {
     );
   }
 
-  private runCodeSilently(code: string): Observable<void> {
-    return this.pyodide.pipe(switchMap(pyodide => {
-      return defer(() => from(pyodide.runPythonAsync(code)));
-    }));
-  }
-
-  set modulePaths(paths: string[]) {
-    this.worker.postMessage({ type: MessageType.SET_SYSPATH, data: paths })
-  }
-
   setupPythonCallables(callbacks: string[]): Observable<PythonCallableData> {
     this.worker.postMessage({ type: MessageType.SETUP_PYTHON_CALLABLE, data: callbacks });
     return this.onMessageListener$.pipe(
       filter(({ type }) => type === MessageType.PYTHON_CALLABLE),
       map(({ data }) => data as PythonCallableData),
     );
+  }
+
+  addToSysPath(path: string): void {
+    this.modulePaths = [...this._modulePaths, path];
+  }
+
+  removeFromSysPath(path: string) {
+    this.modulePaths = this._modulePaths.filter(p => p === path);
   }
 }

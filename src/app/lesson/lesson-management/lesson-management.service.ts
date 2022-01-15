@@ -19,7 +19,7 @@ export class LessonManagementService {
   private sandboxes: Experience[] = [];
   public experiences$ = new ReplaySubject<{lessons: Experience[], sandboxes: Experience[], switchTo?: Experience, deleted?: Experience}>();
 
-  constructor(private http: HttpClient, private zipService: ZipService, private fsService: FilesystemService, 
+  constructor(private http: HttpClient, private zipService: ZipService, private fsService: FilesystemService,
     private location: Location, private py: PyodideService, private lse: LessonEventsService, private gs: GlossaryService) {
       concat(
         this.fsService.test,
@@ -28,30 +28,30 @@ export class LessonManagementService {
       ).subscribe(() => {}) // TODO: Probably display errors
     }
 
-  /** Checks whether lesson with the given name already exists in the local filesystem. 
+  /** Checks whether lesson with the given name already exists in the local filesystem.
    * If yes, the content from the local filesystem is used.
    * If no, the lesson with the given name will be requested from the server and stored afterwards */
   public openLesson(lesson: Experience) {
     return concat(
-      this.py.pyodide.pipe(ignoreElements()), 
+      this.py.pyodide.pipe(ignoreElements()),
       this.fsService.isNewLesson(lesson.name).pipe(tap((isNewLesson) => console.log(`%cisEmpty? ${isNewLesson}`, "color: red")))
     ).pipe(
-      switchMap(isNewLesson => iif(() => isNewLesson, 
-        this.loadAndStoreLesson(lesson), 
+      switchMap(isNewLesson => iif(() => isNewLesson,
+        this.loadAndStoreLesson(lesson),
         this.openExistingExperience(lesson)
       )
      )
-    ) 
+    )
   }
 
   public openSandbox(sandbox: Experience) {
     return this.openExistingExperience(sandbox);
   }
- 
+
   public createAndStoreSandbox(name: string) {
     const newConfig: ConfigObject = {
       open: [],
-      name: name, 
+      name: name,
       type: 'SANDBOX',
       tabSizes: [],
       unityEntryPoint: '',
@@ -86,11 +86,11 @@ export class LessonManagementService {
 
     if (sandbox.type !== 'SANDBOX') {
       return throwError("Fehler: Nur Sandboxes können gelöscht werden")
-    } 
+    }
 
     // sandbox may either be already mounted (in case it is currently being used by the user) or unmounted
     let baseObservable: Observable<void>
-    
+
     if (needsMount) {
       baseObservable = concat(
         this.fsService.mountAndSync(`/sandbox_${sandbox.name}`),
@@ -107,15 +107,16 @@ export class LessonManagementService {
       return EMPTY;
     }))
   }
- 
-  // TODO: Kann sein, dass öffnen von Tabs leicht angepasst werden muss 
+
+  // TODO: Kann sein, dass öffnen von Tabs leicht angepasst werden muss
   private openExistingExperience(exp: Experience) {
     const path = exp.type === 'LESSON' ? exp.name : `/sandbox_${exp.name}`;
     const symlinkSandbox = exp.type === 'SANDBOX' ? defer(() => this.fsService.createSymlink(`/sandbox_${exp.name}`, `/${exp.name}`)) : EMPTY;
 
+
     return concat(
       this.fsService.mountAndSync(path),
-      this.py.addToSysPath(`/${exp.name}`),
+      defer(() => this.py.addToSysPath(`/${exp.name}`)),
       symlinkSandbox,
       this.fsService.changeWorkingDirectory(`/${exp.name}`),
       this.checkExperienceAfterMount(exp)
@@ -130,9 +131,9 @@ export class LessonManagementService {
 
     return concat(
       unlinkSandbox,
-      this.py.removeFromSysPath(`/${exp.name}`),
       this.fsService.changeWorkingDirectory("/"),
       this.fsService.unmountAndSync(fullPath),
+      defer(() => this.py.removeFromSysPath(`/${exp.name}`)),
       this.fsService.reset(),
       deleteBeforeClose ? this.fsService.deleteIDB(`/sandbox_${exp.name}`) : EMPTY,
       of(this.lse.emitExperienceClosed(fullPath))
@@ -142,7 +143,7 @@ export class LessonManagementService {
   public changeExperience(oldExperience: Experience, newExperience: Experience) {
     // if we switch to a lesson we need to call openLesson in order to check if the lesson needs to be downloaded first
     const helper = newExperience.type === 'LESSON' ? this.openLesson(newExperience) : this.openExistingExperience(newExperience);
-    
+
     return concat(
       oldExperience.name !== '' ? this.closeExperience(oldExperience, false) : EMPTY,
       helper
@@ -170,7 +171,7 @@ export class LessonManagementService {
         this.experiences$.next({lessons: this.lessons, sandboxes: this.sandboxes})
       })
     )
-  }  
+  }
 
   /** Retrieves the lesson with the given name from the server */
   private loadLessonFromServer(name: string) {
@@ -187,13 +188,13 @@ export class LessonManagementService {
     return concat(
       this.loadLessonFromServer(lesson.name).pipe(
         switchMap(buff => this.zipService.loadZip(buff)),
-        switchMap(zip => 
+        switchMap(zip =>
           concat(
             this.fsService.mountAndSync(lesson.name).pipe(ignoreElements()),
-            this.fsService.storeLesson(zip, lesson.name).pipe(ignoreElements()), 
+            this.fsService.storeLesson(zip, lesson.name).pipe(ignoreElements()),
             this.zipService.getConfigFromStream(zip).pipe(
               switchMap(config => this.fsService.storeConfig(config))),
-            this.py.addToSysPath(lesson.name)
+            defer(() => this.py.addToSysPath(lesson.name)),
           )
         )
       ),
@@ -205,7 +206,7 @@ export class LessonManagementService {
   private checkExperienceAfterMount(exp: Experience): Observable<void>{
     const fullPath = `/${exp.name}`;
 
-    return this.fsService.getConfigByExperience(exp).pipe(switchMap(config => {  
+    return this.fsService.getConfigByExperience(exp).pipe(switchMap(config => {
       if (config) {
         console.log("%c Config found!", "color: green", config)
         this.fsService.EXP_HIDDEN_PATHS = new Set(this.filterPaths(fullPath, config.hidden));
@@ -213,7 +214,7 @@ export class LessonManagementService {
         this.fsService.EXP_READONLY_PATHS = new Set(this.filterPaths(fullPath, config.readonly));
         this.fsService.EXP_EXTERNAL_PATHS = new Set(this.filterPaths(fullPath, config.external));
         this.fsService.EXP_GLOSSARY_PATH = `${fullPath}/glossary`;
-  
+
         return concat(
           this.fsService.checkPermissionsForExperience(fullPath),
           this.fsService.checkPermissionsForGlossary(),
