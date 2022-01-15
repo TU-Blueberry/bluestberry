@@ -218,6 +218,7 @@ export class LessonManagementService {
         return concat(
           this.fsService.checkPermissionsForExperience(fullPath),
           this.fsService.checkPermissionsForGlossary(),
+          defer(() => this.fsService.EXP_MODULE_PATHS.forEach(p => this.py.addToSysPath(p))),
           this.fsService.sync(false),
           of(this.lse.emitExperienceOpened(config))
         );
