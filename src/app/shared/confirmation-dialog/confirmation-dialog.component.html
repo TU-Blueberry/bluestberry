@@ -1,0 +1,11 @@
+<div class="wrapper">
+    <div class="modal">
+        <div class="text">
+            <ng-content></ng-content>
+        </div>
+        <div class="choices">
+            <button (click)="emit(true)">{{_okText}}</button>
+            <button (click)="emit(false)">Abbrechen</button>
+        </div>
+    </div>
+</div>

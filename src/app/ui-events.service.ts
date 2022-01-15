@@ -10,6 +10,9 @@ export class UiEventsService {
   onHintChange: EventEmitter<void> = new EventEmitter();
   onToggleTerminal: EventEmitter<void> = new EventEmitter();
   onStartTour: EventEmitter<void> = new EventEmitter();
+  onCloseAllContextMenues: EventEmitter<void> = new EventEmitter();
+  onClickOutsideOfFiltree: EventEmitter<{ev: MouseEvent, isGlossary: boolean}> = new EventEmitter();
+  onAboutToggle: EventEmitter<boolean> = new EventEmitter();
 
   constructor() { }
 
@@ -22,7 +25,6 @@ export class UiEventsService {
   }
 
   changeUserInputLocation(path: string): void {
-    console.log("New userinput location: " + path)
     this.onNewUserInputLocation.emit(path);
   }
 
@@ -36,5 +38,17 @@ export class UiEventsService {
 
   startTour(): void {
     this.onStartTour.emit();
+  }
+
+  closeAllContextMenues(): void {
+    this.onCloseAllContextMenues.emit();
+  }
+
+  clickOutsideOfFiletree(ev: MouseEvent, isGlossary: boolean) {
+    this.onClickOutsideOfFiltree.emit({ev: ev, isGlossary: isGlossary});
+  }
+
+  toggleAbout(visible: boolean) {
+    this.onAboutToggle.emit(visible);
   }
 }

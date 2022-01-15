@@ -1,0 +1,14 @@
+<h1 class="mt-0">Credits</h1>
+<div>
+    Ladeanimation: <a href="https://loading.io/css/">loading.io</a>
+</div>
+<div>
+    Icons (Suche und Aktionselemente): <a href="https://github.com/mikolajdobrucki/ikonate">Ikonate</a>
+</div>
+<div>
+    <div *ngFor="let icon of icons" class="entry">
+        <img src='/assets/icons/{{icon.path}}.png'>
+        <div>Icons made by <a href='{{icon.url}}' title='{{icon.name}}'>{{icon.name}}</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
+    </div>
+</div>
+

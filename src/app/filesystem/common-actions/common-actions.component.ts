@@ -1,28 +1,63 @@
-import { Component, EventEmitter, Input, Output } from '@angular/core';
-import { forkJoin, from } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { ChangeDetectorRef, Component, ElementRef, EventEmitter, Input, NgZone, OnInit, Output, Renderer2 } from '@angular/core';
+import { forkJoin, from, fromEvent } from 'rxjs';
+import { filter, map, tap } from 'rxjs/operators';
 
 @Component({
   selector: 'app-common-actions',
   templateUrl: './common-actions.component.html',
   styleUrls: ['./common-actions.component.scss']
 })
-export class CommonActionsComponent {
-  READONLY_MESSAGE_FOLDER = "Nicht möglich (Order ist schreibgeschützt)";
-  READONLY_MESSAGE_FILE = "Nicht möglich (Datei ist schreibgeschützt)";
+export class CommonActionsComponent implements OnInit {
+  DELETE_MSG: string = '';
+  RENAME_MSG: string = '';
+  CREATE_FOLDER_MSG: string = 'Neuen Ordner erstellen';
+  CREATE_FILE_MSG: string = 'Neuen Datei erstellen';
+  UPLOAD_MSG: string = "Dateien hochladen"
+  READONLY_MSG = '';
+
   isReadonly = false;
 
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
   @Input() set mode(mode: number) {
-      this.isReadonly = mode === 33088 || mode === 16704;
+      this.isReadonly = mode === 33133 || mode === 16749;
+      this.setMessages();
   }
 
   @Output() delete: EventEmitter<Event> = new EventEmitter();
   @Output() startRenaming: EventEmitter<Event> = new EventEmitter();
   @Output() createNewFromUI: EventEmitter<{ev: Event, isFile: boolean}> = new EventEmitter();
   @Output() selectedFiles: EventEmitter<{name: string, convertedFile: Uint8Array}[]> = new EventEmitter();
-  constructor() { }
+  @Output() close: EventEmitter<void> = new EventEmitter();
+  constructor(private ref: ElementRef, private cd: ChangeDetectorRef, private zone: NgZone, private r2: Renderer2) { }
+
+  private setMessages() {
+    this.DELETE_MSG = `${this.isFile ? 'Datei' : 'Ordner'} löschen`;
+    this.RENAME_MSG = `${this.isFile ? 'Datei' : 'Ordner'} umbenennen`; 
+    this.READONLY_MSG = `${this.isFile ? 'Datei' : 'Ordner'} ist schreibgeschützt`; 
+  }
+
+  ngOnInit(): void {
+    this.setMessages();
+
+    // see https://stackoverflow.com/questions/39729846/angular-2-click-event-callback-without-triggering-change-detection
+    // listening to document.click inside the zone would trigger change detection on every component, even if detached
+    // running it outside of angulars zone should circumvent change detection (it still looks like it's doing some sort of 
+    // change detection, but it's way faster at least)
+    this.zone.runOutsideAngular(() => {
+      fromEvent(document, 'click').pipe(
+        tap(ev => (this.stopPropagation(ev), ev.preventDefault())),
+        filter(ev => !this.ref.nativeElement.contains(ev.target)),
+        tap(() => this.close.emit())
+      ).subscribe()
+
+      fromEvent(document, 'keydown').pipe(
+        filter(ev => (ev as KeyboardEvent).key === 'Escape'),
+        tap(ev => (this.stopPropagation(ev), ev.preventDefault)),
+        tap(() => this.close.emit())
+      ).subscribe();
+    });
+  }
 
   stopPropagation(ev: Event): void {
     ev.stopPropagation();
@@ -33,20 +68,29 @@ export class CommonActionsComponent {
   }
 
   emitCreateFromUi(params: {ev: Event, isFile: boolean}): void {
+    this.stopPropagation(params.ev);
+
     if (!this.isReadonly) {
       this.createNewFromUI.emit(params);
+      this.close.emit();
     }
   }
 
   emitDelete(ev: Event): void {
+    this.stopPropagation(ev);
+
     if (!this.isReadonly) {
       this.delete.emit(ev);
+      this.close.emit();
     }
   }
 
   emitStartRenaming(ev: Event): void {
+    this.stopPropagation(ev);
+
     if (!this.isReadonly) {
       this.startRenaming.emit(ev);
+      this.close.emit();
     }
   }
 
@@ -65,11 +109,13 @@ export class CommonActionsComponent {
       // konnten und welche nicht (z.B. weil sie schon existieren)
       forkJoin(Array.from(fileList).map(file => this.createUint8ArrayFromFile(file)))
       .subscribe(
-        (arrs) => { this.selectedFiles.emit(arrs)}, 
+        (arrs) => this.selectedFiles.emit(arrs), 
         (err) => console.error(err))     
     } else {
       // TODO: Error
     }
+
+    this.close.emit();
   } 
 
   createUint8ArrayFromFile(file: File) {

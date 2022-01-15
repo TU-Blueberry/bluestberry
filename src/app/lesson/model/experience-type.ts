@@ -1,0 +1,1 @@
+export type ExperienceType = 'LESSON' | 'SANDBOX'

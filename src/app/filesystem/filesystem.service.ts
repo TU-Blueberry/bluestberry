@@ -1,32 +1,34 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
-import { Observable, concat, forkJoin, of, iif, throwError, EMPTY, defer, Subscriber, from } from 'rxjs';
-import { ignoreElements, map, switchMap, filter, withLatestFrom, catchError, concatAll, concatMap, mergeAll, tap, mergeMap } from 'rxjs/operators';
+import { Observable, concat, forkJoin, of, throwError, EMPTY, defer, from, iif, zip } from 'rxjs';
+import { ignoreElements, map, switchMap, filter, mergeAll, tap, shareReplay } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { ConfigObject } from './model/config';
-import {FileType} from 'src/app/shared/filetypes.enum';
+import { FileType, FileTypes } from '../shared/files/filetypes.enum';
+import { ExperienceType } from '../lesson/model/experience-type';
+import { Experience } from '../lesson/model/experience';
 
 @Injectable({
   providedIn: 'root'
 })
 export class FilesystemService {
   readonly SYSTEM_FOLDERS = new Set(['/dev', '/home', '/lib', '/proc', '/tmp', '/bin']);
-  HIDDEN_PATHS = new Set<string>();
-  EXTERNAL_PATHS = new Set<string>();
-  READONLY_PATHS = new Set<string>();
-  MODULE_PATHS = new Set<string>();
+  readonly CUSTOM_FOLDERS = new Set(['/configs', '/sandboxes', '/external', '/glossary'])
+  EXP_HIDDEN_PATHS = new Set<string>();
+  EXP_EXTERNAL_PATHS = new Set<string>();
+  EXP_READONLY_PATHS = new Set<string>();
+  EXP_MODULE_PATHS = new Set<string>();
+  EXP_GLOSSARY_PATH = '';
 
+  // Keep track of readonly folders as they need to be adjusted before and after syncing
+  private READONLY_FOLDERS = new Set<string>();
+
+  public test = this.init();
   PyFS?: typeof FS & MissingInEmscripten;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
 
   constructor(private pyService: PyodideService) {
-    this.pyService.pyodide.subscribe(py => {
-      this.PyFS = py.FS;
-      console.log(this.PyFS);
-      this.fsSubject.next(this.PyFS);
-    });
-
     this.pyService.getAfterExecution().subscribe(() => this.sync(false));
   }
 
@@ -34,53 +36,160 @@ export class FilesystemService {
     return this.fsSubject;
   }
 
+  // wait for pyodide and create basic folders for configs
+  private init() {
+    return concat(
+      this.pyService.pyodide.pipe(tap(py => {
+        this.PyFS = py.FS;
+        console.log("FS: ", this.PyFS)
+        this.fsSubject.next(this.PyFS);
+      }), ignoreElements()),
+      this.mountAndSync("glossary").pipe(ignoreElements()),
+      this.mountAndSync("configs").pipe(ignoreElements()),
+      this.exists('/configs/lessons').pipe(
+        filter(exists => !exists),
+        switchMap(() => this.createFolder('/configs/lessons', false))
+      ),
+      this.exists('/configs/sandboxes').pipe(
+        filter(exists => !exists),
+        switchMap(() => this.createFolder('/configs/sandboxes', false))
+      ),
+      this.unmountAndSync("configs").pipe(ignoreElements())
+    ).pipe(shareReplay(1));
+  }
+
+  public reset(): Observable<void> {
+    return defer(() => {
+      this.EXP_HIDDEN_PATHS = new Set();
+      this.EXP_EXTERNAL_PATHS = new Set();
+      this.EXP_READONLY_PATHS = new Set();
+      this.EXP_MODULE_PATHS = new Set();
+      this.READONLY_FOLDERS = new Set();
+      this.EXP_GLOSSARY_PATH = '';
+    });
+  }
+
   public storeConfig(config: ConfigObject) {
-    const createFolderObservable = this.createFolder(`/configs/${config.name}`, true);
-    const storeConfigObservable = this.createFile(`/configs/${config.name}/config.json`, JSON.stringify(config), false);
+    const configFolderPath = config.type === "LESSON" ? `/configs/lessons/${config.name}` : `/configs/sandboxes/${config.name}`;
+    const configFilePath = config.type === "LESSON" ? `/configs/lessons/${config.name}/config.json` : `/configs/sandboxes/${config.name}/config.json`
 
-    return concat(this.mountAndSync("configs"), createFolderObservable, storeConfigObservable, this.unmountAndSync("configs"));
+    const createFolderObservable = this.createFolder(configFolderPath, false)
+    const storeConfigObservable = this.createFile(configFilePath, JSON.stringify(config), false);
+
+    return concat(
+      this.mountAndSync("configs"),
+      createFolderObservable,
+      storeConfigObservable,
+      this.unmountAndSync("configs")
+    );
   }
 
-  // TODO: Glaube config wird aktuell noch zusätzlich in normales Verzeichnis geschrieben
-  public getConfig(lessonName: string): Observable<ConfigObject> {
-    const getConfigObservable = this.getFileAsBinary(`/configs/${lessonName}/config.json`)
-      .pipe(map(config => <ConfigObject>JSON.parse(new TextDecoder().decode(config))))
-
-    return concat(this.mountAndSync("configs").pipe(ignoreElements()), getConfigObservable, this.unmountAndSync("configs").pipe(ignoreElements()))
+  public deleteConfig(config: ConfigObject) {
+    return concat(
+      this.mountAndSync("configs"),
+      this.deleteFolder(`/configs${config.type === 'SANDBOX' ? '/sandboxes' : ''}/${config.name}`, false),
+      this.unmountAndSync("configs")
+    );
   }
 
-  /** Lesson exists, if the corresponding dir either already exists OR if we can create the
-   * corresponding dir and it is not empty after synching with IDBFS
-   */
+  // TODO: If sync fails: try to revert everyhting
+  // i.e. add back chmod, remove folder etc.
+
+  // TODO: In eigenen Config Service auslagern
+  public getConfigByExperience(exp: Experience): Observable<ConfigObject> {
+     return concat(
+      this.mountAndSync("configs").pipe(ignoreElements()),
+      this.getSingleConfig(exp.name, exp.type).pipe(switchMap(config =>
+        concat(
+          this.unmountAndSync("configs").pipe(ignoreElements()),
+          of(config)
+        )
+      ))
+    )
+  }
+
+  private getSingleConfig(name: string, type: ExperienceType) {
+    return this.getFileAsBinary(`/configs/${type === 'LESSON' ? 'lessons' : 'sandboxes'}/${name}/config.json`).pipe(
+      map(config => <ConfigObject>JSON.parse(new TextDecoder().decode(config))))
+  }
+
+  private getAllConfigsOfType(type: ExperienceType): Observable<ConfigObject[]> {
+    const path = `/configs/${type === 'LESSON' ? 'lessons' : 'sandboxes'}`;
+
+    return this.getNodeByPath(path).pipe(
+      switchMap(node => iif(() => Object.keys(node.contents).length > 0,
+        forkJoin(Object.keys(node.contents).map(name => this.getSingleConfig(name, type))),
+        of([]))
+      )
+    )
+  }
+
+  public getAllConfigs(): Observable<ConfigObject[]>{
+  return concat(
+      this.mountAndSync("configs").pipe(ignoreElements()),
+      zip(
+        this.getAllConfigsOfType("LESSON"),
+        this.getAllConfigsOfType("SANDBOX")
+      ).pipe(
+        switchMap(([lessonConfigs, sandboxConfigs]) =>
+          concat(
+            this.unmountAndSync("configs").pipe(ignoreElements()),
+            of([...lessonConfigs, ...sandboxConfigs])
+          )
+        )
+      )
+    );
+  }
+
+  /** Returns true if a config with the given name exists, false otherwise */
   public isNewLesson(name: string): Observable<boolean> {
-    return concat(this.mountAndSync(name).pipe(ignoreElements()), this.isEmpty(`/${name}`))
+    return concat(
+      this.mountAndSync("configs").pipe(ignoreElements()),
+      this.exists(`/configs/lessons/${name}/config.json`).pipe(switchMap(exists => {
+        return concat(
+          this.unmountAndSync("configs").pipe(ignoreElements()),
+          of(!exists)
+        )
+      }))
+    )
   }
 
-  // special case as synfs has some weird behaviour
-  public sync(fromPersistentToVirtual: boolean): Observable<void> {
-
+  private _sync(fromPersistentToVirtual: boolean): Observable<void> {
     return new Observable(subscriber => {
+      let r = (Math.random() + 1).toString(36).substring(7);
+      console.log("Sync start! " + r + `(${fromPersistentToVirtual ? 'persistent':'virtual'}---->${fromPersistentToVirtual ? 'virtual':'persistent'})`)
+
       if (!this.PyFS) {
         subscriber.error("FS error");
       }
 
       try {
-        console.log('sync start');
         this.PyFS!.syncfs(fromPersistentToVirtual, err => {
-          console.log('sync complete');
-          subscriber.complete();
-          // TODO: Weird sync behaviour
-         /*  if (err) {
-            subscriber.error();
-          } else {
-            subscriber.complete();
-          } */
+          err ? (console.log(err), subscriber.error("Couldn't complete sync")) : (console.log("Sync complete! " + r), subscriber.complete());
         });
       } catch (e) {
         subscriber.error("Error while syncing the filesystem");
       }
     });
+  }
 
+  // workaround to fix sync issue for folders with no write permissions
+  public sync(fromPersistentToVirtual: boolean): Observable<void> {
+    return concat(
+      this.chmodFolders(true),
+      this._sync(fromPersistentToVirtual),
+      this.chmodFolders(false)
+    )
+  }
+
+  private chmodFolders(addWritePermission: boolean) {
+    return new Observable<void>(subscriber => {
+      const mode = addWritePermission ? 0o777 : 0o555;
+      Array.from(this.READONLY_FOLDERS).forEach(path => {
+        this.chmod(path, mode);
+      });
+      subscriber.complete();
+    });
   }
 
   public importLesson(existsAlready: boolean, config: ConfigObject, zip?: JSZip): Observable<void> {
@@ -106,8 +215,8 @@ export class FilesystemService {
   public mountAndSync(name: string): Observable<void> {
     const fullPath = name.startsWith("/") ? name : `/${name}`;
 
-    return this.exists(fullPath).pipe(switchMap(exists => { // sync, unmount, delete
-      return exists === true ? throwError("Path already exists") :
+    return this.exists(fullPath).pipe(switchMap(exists => { // mkdir, mount, sync
+      return exists === true ? throwError(`Path ${name} already exists`) :
         concat(
           defer(() => this.N_mkdir(fullPath)),
           defer(() => this.mount(fullPath)),
@@ -116,54 +225,59 @@ export class FilesystemService {
       }))
   }
 
-  // loops over whole mountpoint and verifies that all modules, readonly and hidden paths have readonly permissions
-  // additionally verifies that no external path is present (or deletes it if found)
+  // TODO: Doesn't work yet
+  // Probably just delete all contents + config and leave idb orphaned
+  public deleteIDB(name: string): Observable<void> {
+    return new Observable<void>(subscriber => {
+      const req = (this.PyFS! as any).indexedDB().deleteDatabase(name);
+      req.onsuccess = () => subscriber.complete()
+      req.onerror = (err:any) => subscriber.error(err),
+      req.onblocked = (err: any) => subscriber.error(err)
+    });
+  }
 
-  // TODO: Refactor so that mergedPaths is already passed as parameter
-  public checkPermissions(mountpoint: string, onlyCheckExternalPermissions: boolean): Observable<void> {
-    console.log("Checkpermissions for mountpoint " + mountpoint);
+  public checkPermissionsForExperience(mountpoint: string): Observable<void> {
+    const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, this.EXP_GLOSSARY_PATH]);
+    return this.checkPermissions(mountpoint, mergedPaths);
+  }
 
-    const mergedPaths = new Set([...this.HIDDEN_PATHS, ...this.READONLY_PATHS, ...this.MODULE_PATHS]);
-    console.log(mergedPaths)
-    return this.testCurrentPath(mountpoint, mergedPaths);
+  public checkPermissionsForGlossary(): Observable<void> {
+    return this.checkPermissions('/glossary', new Set(['/glossary']));
+  }
 
-    // muss es halt wieder rekursiv machen nech
+  // loops over whole mountpoint and verifies that all modules and readonly paths have readonly permissions
+  private checkPermissions(mountpoint: string, paths: Set<string>): Observable<void> {
+    return this.getNodeByPath(mountpoint).pipe(
+      switchMap(node => this.testCurrentPath(node, mountpoint, paths))
+    )
+
     // for all folders, subfolders and files
-    //    if abstractCheck(mergedPaths) === true: check if permissions are set
-    //        if yes: continue
-    //        if no: set permission to readonly (rx)
-
     //    if is external path: delete
     //    (kann dafür auch abstractCheck nutzen; new Set('/external/' + lessonName))
   }
 
   mountExternal(): void {
     // TODO: Mount, call checkPermissions for extenral mountpoint
+    // TODO: read/write permissions?
   }
 
-  private testElementsInCurrentFolder(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<void> {
-    return this.getEntriesOfFolder(node, currentPath).pipe(
-      switchMap(entries => entries.map(entry => this.testCurrentPath(entry, mergedPaths))),
-      mergeAll()
+  // -----
+  private testElementsInCurrentFolder(node: FSNode, currentPath: string, mergedPaths: Set<string>) {
+    const obsv = Object.entries(node.contents).map(([name, value]) => this.testCurrentPath(value, `${currentPath}/${name}`, mergedPaths))
+    return forkJoin(obsv).pipe(mergeAll());
+  }
+
+  private testCurrentPath(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<void> {
+    return of(Object.keys(node.contents || {}).length).pipe(
+      filter(length => length > 0),
+      tap(() => this.setPermissionsReadExecute(currentPath, mergedPaths, this.N_isFile(node))),
+      switchMap(() => this.N_isFile(node) ? EMPTY : this.testElementsInCurrentFolder(node, currentPath, mergedPaths))
     );
   }
 
-  private testCurrentPath(currentPath: string, mergedPaths: Set<string>): Observable<void> {
-    return this.isEmpty(currentPath)
-      .pipe(filter(isEmpty => isEmpty === false))
-      .pipe(
-        tap(() => this.abstractCheck(mergedPaths, currentPath) === true ? this.setPermissionsReadExecute(currentPath) : {}), // check this node
-        switchMap(() => this.getNodeByPath(currentPath).pipe( // recursively check all children
-          switchMap(node => node.contents instanceof Uint8Array ? EMPTY : this.testElementsInCurrentFolder(node, currentPath, mergedPaths))))
-      )
-  }
-
-
-  private setPermissionsReadExecute(path: string) {
-    try {
-      this.chmod(path, 0o500);
-    } catch(err) {
-      console.error(err);
+  private setPermissionsReadExecute(currentPath: string, mergedPaths: Set<string>, isFile: boolean): void {
+    if (this.abstractCheck(mergedPaths, currentPath)) {
+      isFile ? this.chmod(currentPath, 0o555) : (this.READONLY_FOLDERS.add(currentPath), this.chmod(currentPath, 0o555))
     }
   }
 
@@ -177,7 +291,6 @@ export class FilesystemService {
         return true;
       }
     }
-
     return false;
   }
 
@@ -186,19 +299,28 @@ export class FilesystemService {
   }
 
   public isHiddenPath(path: string): boolean {
-    const res =  this.abstractCheck(this.HIDDEN_PATHS, path);
-    return res;
+    return this.abstractCheck(this.EXP_HIDDEN_PATHS, path);
   }
 
   public isModulePath(path: string): boolean {
-    return this.abstractCheck(this.MODULE_PATHS, path);
+    return this.abstractCheck(this.EXP_MODULE_PATHS, path);
+  }
+
+  private checkPathAndFS(path: string): string {
+    const fullPath = path.startsWith("/") ? path : `/${path}`;
+
+    if (!this.PyFS) {
+      throw new Error("FS");
+    }
+
+    return fullPath;
   }
 
   public unmountAndSync(name: string): Observable<void> {
-    const fullPath = name.startsWith("/") ? name :  `/${name}`;
+    const fullPath = name.startsWith("/") ? name : `/${name}`;
 
     return this.exists(fullPath).pipe(switchMap(exists => { // sync, unmount, delete
-      return !exists ? throwError("Path doesnt exist") :
+      return !exists ? throwError(`Path ${fullPath} doesnt exist, can't unmount`) :
       concat(
         this.sync(false),
         defer(() => this.unmount(fullPath)),
@@ -210,48 +332,39 @@ export class FilesystemService {
   /* Returns all non-hidden and non-module subfolders and - if requested - files of the given path as seperate arrays */
   public scan(path: string, depth: number, includeFiles: boolean, includeHidden: boolean = false): Observable<FSNode[][]> {
     return this.getNodeByPath(path).pipe(switchMap(node => {
-
-    return node.contents instanceof Uint8Array ? of([]) : this.scanWithoutFetch(node.contents, path, depth, includeFiles, includeHidden);
+      return this.N_isFile(node) ? of([]) : this.scanWithoutFetch((node.contents as FSNode), path, depth, includeFiles, includeHidden);
     }))
   }
 
   public scanWithoutFetch(node: FSNode, path: string, depth: number, includeFiles: boolean, includeHidden: boolean = false): Observable<FSNode[][]> {
-      const subfolders: FSNode[] = [];
-      const filesInFolder: FSNode[] = [];
+    const subfolders: FSNode[] = [];
+    const filesInFolder: FSNode[] = [];
 
-      // remove all hidden paths + all modules + all system directories
-      const remainingObjects =  Object.entries(node).filter(([_, value], key) =>
-        (includeHidden || !this.isHiddenPath(`${path}/${value.name}`))
-        && !this.isModulePath(`${path}/${value.name}`)
-        && !this.isSystemDirectory(`${path}/${value.name}`));
+    // remove all hidden paths + all modules + all system directories
+    const remainingObjects =  Object.entries(node).filter(([_, value], key) =>
+      (includeHidden || !this.isHiddenPath(`${path}/${value.name}`))
+      && !this.isModulePath(`${path}/${value.name}`)
+      && !this.isSystemDirectory(`${path}/${value.name}`));
 
-      // welp
-      // for each remaining object, we get the results from isFile and isDirectory in parallel
-      // depending on the results we put the node into the corresponding array
-      const test = remainingObjects.map(([_, value], key) =>
-        forkJoin([this.isFile(`${path}/${value.name}`), this.isDirectory(`${path}/${value.name}`)])
-          .pipe(tap(([isFile, isDirectory]) => isDirectory ? subfolders.push(value) :
-            (isFile && !(depth == 0 && value.name === 'config.json') && includeFiles ? filesInFolder.push(value) : {}) )))
+    // welp
+    // for each remaining object, we get the results from isFile and isDirectory in parallel
+    // depending on the results we put the node into the corresponding array
+    const test = remainingObjects.map(([_, value], key) =>
+      forkJoin([this.isFile(`${path}/${value.name}`), this.isDirectory(`${path}/${value.name}`)])
+        .pipe(tap(([isFile, isDirectory]) => isDirectory ? subfolders.push(value) :
+          (isFile && !(depth == 0 && value.name === 'config.json') && includeFiles ? filesInFolder.push(value) : {}) )))
 
-      return concat(forkJoin(test).pipe(ignoreElements()), of([subfolders, filesInFolder]));
-
-      /* Object.entries(node)
-        .filter(([_, value], key) => !this.isHiddenPath(`${path}/${value.name}`) && !this.isModulePath(`${path}/${value.name}`))
-        .map(([_, value], key) =>  {
-        const currentPath = `${path}/${value.name}`;
-
-        if (!this.isSystemDirectory(currentPath) && this.isDirectory(currentPath)) {
-          subfolders.push(value);
-        }
-
-        if (this.isFile(currentPath) && !(depth == 0 && value.name === 'config.json') && includeFiles) {
-          filesInFolder.push(value);
-        }
-      });  */
+    return concat(forkJoin(test).pipe(ignoreElements()), of([subfolders, filesInFolder]));
   }
 
   // TODO: Move zip stuff to zip service
   // TODO: Rewrite (probably also check if path exists)
+
+  // TODO: Paths have changed!
+  // Lesson: /name
+  // sandbox: /sandbox_name
+  // lesson config: /configs/lessons/name.json
+  // sandbox config: /configs/sandboxes/name.json
   fillZip(path: string, zip: JSZip, lessonName: string) {
     try {
       if (!this.isEmpty(path)) {
@@ -284,28 +397,6 @@ export class FilesystemService {
       console.error(e);
     }
   }
-
-  // https://github.com/emscripten-core/emscripten/issues/2602
-  /* printRecursively(path: string, startDepth: number, offsetPerLevel: number): void {
-    try {
-      if (!this.isEmpty(path)) {
-        const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
-
-        for (const entry in entries) {
-          if (!this.isSystemDirectory(`${path}${entry}`) && !this.isHiddenPath(`${path}${entry}`) && !this.isModulePath(`${path}${entry}`)) {
-            if (this.isDirectory(`${path}${entry}`)) {
-              console.log("-".repeat(startDepth + offsetPerLevel) + ` ${entry}`);
-              this.printRecursively(`${path}${entry}/`, startDepth + offsetPerLevel, offsetPerLevel);
-            } else {
-              console.log("-".repeat(startDepth + offsetPerLevel) + ` ${entry}`);
-            }
-          }
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  } */
 
   private getFileAsBuffer(unzippedLesson: JSZip, file: string): Observable<ArrayBuffer>{
     return defer(() => of(unzippedLesson.file(file)?.internalStream("arraybuffer"))).
@@ -356,8 +447,8 @@ export class FilesystemService {
     );
   }
 
-  public writeFileTest(path: string, content: Uint8Array | string) {
-    return this.basicFactory<void>(path, "Error writing to file", (_) => this.N_writeFile(path, content), false);
+  public writeFileTest(path: string, content: Uint8Array | string, mode?: number) {
+    return this.basicFactory<void>(path, "Error writing to file", (_) => this.N_writeFile(path, content, mode), false);
   }
 
   // TODO: Könnte ich das mit dem neuen "needsToExist" param der factory nicht auch lösen?
@@ -374,7 +465,7 @@ export class FilesystemService {
           subscriber.next(analyzeObject.exists);
           subscriber.complete();
         } else {
-          subscriber.error("No information about given path copuld be contained");
+          subscriber.error("No information about given path could be contained");
         }
       } catch (err) {
         subscriber.error("Generic error");
@@ -382,19 +473,47 @@ export class FilesystemService {
     });
   }
 
-  public writeToFile(path: string, content: Uint8Array | string): Observable<void> {
+  /** Creates a symlink node at destination linking to source */
+  public createSymlink(source: string, destination: string): Observable<void> {
+    return zip(this.exists(source), this.exists(destination)).pipe(
+      switchMap(([oldPathExists, newPathExists]) =>
+        (!oldPathExists || newPathExists) ? throwError("Old path doesn't exist or new path is already in use") :
+        defer(() => this.N_createSymlink(source, destination))
+      )
+    )
+  }
+
+  public unlinkPath(path: string): Observable<void> {
+    return this.exists(path).pipe(switchMap(exists =>
+      !exists ? throwError(`Given path ${path} does not exist`) : defer(() => this.N_unlinkPath(path))
+    ))
+  }
+
+  public changeWorkingDirectory(to: string): Observable<void> {
+    return this.exists(to).pipe(switchMap(exists =>
+      !exists ? throwError(`Couldn't change working directory (path ${to} doesn't exist)`) : defer(() => this.N_changeWorkingDirectory(to))))
+  }
+
+  public writeToFile(path: string, content: Uint8Array | string, mode?: number): Observable<void> {
     const writeObservable =  this.exists(path).pipe(switchMap(exists =>
       !exists ? throwError("File doesn't yet exist. Use createFile instead") :
-        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content)) : throwError("Can't write to system files"))
+        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content, mode)) : throwError("Can't write to system files"))
       ));
 
     return concat(writeObservable, this.sync(false));
   }
 
-  public createFile(path: string, content: Uint8Array | string, withSync: boolean): Observable<void> {
+  public overwriteFile(path: string, content: Uint8Array | string, mode?: number): Observable<void> {
+    return !this.isSystemDirectory(path) ? defer(() => {
+      this.chmod(path, 0o777);
+      this.N_writeFile(path, content, mode);
+    }) : throwError("Can't write to system files");
+  }
+
+  public createFile(path: string, content: Uint8Array | string, withSync: boolean, mode?: number): Observable<void> {
     const createFileObservable =  this.exists(path).pipe(switchMap(exists =>
-      exists ? throwError("File already exists. Use writeFile instead") :
-        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content)) : throwError("Can't create file in system directory"))
+      exists ? throwError(`File ${path} already exists. Use writeFile instead`) :
+        (!this.isSystemDirectory(path) ? defer(() => this.writeFileTest(path, content, mode)) : throwError("Can't create file in system directory"))
       ));
 
     return withSync === true ? concat(createFileObservable, this.sync(false)) : createFileObservable;
@@ -475,17 +594,17 @@ export class FilesystemService {
       try {
         const analyzeObject = this.N_analyzePath(path);
 
-        if (analyzeObject.exists !== undefined) {
-           if (analyzeObject.object) {
+        if (analyzeObject.exists) {
+          if (analyzeObject.object) {
             subscriber.next(fn(analyzeObject.object));
             subscriber.complete();
           } else {
-            needsToExist ? subscriber.error(`Path ${path} exists but no object could be found`) :
+            needsToExist ? subscriber.error(`Path ${path} exists but no corresponding object could be found in the fileystem`) :
             (subscriber.next(fn(analyzeObject.object)), subscriber.complete());
           }
         } else {
-          console.error("1111")
-          subscriber.error(`Given path (${path}) does not exist`);
+          needsToExist ? subscriber.error(`Path ${path} doesn't exist`) :
+          (subscriber.next(fn(analyzeObject.object)), subscriber.complete());
         }
       } catch (err) {
         console.error(err);
@@ -500,14 +619,18 @@ export class FilesystemService {
     return this.PyFS!.analyzePath(path, false);
   }
 
-  private N_isFile(node: FSNode) {
+  public N_isFile(node: FSNode) {
     this.checkFilesystem();
     return this.PyFS!.isFile(node.mode);
   }
 
-  private N_writeFile(path: string, data: Uint8Array | string) {
+  private N_writeFile(path: string, data: Uint8Array | string, mode?: number) {
     this.checkFilesystem();
     this.PyFS?.writeFile(path, data);
+
+    if (mode !== undefined) {
+      this.chmod(path, mode);
+    }
   }
 
   private N_readFileAsString(path: string) {
@@ -516,7 +639,7 @@ export class FilesystemService {
   }
 
   private N_readFileAsBinary(path: string) {
-this.checkFilesystem();
+    this.checkFilesystem();
     return this.PyFS!.readFile(path, { encoding: "binary" });
   }
 
@@ -526,27 +649,31 @@ this.checkFilesystem();
   }
 
   private N_mkdir(path: string, mode?: number) {
-
-        this.checkFilesystem();
+    this.checkFilesystem();
     mode ? this.PyFS?.mkdir(path, mode) : this.PyFS?.mkdir(path);
+    console.log("folder created: " + path)
   }
 
   private mount(path: string) {
+    console.log("MOUNT ", path)
     this.checkFilesystem();
     this.PyFS?.mount(this.PyFS?.filesystems.IDBFS, {}, path);
   }
 
   private chmod(path: string, permission: number) {
     this.checkFilesystem();
+    // console.log(`Chmod ${path} to ${permission}`)
     this.PyFS?.chmod(path, permission);
   }
 
   private unmount(path: string) {
+    console.log("UNMOUNT ", path)
     this.checkFilesystem();
     this.PyFS?.unmount(path);
   }
 
   private rmdir(path: string) {
+    console.log("RMDIR " + path)
     this.checkFilesystem();
     this.PyFS?.rmdir(path);
   }
@@ -559,6 +686,23 @@ this.checkFilesystem();
   private isDir(mode: number) {
     this.checkFilesystem();
     return this.PyFS!.isDir(mode);
+  }
+
+  // TODO: Additional checks?
+  private N_createSymlink(oldPath: string, newPath: string) {
+    this.checkFilesystem();
+    this.PyFS!.symlink(oldPath, newPath);
+  }
+
+  private N_unlinkPath(path: string) {
+    this.checkFilesystem();
+    this.PyFS!.unlink(path);
+    console.log("unlinked " + path)
+  }
+
+  private N_changeWorkingDirectory(path: string) {
+    this.checkFilesystem();
+    this.PyFS!.chdir(path);
   }
 
   private checkFilesystem(): void {
@@ -583,13 +727,13 @@ this.checkFilesystem();
   }
 
   getFileType(path: string): FileType {
-    const matches = RegExp(/([a-zA-Z\d-_]+\/)*[a-zA-Z\d-_]+\.[a-zA-Z]{2,5}$/, "i").exec(path);
-    if (!matches || matches.length === 0) {
-      return FileType.OTHER;
-    } else {
-      const extension = matches[0].split(".");
-      const trimmedExtension = extension[extension.length - 1];
-      return FileType[trimmedExtension.toUpperCase() as keyof typeof FileType] || FileType.OTHER;
-    }
+    const extension = path.split(".");
+    const trimmedExtension = extension[extension.length - 1];
+    return FileTypes.getType(trimmedExtension);
+  }
+
+  getExtension(name: string): string {
+    const extension_match = name.split(".");
+    return extension_match[extension_match.length - 1].toUpperCase();
   }
 }

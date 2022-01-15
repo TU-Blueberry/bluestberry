@@ -3,7 +3,7 @@ import {
   Component,
   ContentChildren,
   EventEmitter,
-  Input, OnInit,
+  Input,
   Output,
   QueryList,
   ViewChild,
@@ -13,6 +13,7 @@ import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {Tab} from 'src/app/tab/model/tab.model';
 import {TabManagementService} from 'src/app/tab/tab-management.service';
 import {filter} from 'rxjs/operators';
+import {LessonEventsService} from 'src/app/lesson/lesson-events.service';
 
 @Component({
   selector: 'app-tab-group',
@@ -58,7 +59,8 @@ export class TabGroupComponent implements AfterViewInit {
     return this._activeTab;
   }
 
-  constructor(private tabEventService: TabManagementService) {
+  constructor(private tabEventService: TabManagementService,
+    private lessonEventService: LessonEventsService) {
   }
 
   ngAfterViewInit(): void {
@@ -69,7 +71,14 @@ export class TabGroupComponent implements AfterViewInit {
       filter(tab => !!this.templates?.find(template => template.type === tab.type)),
       filter(tab => tab.groupId === this.id),
     ).subscribe(tab => {
-      const existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+      let existingTab;
+      
+      if (tab.type === "HINT" || tab.type === "UNITY") {
+        existingTab = this.dataSource.find(t => t.type === tab.type);
+      } else {
+        existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+      }
+
       if (!existingTab) {
         this.dataSource.push(tab);
         this.dataSourceChange.emit(this.dataSource);
@@ -77,7 +86,8 @@ export class TabGroupComponent implements AfterViewInit {
       } else {
         this.activeTab = existingTab;
       }
-    })
+    });
+    this.lessonEventService.onExperienceClosed.subscribe(() => this.closeAllTabs());    
   }
 
   handleScroll(event: WheelEvent) {
@@ -88,6 +98,12 @@ export class TabGroupComponent implements AfterViewInit {
 
   startDrag(event: DragEvent, tab: TabTemplateDirective): void {
     //TBD
+  }
+
+  closeAllTabs(): void {
+    this.viewContainerRef?.clear();
+    this.dataSource = [];
+    this.dataSourceChange.emit(this.dataSource);
   }
 
   closeTab(index: number) {

@@ -11,8 +11,6 @@ import { saveAs } from 'file-saver';
   providedIn: 'root'
 })
 export class ZipService {
-  zipper: JSZip = new JSZip();
-
   constructor(private fsService: FilesystemService) { }
 
   getConfigFromStream(unzipped: JSZip): Observable<ConfigObject> {
@@ -20,14 +18,11 @@ export class ZipService {
       const stream = config.internalStream("string");
 
       return new Observable<ConfigObject>(subscriber => {
-        console.log("Get config from stream!!!!!")
-
         stream.on("error", () => subscriber.error("Error trying to stream config"));
         stream.accumulate().then((data => {
           const parsedConfig: ConfigObject = JSON.parse(data);
         
           if (parsedConfig.name) {
-            console.log("NEXT: ", parsedConfig)
             subscriber.next(parsedConfig);
             subscriber.complete();
           } else {
@@ -69,7 +64,7 @@ export class ZipService {
   }
 
   loadZip(buff: ArrayBuffer): Observable<JSZip> {
-    return from(this.zipper.loadAsync(buff));
+    return from(new JSZip().loadAsync(buff));
   }
  
 }

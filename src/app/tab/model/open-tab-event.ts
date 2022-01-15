@@ -4,6 +4,5 @@ export interface OpenTabEvent {
   groupId: string;
   type: TabType;
   title: string;
-  icon?: string;
   data?: any;
 }

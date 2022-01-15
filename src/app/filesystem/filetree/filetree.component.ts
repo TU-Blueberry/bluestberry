@@ -1,23 +1,24 @@
-import { Component, ComponentFactoryResolver, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Observable, of, Subject, Subscription } from 'rxjs';
-import { PyodideService } from '../../pyodide/pyodide.service';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
+import { concat, from, Observable, Subject, Subscription } from 'rxjs';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
-import { catchError, switchMap, tap } from 'rxjs/operators';
+import { filter, switchMap, tap } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
-import { LessonManagementService } from '../lesson-management/lesson-management.service';
 import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
+import { LessonEventsService } from 'src/app/lesson/lesson-events.service';
+import { Experience } from 'src/app/lesson/model/experience';
+import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
 
 @Component({
   selector: 'app-filetree',
   templateUrl: './filetree.component.html',
   styleUrls: ['./filetree.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FiletreeComponent implements OnDestroy{
-  rootComponent?: FolderComponent;
   showImportWindow = false;
   dragOver = false;
   tempZip?: JSZip;
@@ -26,38 +27,74 @@ export class FiletreeComponent implements OnDestroy{
   selectedFile?: File;
   userResult$: Subject<boolean> = new Subject();
   lastCheck?: Subscription;
+  SELECTED_LESSON?: Experience;
+  _isGlossary = false;
+  toggleSubscription?: Subscription;
+  outsideClickSubscription?: Subscription;
 
-  readonly SELECTED_LESSON = "sortierroboter"
-
-  @ViewChild('liste', { read: ViewContainerRef, static: true }) listRef!: ViewContainerRef;
-  constructor(private pys: PyodideService, private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
-    private zipService: ZipService, private mgmtService: LessonManagementService, private uiEv: UiEventsService, private ev: FilesystemEventService) {
-
-    // TODO: error handling
-    concat(this.pys.pyodide, this.mgmtService.openLessonByName(this.SELECTED_LESSON))
-      .subscribe(
-        () => { },
-        err => { console.error(err) },
-        () => this.kickstartTreeGeneration());
+  @Input() set isGlossary(isGlossary: boolean) {
+    this._isGlossary = isGlossary;
+    this.init();
   }
 
-  kickstartTreeGeneration() {
-    console.log("kickstart trtee")
+  @Output() expandChange: EventEmitter<boolean> = new EventEmitter();
+  @ViewChild('content', { read: ViewContainerRef }) ref!: ViewContainerRef;
+  constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
+    private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
+    private lse: LessonEventsService, private gs: GlossaryService, private cd: ChangeDetectorRef) { }
 
+  private init(): void {
+    if (!this._isGlossary) {
+      this.lse.onExperienceOpened.subscribe((lesson) => {
+        this.SELECTED_LESSON = lesson;
+        this.kickstartTreeGeneration();
+      })
+
+      this.lse.onExperienceClosed.subscribe(() => {
+        this.ref.clear();
+      })
+    }
+
+    if (this._isGlossary) {
+      this.gs.glossaryEntries$.subscribe(entries => {
+        this.kickstartTreeGeneration(entries);
+      });   
+    }
+  }
+
+  // possible further optimization: only delete and create new components for glossary entries which changed
+  private kickstartTreeGeneration(additionalGlossaryEntries?: { path: string; node: FSNode; }[]) {  
+    this.ref.clear();
+
+    const path = this._isGlossary ? '/glossary' : `/${this.SELECTED_LESSON?.name}`;
+    const name = this._isGlossary ? 'Glossar' : this.SELECTED_LESSON?.name;
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
-    const root = this.fsService.getNodeByPath(`/${this.SELECTED_LESSON}`).subscribe((node) => {
-      console.log("Got node: ", node)
+    const folderComp = this.ref.createComponent(folderFactory).instance;
+    const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
+    baseNode.path = "/";
 
-      const folderComp = <FolderComponent>this.listRef.createComponent(folderFactory).instance;
-      const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
-      baseNode.path = "/";
-      folderComp._node = baseNode.generateTreeNode(0, `/${this.SELECTED_LESSON}`, node, "Sortierroboter");
-      this.rootComponent = folderComp;
+    this.outsideClickSubscription = this.uiEv.onClickOutsideOfFiltree.pipe(
+      filter(click => click.isGlossary === (additionalGlossaryEntries !== undefined))
+    ).subscribe(click => {
+      folderComp.closeContextMenu();
+      folderComp.toggleContextMenu(click.ev);
     });
+
+
+    this.fsService.getNodeByPath(path).subscribe((node) => {
+      folderComp.node = baseNode.generateTreeNode(0, path, node, name);
+      folderComp.node.isRoot = true; 
+      this.toggleSubscription = folderComp.onExpandToggle.subscribe(next => this.expandChange.emit(next));
+
+      additionalGlossaryEntries?.forEach(entry => 
+        folderComp.createSubcomponent(true, entry.path, entry.node)
+      )
+
+      this.cd.markForCheck()
+    }); 
   }
 
   // TODO: Dateien laden bugg bei FF irgendwie
-  // TODO: Catch error
 
   // TODO: Config aus neuem Mountpoint laden und reinpacken
   // Gleiches gilt für external dateien
@@ -70,7 +107,6 @@ export class FiletreeComponent implements OnDestroy{
   }
 
   // TODO: Regular flow should be similar to this!
-
   // TODO: Additionally check whether zip is completely empty or only consists of config.json
   unpackCheckAndPossiblyImport(file: File) {
     this.checkInProgress = true;
@@ -106,19 +142,17 @@ export class FiletreeComponent implements OnDestroy{
     ev.preventDefault();
     this.selectedFile = undefined;
 
-    if (ev.dataTransfer) {
-      if (ev.dataTransfer.items) {
-        if (ev.dataTransfer.items.length === 1 && ev.dataTransfer.items[0].kind === "file") {
-          const file = ev.dataTransfer.items[0].getAsFile();
+    if (ev.dataTransfer && ev.dataTransfer.items) {
+      if (ev.dataTransfer.items.length === 1 && ev.dataTransfer.items[0].kind === "file") {
+        const file = ev.dataTransfer.items[0].getAsFile();
 
-          if (file) {
-            this.check(file);
-          } else {
-            // TODO: Error
-          }
+        if (file) {
+          this.check(file);
         } else {
           // TODO: Error
         }
+      } else {
+        // TODO: Error
       }
     }
   }
@@ -157,7 +191,7 @@ export class FiletreeComponent implements OnDestroy{
       err => console.error(err), 
       () => {
         console.log("Import complete!");
-        this.listRef.clear();
+        this.ref.clear();
         this.kickstartTreeGeneration();
         this.checkInProgress = false;
         this.conflictDetected = false;
@@ -183,5 +217,7 @@ export class FiletreeComponent implements OnDestroy{
 
   ngOnDestroy(): void {
     this.lastCheck?.unsubscribe();
+    this.toggleSubscription?.unsubscribe();
+    this.outsideClickSubscription?.unsubscribe();
   }
 }

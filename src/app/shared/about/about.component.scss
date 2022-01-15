@@ -1,0 +1,21 @@
+.entry {
+    display: flex;
+    align-items: center;
+    margin: 15px 0px 15px 0px;
+}
+
+a {
+    &:link {
+        color: white;
+    }
+
+    &:visited {
+        color: lightblue;
+    }
+}
+
+img {
+    margin-right: 5px;
+    width: 30px;
+    height: 30px;
+}

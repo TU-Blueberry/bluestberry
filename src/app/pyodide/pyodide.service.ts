@@ -96,6 +96,12 @@ export class PyodideService {
     );
   }
 
+  private runCodeSilently(code: string): Observable<void> {
+    return this.pyodide.pipe(switchMap(pyodide => {
+      return defer(() => from(pyodide.runPythonAsync(code)));
+    }));
+  }
+
   set modulePaths(paths: string[]) {
     this.worker.postMessage({ type: MessageType.SET_SYSPATH, data: paths })
   }

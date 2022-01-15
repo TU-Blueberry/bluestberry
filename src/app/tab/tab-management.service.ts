@@ -1,11 +1,12 @@
- import {Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {concat, EMPTY, merge, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
-import {FileType} from 'src/app/shared/filetypes.enum';
 import {OpenTabEvent} from 'src/app/tab/model/open-tab-event';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
+import {FileType} from '../shared/files/filetypes.enum';
+import {LessonEventsService} from '../lesson/lesson-events.service';
 
 
 @Injectable({
@@ -20,21 +21,20 @@ export class TabManagementService {
 
   constructor(
     private filesystemEventService: FilesystemEventService,
-    private filesystemService: FilesystemService
+    private filesystemService: FilesystemService,
+    private lessonEventService: LessonEventsService
   ) {
-    const lesson$ = filesystemEventService.onOpenLesson.pipe(
+    const lesson$ = lessonEventService.onExperienceOpened.pipe(
         switchMap(({open}) => concat(...open.map(file => {
           if (file.path.toLowerCase().endsWith('unity')) {
             return of({
               groupId: file.on,
-              icon: 'hero-chip',
               title: 'Simulation',
               type: 'UNITY' as TabType,
             });
           } else if (file.path.toLowerCase().endsWith('hint')) {
             return of({
               groupId: file.on,
-              icon: 'hero-lightning-bolt',
               title: 'Hinweise',
               type: 'HINT' as TabType,
             });
@@ -53,6 +53,10 @@ export class TabManagementService {
     merge(lesson$, userOpenEvent$).subscribe(t => this._openTab.next(t));
   }
 
+  openHintsManually(data: {path: string, content: Uint8Array}): void {
+    this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, data: data});
+  }
+
   createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
     const fileType = type || this.filesystemService.getFileType(path);
     return (
@@ -63,49 +67,18 @@ export class TabManagementService {
         return EMPTY;
       }),
       map((fileContent) => ({
-          title: (fileType == FileType.HINT) ? 'Hinweise' : path.split('/').pop() || path,
-          groupId: this.mapFileTypeToTabGroup(fileType),
-          icon: this.mapTypeToIcon(fileType),
-          type: this.mapFileTypeToTabType(fileType),
-          data: { path: path, content: fileContent },
+      title: path.split('/').pop() || path,
+      groupId: this.mapFileTypeToTabGroup(fileType),
+      type: this.mapFileTypeToTabType(fileType),
+      data: { path: path, content: fileContent },
     })));
-  }
-
-  mapTypeToIcon(fileType?: FileType): string {
-    switch (fileType) {
-      case FileType.PY:
-      case FileType.JSON:
-      case FileType.TEX:
-      case FileType.CSV:
-        return 'hero-document-text';
-      case FileType.BMP:
-      case FileType.JPEG:
-      case FileType.JPG:
-      case FileType.PNG:
-        return 'hero-photograph';
-      case FileType.MD:
-        return 'hero-book-open';
-      default:
-        return 'hero-document';
-    }
   }
 
   mapFileTypeToTabType(fileType?: FileType): TabType {
     switch (fileType) {
-      case FileType.PY:
-      case FileType.JSON:
-      case FileType.TEX:
-      case FileType.CSV:
-        return 'CODE';
-      case FileType.BMP:
-      case FileType.JPEG:
-      case FileType.JPG:
-      case FileType.PNG:
-        return 'IMAGE';
-      case FileType.MD:
-        return 'MARKDOWN'
-      case FileType.HINT:
-        return 'HINT'
+      case FileType.IMAGE: return 'IMAGE';
+      case FileType.PROGRAMMING_LANGUAGE: return 'CODE';
+      case FileType.MARKDOWN: return 'MARKDOWN';
       default:
         return 'CODE';
     }
@@ -113,17 +86,13 @@ export class TabManagementService {
 
   private mapFileTypeToTabGroup(fileType?: FileType): string {
     switch (fileType) {
-      case FileType.PY:
+      case FileType.PROGRAMMING_LANGUAGE:
       case FileType.JSON:
       case FileType.TEX:
-      case FileType.CSV:
+      case FileType.DATA:
         return 'left';
-      case FileType.MD:
-      case FileType.BMP:
-      case FileType.JPEG:
-      case FileType.JPG:
-      case FileType.PNG:
-      case FileType.HINT:
+      case FileType.IMAGE:
+      case FileType.MARKDOWN:
         return 'right';
       default:
         return 'left';

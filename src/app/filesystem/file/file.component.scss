@@ -9,8 +9,12 @@
     justify-content: space-between;
 
     &:hover {
-        background-color: hsl(220 12% 20%);
+        background-color: lighten(#262626, 5%); // Lighten bg color (TODO: Store bg color in global var?)
     }
+}
+
+.file-icons {
+    margin-right: 5px;
 }
 
 .active {
@@ -22,18 +26,20 @@
 }
 
 .file-heading {
-    padding-left: 16px;
+    padding-left: 20px;
     display: flex;
-}
-
-.file:hover > .common-actions {
-    display: inline-block;
+    align-items: center;
 }
 
 .common-actions {
     display: none;
+    position: absolute;
+    z-index: 99;
 }
 
+.show {
+    display: inline-block !important;
+}
 
 .file-type-image {
     color: green;
@@ -47,3 +53,4 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+

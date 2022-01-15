@@ -16,7 +16,9 @@ import { AngularSplitModule} from 'angular-split';
 import {GuidedTourModule, GuidedTourService} from 'ngx-guided-tour';
 import { MarkdownModule, MarkedOptions, MarkedRenderer } from "ngx-markdown";
 import { NgIconsModule } from '@ng-icons/core';
+import { SharedModule } from './shared/shared.module';
 import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
+import { LessonModule } from './lesson/lesson.module';
 import { SearchComponent } from './search/search.component';
 import {PyodideService} from 'src/app/pyodide/pyodide.service';
 
@@ -41,6 +43,7 @@ export function markedOptionsFactory(): MarkedOptions {
     FormsModule,
     FilesystemModule,
     UnityModule,
+    SharedModule, 
     HttpClientModule,
     GuidedTourModule,
     NgIconsModule.withIcons({ HeroDocumentText, HeroDocument, HeroX, HeroPhotograph, HeroChip, HeroLightningBolt, HeroBookOpen }),
@@ -51,6 +54,7 @@ export function markedOptionsFactory(): MarkedOptions {
         useFactory: markedOptionsFactory,
       },
     }),
+    LessonModule,
   ],
   providers: [
     GuidedTourService,

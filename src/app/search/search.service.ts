@@ -14,7 +14,7 @@ export class SearchService {
   filePaths: string[] = [
     '/sortierroboter',
     '/sortierroboter/BlueberryData/TrainingData',
-    '/sortierroboter/Glossary',
+    '/sortierroboter/glossary',
     '/sortierroboter/test_files'  //TODO: Remove eventually
   ];
 
@@ -53,8 +53,8 @@ export class SearchService {
           let files = data[1];
           for (const file of files) {
             if (file.name.toLowerCase().includes(searchTerm.toLowerCase())) {
-              let type = this.fsService.getFileType(file.name);
-              matchingEntries.push(<SearchEntry>{file, path, type})
+              const fullPath = `${path}/${file.name}`
+              matchingEntries.push(<SearchEntry>{file: file, path: fullPath});
             }
           }
         }

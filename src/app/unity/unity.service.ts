@@ -1,8 +1,7 @@
 import { Injectable } from '@angular/core'
 import { FilesystemService } from '../filesystem/filesystem.service'
-import { PyodideService } from '../pyodide/pyodide.service'
 import { PythonCallable } from '../python-callable/python-callable.decorator'
-import { UnityBerryDTO } from '../shared/unity.berry.dto'
+import { UnityBerryDTO } from '../shared/unity/unity.berry.dto'
 
 @Injectable({
   providedIn: 'root',

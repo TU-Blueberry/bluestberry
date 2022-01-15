@@ -8,20 +8,33 @@
     }
 }
 
-.disabled {
-    color: grey;
-
-    &:hover {
-        color: grey;
-        cursor: default;
-    }
-}
-
 label:hover {
     cursor: pointer;
 }
 
 .common-actions {
     display: flex;
+    flex-direction: column;
     justify-content: space-evenly;
+    background-color: #1f1f1f;
+    border-radius: 5px;
+    max-height: 400px;
+    overflow-y: auto;
+    width: 300px;
+    color: white;
+}
+
+.message, .entry {
+    padding: 15px;
+    text-overflow: ellipsis;
+}
+
+.message:hover {
+    cursor: initial;
+}
+
+.entry:hover {  
+    background-color: #333333;
+    cursor: pointer;
+    border-radius: 5px;
 }
