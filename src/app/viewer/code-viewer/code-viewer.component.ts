@@ -6,6 +6,7 @@ import ICodeEditor = editor.ICodeEditor
 import { FileTabDirective } from 'src/app/tab/file-tab.directive'
 import { Subject } from 'rxjs'
 import { concatMap, debounceTime, switchMap, tap } from 'rxjs/operators'
+import { TabManagementService } from 'src/app/tab/tab-management.service';
 
 @Component({
   selector: 'app-code-viewer',
@@ -28,7 +29,8 @@ export class CodeViewerComponent implements OnInit {
   saveSubject = new Subject<void>()
   constructor(
     private pyodideService: PyodideService,
-    private fileTabDirective: FileTabDirective
+    private fileTabDirective: FileTabDirective,
+    private tabManagementService: TabManagementService
   ) {}
 
   ngOnInit(): void {
@@ -56,20 +58,16 @@ export class CodeViewerComponent implements OnInit {
   executeCode(): void {
     
     this.pyodideService.runCode(this.code).subscribe(_ => {
-      
       this.pyodideService.getGlobal('plotly_output').subscribe(plotlyOutput => {
         
         if(plotlyOutput.length > 0) {
 
-          const html = plotlyOutput[0];
-          console.log(plotlyOutput);
+          const encodedString = (new TextEncoder()).encode(plotlyOutput.toString())
+          this.tabManagementService.openPlotly(encodedString)
+
         }
-
-
       });
     });
- 
-
   }
 
   editorInit(editor: any) {
