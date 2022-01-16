@@ -1,4 +1,7 @@
 import { Component, Input, OnInit } from '@angular/core'
+// import { listen } from '@codingame/monaco-jsonrpc';
+import * as monaco from 'monaco-editor-core'
+
 import { PyodideService } from 'src/app/pyodide/pyodide.service'
 import { EditorComponent, NgxEditorModel } from 'ngx-monaco-editor'
 import { listen, MessageConnection } from 'vscode-ws-jsonrpc';
@@ -138,7 +141,13 @@ main()
   constructor(
     private pyodideService: PyodideService,
     private fileTabDirective: FileTabDirective
-  ) {}
+  ) {
+    monaco.languages.register({
+      id: 'python',
+      extensions: ['.py', '.pyc', '.jupyter'],
+      aliases: ['Python', 'PYTHON', 'PyLang']
+    });
+  }
 
   ngOnInit(): void {
     this.fileTabDirective.dataChanges.subscribe((data) => {
@@ -167,6 +176,7 @@ main()
   }
 
   editorInit(editor: any) {
+    editor.getModeId = function(){return editor._languageId; }
     this.editor = editor
     MonacoServices.install(editor);
     // create the web socket
@@ -177,6 +187,7 @@ main()
       webSocket,
       onConnection: (connection: MessageConnection) => {
         // create and start the language client
+        
         const languageClient = this.createLanguageClient(connection);
         const disposable = languageClient.start();
         connection.onClose(() => disposable.dispose());
@@ -185,7 +196,7 @@ main()
   }
 
   public createUrl(): string {
-    return 'ws://localhost:3000/sampleServer';
+    return 'ws://localhost:3000/python';
   }
   
 
