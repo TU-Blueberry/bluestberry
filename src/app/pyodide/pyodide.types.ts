@@ -15,6 +15,7 @@ export enum MessageType {
   GET_GLOBAL = 'GET_GLOBAL',
   SETUP_PYTHON_CALLABLE = 'SETUP_PYTHON_CALLABLE',
   PYTHON_CALLABLE = 'PYTHON_CALLABLE',
+  SET_PYODIDE_LOCATION = 'SET_PYODIDE_LOCATION',
 }
 
 export type MessageData = ExecutionRequestData | GlobalRequestData | PythonCallableData | string | string[];

@@ -10,7 +10,6 @@ import {
   PythonCallableData
 } from 'src/app/pyodide/pyodide.types';
 
-importScripts("/assets/pyodide/pyodide.js");
 
 const DEFAULT_LIBS = ['micropip'];
 const results$ = new Subject<any>();
@@ -20,7 +19,7 @@ const stdErr$ = new ReplaySubject<string>(1000);
 const afterExecution$ = new Subject<void>();
 const pythonCallable$ = new Subject<PythonCallableData>();
 let _modulePaths: string[] = [];
-const pyodide = initPyodide();
+let pyodide: Observable<Pyodide>;
 
 const messageMapper = (type: MessageType) => map(data => ({ type, data }));
 
@@ -39,6 +38,10 @@ merge(
 addEventListener('message', ({ data }: { data: PyodideWorkerMessage }) => {
   console.log('got message in worker: ', data);
   switch (data.type) {
+    case MessageType.SET_PYODIDE_LOCATION:
+      importScripts(data.data as string);
+      pyodide = initPyodide();
+      break;
     case MessageType.EXECUTE:
       runCode((data.data as ExecutionRequestData).code).subscribe();
       break;
