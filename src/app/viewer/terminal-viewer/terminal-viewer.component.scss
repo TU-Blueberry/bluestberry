@@ -1,6 +1,10 @@
+.terminal-wrapper {
+  height: inherit;
+}
+
 .terminal {
   padding: 10px;
-  height: 240px;
+  height: inherit;
   resize: none;
   background: #262626;
   border: 1px solid #424242;
