@@ -26,7 +26,7 @@ export class PyodideService {
       this.worker.onmessage = ({ data }) => {
         this.onMessageListener$.next(data);
       };
-      this.worker.postMessage({ type: MessageType.SET_PYODIDE_LOCATION, data: location.prepareExternalUrl('/assets/pyodide/pyodide.js')})
+      this.worker.postMessage({ type: MessageType.SET_PYODIDE_LOCATION, data: location.prepareExternalUrl('/assets/pyodide')})
     } else {
       console.error('WebWorkers not supported by this Environment...');
     }
