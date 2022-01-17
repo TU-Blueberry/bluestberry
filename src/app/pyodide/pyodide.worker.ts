@@ -39,8 +39,8 @@ addEventListener('message', ({ data }: { data: PyodideWorkerMessage }) => {
   console.log('got message in worker: ', data);
   switch (data.type) {
     case MessageType.SET_PYODIDE_LOCATION:
-      importScripts(data.data as string);
-      pyodide = initPyodide();
+      importScripts(`${data.data}/pyodide.js`);
+      pyodide = initPyodide(data.data as string);
       break;
     case MessageType.EXECUTE:
       runCode((data.data as ExecutionRequestData).code).subscribe();
@@ -62,9 +62,9 @@ addEventListener('message', ({ data }: { data: PyodideWorkerMessage }) => {
 });
 
 
-function initPyodide(): Observable<Pyodide> {
+function initPyodide(pyodideLocation: string): Observable<Pyodide> {
   return from(loadPyodide({
-      indexURL: '/assets/pyodide',
+      indexURL: pyodideLocation,
       stdout: (text) => {
         stdOut$.next(text)
       },
