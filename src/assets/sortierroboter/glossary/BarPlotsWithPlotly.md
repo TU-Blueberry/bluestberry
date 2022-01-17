@@ -11,7 +11,7 @@ fig = px.bar(df, x='year', y='pop')
 fig.show()
 ```
 
-![easyBarPlot]
+![medium-image][easyBarPlot]
 
 Beispiel von https://plotly.com/python/bar-charts/
 
@@ -59,7 +59,7 @@ fig = go.Figure(data=[
 fig.update_layout(barmode='group')
 fig.show()
 ```
-![twoBarPlot]
+![medium-image][twoBarPlot]
 
 Beispiel von https://plotly.com/python/bar-charts/
 
@@ -89,7 +89,7 @@ fig.add_trace(go.Bar(x=years, y=[300, 400, 700],
 fig.show()
 ```
 
-![moreBarPlots]
+![medium-image][moreBarPlots]
 
 Beispiel von https://plotly.com/python/bar-charts/
 

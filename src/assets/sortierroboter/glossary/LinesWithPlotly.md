@@ -14,7 +14,7 @@ fig = px.line(df, x="year", y="lifeExp", title='Life expectancy in Canada')
 fig.show()
 ```
 
-![easyLinePlot]
+![small-image][easyLinePlot]
 
 Beispiel von https://plotly.com/python/line-charts/
 
@@ -78,7 +78,7 @@ fig.add_trace(go.Scatter(x=x, y=[18, 23, None, 15, 13, 3, 18, None, 27, 11, 14, 
 fig.show()
 ```
 
-![moreLinesLinePlot]
+![medium-image][moreLinesLinePlot]
 
 
 Beispiel von https://plotly.com/python/line-charts/ mit abgeänderten eigenen Werten.
