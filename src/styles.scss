@@ -108,7 +108,33 @@ body {
   }
 }
 
-/** Glossary start */
+/** Icon bar for hint and image viewer */
+.footer-bar {
+  position: absolute;
+
+  display: flex;
+  justify-items: center;
+  justify-content: center;
+
+  padding-top: 5px;
+  padding-bottom: 5px;
+  bottom: 10px;
+}
+
+.footer-bar-button {
+  height: 24px;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 50%;
+  color: #ffffff66;
+  background-color: rgb(46, 49, 56);
+
+  &:hover {
+    background-color: rgb(66, 70, 80);
+    cursor: pointer;
+    color: rgb(240, 240, 240);
+  }
+}
 
 .glossary-image {
   height: 150px;
@@ -116,8 +142,7 @@ body {
 
 /** Glossary end */
 
-/** ngx-guided-tour start */
-
+/** ngx-guided-tour */
 .tour-block {
   border-radius: 10px;
 }
@@ -136,4 +161,4 @@ $tour-back-button-color : white;                // Back button color.
 
 @import '../node_modules/ngx-guided-tour/scss/guided-tour-base-theme.scss';
 
-/** ngx-guided-tour start end */
+/** ngx-guided-tour end */
