@@ -18,7 +18,7 @@ import {FileTabDirective} from 'src/app/tab/file-tab.directive';
 export class ImageViewerComponent implements OnInit {
 
   @ViewChild('imageLoaded', { read: ElementRef, static: false })
-  imageLoaded: ElementRef;
+  imageLoaded!: ElementRef;
 
   constructor(private domSanitizer: DomSanitizer,
               private fileTabDirective: FileTabDirective) {
@@ -89,11 +89,23 @@ export class ImageViewerComponent implements OnInit {
 
   mouseClick(event: any): void {
     if(this._zoom_in) {
-      this._zoom_factor += this._zoom_step;
+      this.increaseSize();
     } else {
-      this._zoom_factor -= this._zoom_step;
+      this.decreaseSize();
     }
+  }
 
+  increaseSize(): void {
+    this._zoom_factor += this._zoom_step;
+    this.setNewSize();
+  }
+
+  decreaseSize(): void {
+    this._zoom_factor -= this._zoom_step;
+    this.setNewSize();
+  }
+
+  setNewSize(): void {
     this._image_width = this._original_image_width + this._zoom_factor;
     this._image_height = this._image_width / this._original_image_ratio;
 

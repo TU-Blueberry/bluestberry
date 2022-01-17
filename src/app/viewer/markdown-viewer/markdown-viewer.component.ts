@@ -21,13 +21,28 @@ export class MarkdownViewerComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    /* Sets class for images which is defined in styles.css */
+    /**
+     * Example how to overwrite the default behavior of the ngx-markdown renderer.
+     * Defaults are defined in node_modules/marked/src/Renderer.js.
+     *
+     * Currently 'text' is misused for class assignment to apply a specific styling.
+     * The corresponding classes must be defined in styles.scss.
+    **/
     this.markdownService.renderer.image = (href, title, text) => {
-      let out = '<img class="glossary-image"  src="' + href + '" alt="' + text + '"';
+      if (href === null) {
+        return '<p style="color: #cc0000">Kein href-Argument übergeben!</p>';
+      }
 
+      let out = '<img src="' + href + '" alt="Hier sollte eigentlich ein Bild sein!"';
+
+      if (text) {
+        out += ' class="' + text + '"'
+      }
       if (title) {
         out += ' title="' + title + '"';
       }
+      out += '>'
+
       return out;
     }
 
