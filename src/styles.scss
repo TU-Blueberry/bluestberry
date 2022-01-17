@@ -136,11 +136,25 @@ body {
   }
 }
 
-.glossary-image {
-  height: 150px;
+/** Markdown styling */
+.markdown-entry a {
+  color: #c6c6c6;
 }
 
-/** Glossary end */
+.small-image {
+  max-width: 25%;
+  height: auto;
+}
+
+.medium-image {
+  max-width: 50%;
+  height: auto;
+}
+
+.big-image {
+  max-width: 75%;
+  height: auto;
+}
 
 /** ngx-guided-tour */
 .tour-block {
