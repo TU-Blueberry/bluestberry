@@ -1,0 +1,20 @@
+{
+  "open": [
+    { "path": "code.py", "on": "left" },
+    { "path": "unity", "on": "right" }
+  ],
+  "type": "LESSON",
+  "tabSizes": [10, 45, 45],
+  "unityEntryPoint": "/assets/unity/berrysort/Build/berrysort.json",
+  "name": "sortierroboter",
+  "hidden": [
+    "test_files/username.csv",
+    "test_files/subfolder1",
+    "BlueberryData/TestData",
+    "BlueberryData/NoisyTestData",
+    "hint_files"
+  ],
+  "external": [],
+  "readonly": ["BlueberryData/TrainingData", "hint_files"],
+  "modules": ["libs"]
+}

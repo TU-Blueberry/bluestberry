@@ -1,0 +1,1370 @@
+
+- item1:
+    question_id: 1
+    following_answer_id: 100
+    content: Ich brauche Hilfe bei der Visualisierung.
+
+- item400001:
+    question_id: 400000
+    following_answer_id: 400001
+    content: Was ist ein Klassifikator?    
+
+- item400002:
+    answer_id: 400001 
+    question_options: [400001]
+    content: |
+        Ein Klassifikator ist ein Verfahren zur Einteilung von Objekten oder Situationen in verschiedene     Klassen. Hier in diesem Beispiel wird der Klassifikator eingesetzt, um gute Blaubeeren von schlechten Blaubeeren zu unterscheiden, das hei�t die Einteilung der Blaubeeren in die Klassen �gut� und �schlecht�.
+
+- item400003:
+    question_id: 400001
+    following_answer_id: 400002
+    content:  Welche Klassifikatoren gibt es?
+
+- item400004:
+    answer_id: 400002
+    question_options: [400002, 400003]
+    content: |
+        Es gibt viele Klassifikatoren, einige Beispiele sind Random Forests, Neuronale Netze, Support Vector Machines oder auch Clusteringverfahren. 
+
+- item400005:
+    question_id: 400002
+    following_answer_id: 400003
+    content: |
+        Ich m�chte mehr dar�ber erfahren.
+
+- item400006:
+    answer_id: 400003
+    question_options: []
+    content: |
+        Dann sieh dir gerne diese Seiten an: link< https://deacademic.com/dic.nsf/dewiki/772371/Klassifikator_(Informatik)/>.
+
+- item400007:
+    question_id: 400003
+    following_answer_id: 400004
+    content: |
+        Ich brauche Hilfe bei der Methode codeinline<hyperparameters_search/>.
+
+- item400008:
+    answer_id: 400004
+    question_options: [400004, 400005, 400006]
+    content: |
+        F�r diese Methode solltest du dich f�r ein Modell, das hei�t f�r einen Klassifikator entscheiden.
+
+- item400009:
+    question_id: 400004
+    following_answer_id: 400005
+    content: |
+        Ich m�chte einen Random Forest erstellen.
+
+- item400010:
+    question_id: 400005
+    following_answer_id: 
+    content: |
+        Ich m�chte eine Support Vector Machine nutzen.
+
+- item400011:
+    question_id: 400006
+    following_answer_id: 
+    content: |
+        Ich m�chte ein Neuronales Netz erstellen.
+
+- item400012:
+    answer_id: 400005
+    question_options: [400007, 400008, 400009]
+    content: |
+        F�r den RandomForestClassifier kannst du dir hier die Dokumentation anschauen: link<https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html/>.
+
+- item400013:
+    question_id: 400007
+    following_answer_id: 400006
+    content: |
+        Leider Hilft mir die Dokumentation nicht weiter.
+
+- item400014:
+    answer_id: 400006
+    question_options: [400008, 400009, 400010]
+    content: |
+        Okay, im Rahmen dieser Funktion soll ein Modell erstellt werden, daher soll die Funktion RandomForestClassifier aufgerufen werden.
+
+- item400015:
+    question_id: 400008
+    following_answer_id: 400007
+    content: |
+        Wie rufe ich diese Funktion auf?
+    
+- item400016:
+    answer_id: 400007
+    question_options: [400009, 400010]
+    content: |
+        Zum Beispiel mit code<model = RandomForestClassifier()/>, wobei einige der Parameter noch gesetzt werden sollten.
+
+- item400017:
+    question_id: 400009
+    following_answer_id: 400008
+    content: |
+        Welche Parameter sollte ich setzen?
+
+- item400018:
+    answer_id: 400008
+    question_options: [400010]
+    content: |
+        Daf�r solltest du dir besonders die Parameter n_estimators, max_depth, min_samples_split, min_samples_leaf, random_state anschauen.
+
+- item400019:
+    question_id: 400010
+    following_answer_id: 400009
+    content: |
+        Mir ist leider weiterhin nicht klar wie ich damit umgehen soll.
+
+- item400020:
+    answer_id: 400009
+    question_options: [400011, 400014, 400016, 400019, 400021]
+    content: |
+        Bei welchem der Parameter hast du Probleme?
+
+- item400021:
+    question_id: 400011
+    following_answer_id: 400010
+    content: |
+        Bei dem Parameter n_estimators.
+
+- item400022:
+    answer_id: 400010
+    question_options: [400012]
+    content: |
+        Mit diesem Parameter wird die Anzahl der B�ume in dem Random Forest bestimmt. Die Eingabe ist ein int und per default 100.
+
+- item400023:
+    question_id: 400012
+    following_answer_id: 400011
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?
+
+- item400024:
+    answer_id: 400011
+    question_options: [400013, 400024]
+    content: |
+        In diesem Fall gilt, dass der Random Forest seine Vorteile hat, da viele Entscheidungsb�ume erstellt werden. Daher sind viele B�ume oft besser als wenige B�ume, trotzdem besteht bei vielen B�umen die Gefahr des Overfittings. Ein sinnvoller Wert kann n_estimators=300 sein.
+
+- item400025:
+    question_id: 400013
+    following_answer_id: 400012
+    content: |
+        Was bedeutet Overfitting?
+
+- item400026:
+    answer_id: 400012
+    question_options: [400024, 400026, 400031, 400076]
+    content: |
+        Overfitting bedeutet �beranpassung, es bedeutet hier also, dass das Modell im Fall von Overfitting die Testdaten auswendig lernt. Im Glossar,  kannst du mehr zu dem Thema lesen.
+
+- item400027:
+    question_id: 400014
+    following_answer_id: 400013
+    content: |
+        Bei dem Parameter max_depth.
+
+- item400028:
+    answer_id: 400013
+    question_options: [400015, 400026, 400076]
+    content: |
+        Hier wird die maximale Tiefe der B�ume gesetzt. Die Eingabe ist ein int.
+
+- item400029:
+    question_id: 400015
+    following_answer_id: 400014
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?
+
+- item400030:
+    answer_id: 400014
+    question_options: [400026, 400076]
+    content: |
+        Ein sinnvoller Wert ist gro� genug, um gen�gend genaue Informationen zu erhalten aber klein genug, um Overfitting zu verhindern. Zum Beispiel max_depth=15.
+
+- item400031:
+    question_id: 400016
+    following_answer_id: 400015
+    content: |
+        Bei dem Parameter min_samples_split.
+
+- item400032:
+    answer_id: 400015
+    question_options: [400017, 400018, 400026, 400076]
+    content: |
+        Dieser Parameter beschreibt die minimale Anzahl an Beobachtungen, die es braucht, um einen Split in einem inneren Knoten eines Baumes durchzuf�hren. Die Eingabe ist ein int.
+
+- item400033:
+    question_id: 400017
+    following_answer_id: 400016
+    content: |
+        Was ist ein Split?
+
+- item400034:
+    answer_id: 400016
+    question_options: [400018, 400026, 400076]
+    content: |
+        Ein Split bezeichnet die Aufteilung eines Knotens. Im Glossar kannst du mehr dr�ber lesen.
+
+- item400035:
+    question_id: 400018
+    following_answer_id: 400017
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?
+
+- item400036:
+    answer_id: 400017
+    question_options: [400026, 400076]
+    content: |
+        Ein Wert, der mindestens 2 betr�gt ist hier sinnvoll, da ansonsten kein Split durchgef�hrt werden muss. Der Wert sollte nicht zu gro� sein, da ansonsten in zu vielen F�llen kein Split durchgef�hrt wird. Sinnvoll ist hier zum Beispiel min_samples_split = 4.
+
+- item400037:
+    question_id: 400019
+    following_answer_id: 400018
+    content: |
+        Bei dem Parameter min_samples_leaf. 
+
+- item400038:
+    answer_id: 400018
+    question_options: [400020, 400026, 400076]
+    content: |
+        Dieser Parameter definiert die minimale Anzahl an Beobachtungen, die ein Blatt der B�ume des Random Forests bilden. Die Eingabe ist ein int.
+
+- item400039:
+    question_id: 400020
+    following_answer_id: 400019
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?
+
+- item400040:
+    answer_id: 400019
+    question_options: [400026, 400076]
+    content: |
+        Sinnvoll kann hier min_samples_leaf=1 sein.
+
+- item400041:
+    question_id: 400021
+    following_answer_id: 400020
+    content: |
+        Bei dem Parameter random_state.
+
+- item400042:
+    answer_id: 400020
+    question_options: [400022, 400023, 400026, 400076]
+    content: |
+        Dieser Parameter kontrolliert die Zuf�lligkeit des Bootstrappings. Die Eingabe ist ein int, eine Instanz von RandomState oder None.
+
+- item400043:
+    question_id: 400022
+    following_answer_id: 400021
+    content: |
+        Was ist Bootstrapping?
+
+- item400044:
+    answer_id: 400021
+    question_options: [400023, 400026, 400076]
+    content: |
+        Bootstrapping ist eine Methode, um Trainings- und Testdaten auszuw�hlen. Dabei wird aus der Stichprobe aller Daten mit Zur�cklegen gezogen. Im Glossar kannst du mehr dr�ber lesen
+
+- item400045:
+    question_id: 400023
+    following_answer_id: 400022
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?
+
+- item400046:
+    answer_id: 400022
+    question_options: [400024, 400026, 400076]
+    content: |
+        Sinnvoll ist hier random_state=RANDOM_STATE.
+
+- item400047:
+    question_id: 400024
+    following_answer_id: 400023
+    content: |
+        Wie finde ich denn jetzt geeignete Parameter f�r den RandomForestClassifier?
+
+- item400048:
+    answer_id: 400023
+    question_options: [400025, 400026, 400027, 400031]
+    content: |
+        Daf�r sind die Funktionen RepeatedStratifiedKFold und RandomizedSearchCV hilfreich. Hier der Link zu den jeweiligen Dokumentationen. Es kann aber auch eine M�glichkeit in hyperparameters_search geben, in der die Parameter festgelegt werden.
+
+- item400049:
+    question_id: 400025
+    following_answer_id: 400024
+    content: |
+        Ich m�chte die Parameter selbst festlegen k�nnen.
+
+- item400050:
+    answer_id: 400024
+    question_options: [400026]
+    content: |
+        Um die Parameter selbst festzulegen, nutze die Funktion RandomForestClassifier und weise den Parametern manuell Werte zu.
+
+- item400051:
+    question_id: 400026
+    following_answer_id: 400025
+    content: |
+        Wie nutze ich den RandomForestClassifier.
+
+- item400052:
+    answer_id: 400025
+    question_options: [400027, 400031, 400076]
+    content: |
+        Genutzt werden kann der Klassifizierer, um ein Modell zu erstellen: code<model = RandomForestClassifier(random_state=RANDOM_STATE, n_estimators=300, min_samples_split=4, min_samples_leaf=1, max_depth=15)>.
+
+- item400053:
+    question_id: 400027
+    following_answer_id: 400026
+    content: |
+        Wie halte ich die beiden M�glichkeiten offen sowohl von Hand die Parameter zu w�hlen als auch nach geeigneten Parametern zu suchen?
+
+- item400054:
+    answer_id: 400026
+    question_options: [400028, 400029, 400076]
+    content: |
+        Die Funktion hyperparameters_search kann daf�r einen booleschen Eingabeparameter erhalten.
+
+- item400055:
+    question_id: 400028
+    following_answer_id: 400027
+    content: |
+        Wie kann das aussehen?
+
+- item400056:
+    answer_id: 400027
+    question_options: [400029, 400031, 400076]
+    content: |
+        Das kann wie folgt aussehen: code<hyperparameters_search(fixed_hyperparams=False)/>. Per Default ist der Parameter hier False.
+
+- item400057:
+    question_id: 400029
+    following_answer_id: 400028
+    content: |
+        Wie verwende ich dann diesen Parameter?
+
+- item400058:
+    answer_id: 400028
+    question_options: [400030, 400031, 400076]
+    content: |
+        Dieser Parameter kann dazu verwendet werden, um in einer if-Bedingung abgefragt zu werden.
+
+- item400059:
+    question_id: 400030
+    following_answer_id: 400029
+    content: |
+        Wie kann diese Bedingung aussehen?
+
+- item400060:
+    answer_id: 400029
+    question_options: [400031, 400076]
+    content: |
+        Diese Bedingung kann zum Beispiel so aussehen: code<if (fixed_hyperparams)/>:. Wenn die Parameter also manuell festgelegt werden sollen, kann hier der das Modell erstellt werden und zur�ckgegeben werden.
+
+- item400061:
+    question_id: 400031
+    following_answer_id: 400030
+    content: |
+        Wie gestalte ich die Suche nach geeigneten Parametern?
+
+- item400062:
+    answer_id: 400030
+    question_options: [400032]
+    content: |
+        Zuerst solltest du w�hlen, nach welchen Parametern hier gesucht werden soll.
+
+- item400063:
+    question_id: 400032
+    following_answer_id: 400031
+    content: |
+        Welche Parameter sind hier sinnvoll?
+
+- item400064:
+    answer_id: 400031
+    question_options: [400033, 400040]
+    content: |
+        Sinnvoll ist es zum Beispiel verschiedene Werte f�r n_estimators, max_depth, min_samples_split, min_samples_leaf durchzuprobieren.
+
+- item400065:
+    question_id: 400033
+    following_answer_id: 400032
+    content: |
+        Welcher Wertebereich ist f�r n_estimators geeignet?
+
+- item400066:
+    answer_id: 400032
+    question_options: [400034, 400035]
+    content: |
+        Hier kannst du selbst entscheiden welchen Wertebereich du betrachten m�chtest. Beachte aber je gr��er die betrachteten Intervalle sind, desto mehr verl�ngert sich die Laufzeit.
+
+- item400067:
+    question_id: 400034
+    following_answer_id: 400033
+    content: |
+        Kannst du mir trotzdem einen Wertebereich vorgeben?
+
+- item400068:
+    answer_id: 400033
+    question_options: [400035, 400040]
+    content: |
+        Der Wertebereich f�r n_estimators kann zum Beispiel zwischen 10 und 700 liegen. Dabei kann aber auch in gr��eren Schritten vorgegangen werden.
+
+- item400069:
+    question_id: 400035
+    following_answer_id: 400034
+    content: |
+        Wie betrachte ich denn diesen Wertebereich mit gr��eren Schritten?
+
+- item400070:
+    answer_id: 400034
+    question_options: [400036]
+    content: |
+        �ber den Wertebereich kannst du mit einer for-Schleife laufen. Um einen Start- und Zielwert, sowie die Gr��e der Schritte zu definieren, sieh dir die Funktion numpy.linspace an.
+
+- item400071:
+    question_id: 400036
+    following_answer_id: 400035
+    content: |
+        Mit welchem der Parameter gebe ich die Schrittgr��e vor?
+
+- item400072:
+    answer_id: 400035
+    question_options: [400037, 400076]
+    content: |
+        Der Parameter num gibt an wie viele Werte generiert werden sollen. Dar�ber kann die Schrittgr��e angepasst werden.
+
+- item400073:
+    question_id: 400037
+    following_answer_id: 400036
+    content: |
+        Kannst du mir ein Beispiel daf�r geben?
+
+- item400074:
+    answer_id: 400036
+    question_options: [400038, 400039]
+    content: |
+        Ein Beispiel w�re code<np.linspace(10, 700, num=7)/>, hierbei ist die Ausgabe code<array([ 10., 125., 240., 355., 470., 585., 700.])/> und die Schrittgr��e 115.
+
+- item400075:
+    question_id: 400038
+    following_answer_id: 400037
+    content: |
+        Wie definiere ich denn den Wertebereich mit linspace und einer for-Schleife?
+
+- item400076:
+    answer_id: 400037
+    question_options: [400039, 400040, 400076]
+    content: |
+        Ein Beispiel ist code<parameters = {"n_estimators": [int(x) for x in np.linspace(start=10, stop=700, num=7)]}/>.
+
+- item400077:
+    question_id: 400039
+    following_answer_id: 400038
+    content: |
+        Wie kann ich vorgehen, um dann Wertebereiche weiterer Parameter zu betrachten?
+
+- item400078:
+    answer_id: 400038
+    question_options: [400040, 400041]
+    content: |
+        Die Variable parameters l�sst sich analog zu n_estimators erweitern, nicht immer muss aber mit einer for-Schleife agiert werden.
+
+- item400079:
+    question_id: 400040
+    following_answer_id: 400039
+    content: |
+        Kannst du mir zeigen, wie das aussehen kann bei max_depth?
+
+- item400080:
+    answer_id: 400039
+    question_options: [400041, 400074, 400076]
+    content: |
+        F�r die beiden Parameter n_estimators und max_depth kann das aussehen wie folgt:  code<parameters = {"n_estimators": [int(x) for x in np.linspace(start=10, stop=700, num=7)], "max_depth": [5, 10, 20]}/>. 
+        F�r die Parameter min_samples_leaf und min_samples_split kann analog dazu vorgegangen werden.
+
+- item400081:
+    question_id: 400041
+    following_answer_id: 400040
+    content: |
+        Nachdem die Werte der Parameter in parameters gespeichert sind, wie wird dann nach geeigneten Parameter gesucht?
+
+- item400082:
+    answer_id: 400040
+    question_options: [400042, 400050, 400074, 400076]
+    content: |
+        Daf�r sind die Funktionen RepeatedStratifiedKFold und RandomizedSearchCV hilfreich. Hier der Link zu den jeweiligen Dokumentationen: link<https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RepeatedStratifiedKFold.html/> und link<https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html/>.
+
+- item400083:
+    question_id: 400042
+    following_answer_id: 400041
+    content: |
+        Was macht die Funktion RepeatedStratifiedKFold?
+
+- item400084:
+    answer_id: 400041
+    question_options: [400042, 400044, 400046, 400048, 400050]
+    content: |
+        RepeatedStratifiedKFold ist eine Form der Kreuzvalidierung. Wenn du mehr dar�ber erfahren m�chtest, kannst du im Glossar nachlesen.
+
+- item400085:
+    question_id: 400043
+    following_answer_id: 400042
+    content: |
+        Was ist Kreuzvalidierung?
+
+- item400086:
+    answer_id: 400042
+    question_options: [400044, 400046, 400048, 400050]
+    content: |
+        link<https://de.mathworks.com/discovery/cross-validation.html/>. Oder lies im Glossar nach.
+
+- item400087:
+    question_id: 400044
+    following_answer_id: 400043
+    content: |
+        Kannst du mir den Parameter n_splits erkl�ren?
+
+- item400088:
+    answer_id: 400043
+    question_options: [400045, 400046, 400048, 400050]
+    content: |
+        Dieser Parameter gibt die Anzahl an Faltungen an. Die Eingabe ist ein int.
+
+- item400089:
+    question_id: 400045
+    following_answer_id: 400044
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?    
+
+- item400090:
+    answer_id: 400044
+    question_options: [400046, 400048, 400050]
+    content: |
+        Sinnvoll ist hier zum Beispiel n_splits=5.
+
+- item400091:
+    question_id: 400046
+    following_answer_id: 400045
+    content: |
+        Kannst du mir den Parameter n_repeats erkl�ren?
+
+- item400092:
+    answer_id: 400045
+    question_options: [400047, 400048, 400050]
+    content: |
+        Dieser Parameter gibt an, wie h�ufig die Kreuzvalidierung wiederholt wird. Die Eingabe ist ein int.
+
+- item400093:
+    question_id: 400047
+    following_answer_id: 400046
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?
+
+- item400094:
+    answer_id: 400046
+    question_options: [400048, 400050]
+    content: |
+        Sinnvoll ist hier zum Beispiel n_repeats=5.
+
+- item400095:
+    question_id: 400048
+    following_answer_id: 400047
+    content: |
+        Kannst du mir den Parameter random_state erkl�ren?
+
+- item400096:
+    answer_id: 400047
+    question_options: [400049, 400050, 400074]
+    content: |
+        Dieser Parameter kontrolliert die Generierung der Zufallswerte f�r jede Wiederholung. Die Eingabe ist ein int, eine Instanz von RandomState oder None.
+
+- item400097:
+    question_id: 400049
+    following_answer_id: 400048
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?
+
+- item400098:
+    answer_id: 400048
+    question_options: [400050, 400051]
+    content: |    
+        Sinnvoll ist hier random_state=RANDOM_STATE.
+
+- item400099:
+    question_id: 400050
+    following_answer_id: 400049
+    content: |
+        Wie kann der Aufruf von RepeatedStratifiedKFold aussehen?
+
+- item400100:
+    answer_id: 400049
+    question_options: [400051, 400074, 400076]
+    content: |
+        Der Aufruf kann zum Beispiel so aussehen: 
+        code<RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=RANDOM_STATE)/>. Um das Ergebnis in der Funktion RandomizedSearchCV verwenden zu k�nnen, sollte eine Variable angelegt werden.
+
+
+- item400101:
+    question_id: 400051
+    following_answer_id: 400050
+    content: |
+        Was macht die Funktion RandomizedSearchCV?
+
+- item400102:
+    answer_id: 400050
+    question_options: [400052]
+    content: |
+        Diese Funktion sucht randomisiert nach geeigneten Parametern f�r den Klassifikator.
+
+- item400103:
+    question_id: 400052
+    following_answer_id: 400051
+    content: |
+        Welche Parameter sollte ich setzen?
+
+- item400104:
+    answer_id: 400051
+    question_options: [400053, 400074]
+    content: |
+        Daf�r solltest du dir besonders die Parameter estimator, scoring, param_distributions, n_iter, cv, verbose, n_jobs, random_state anschauen. 
+
+- item400105:
+    question_id: 400053
+    following_answer_id: 400052
+    content: |
+        Mir ist leider weiterhin nicht klar wie ich damit umgehen soll.
+
+- item400106:
+    answer_id: 400052
+    question_options: [400054, 400056, 400060, 400062, 400064, 400067, 400069, 400071]
+    content: |
+        Bei welchem der Parameter hast du Probleme?
+
+- item400107:
+    question_id: 400054
+    following_answer_id: 400053
+    content: |
+        Bei dem Parameter estimator.
+
+- item400108:
+    answer_id: 400053
+    question_options: [400055]
+    content: |
+        Hier sollte die Eingabe der Klassifizierer sein. Daf�r ist es n�tzlich ein Modell zu erstellen, zum Beispiel: code<randfor = RandomForestClassifier(random_state=RANDOM_STATE)/>.
+
+- item400109:
+    question_id: 400055
+    following_answer_id: 400054
+    content: |
+        Was gebe ich dann f�r estimator an?
+
+- item400110:
+    answer_id: 400054
+    question_options: [400056, 400060, 400062, 400064, 400067, 400069, 400071]
+    content: |
+        Diesen Parameter kannst du als estimator=randfor setzen.
+
+- item400111:
+    question_id: 400056
+    following_answer_id: 400055
+    content: |
+        Bei dem Parameter scoring.
+
+- item400112:
+    answer_id: 400055
+    question_options: [400057]
+    content: |
+        Dieser Parameter gibt die Strategie an, nach der das Modell evaluiert werden soll.
+
+- item400113:
+    question_id: 400057
+    following_answer_id: 400056
+    content: |
+        Was ist eine sinnvolle Eingabe f�r diesen Parameter?
+
+- item400114:
+    answer_id: 400056
+    question_options: [400058, 400060]
+    content: |
+        Diesen Parameter kannst du zum Beispiel als scoring="f1_macro" setzen.
+
+- item400115:
+    question_id: 400058
+    following_answer_id: 400057
+    content: |
+        Was bedeutet f1_macro?
+
+- item400116:
+    answer_id: 400057
+    question_options: [400059]
+    content: |
+        f1_macro bedeutet, dass der f1_score f�r jedes Label bestimmt wird als Mittelwert der Metriken.
+
+- item400117:
+    question_id: 400059
+    following_answer_id: 400058
+    content: |
+        Was ist der f1_score?
+
+- item400118:
+    answer_id: 400058
+    question_options: []
+    content: |
+        Der f1_score bestimmt G�tema�e wie zum Beispiel Sensitivity und Precision. Um mehr dar�ber zu erfahren, lies im Glossar nach.
+
+- item400119:
+    question_id: 400060
+    following_answer_id: 400059
+    content: |
+        Bei dem Parameter param_distributions.
+
+- item400120:
+    answer_id: 400059
+    question_options: [400061]
+    content: |
+        Bei diesem Parameter kommt dein erstelltes Dictionary mit den Parametern zum Einsatz, die du betrachten m�chtest. Falls du noch kein solches Dictionary erstellt hast, kannst du unter �Wie gestalte ich die Suche nach geeigneten Parametern� nachlesen.
+
+- item400121:
+    question_id: 400061
+    following_answer_id: 400060
+    content: |
+        Wie setze ich denn diesen Parameter, wenn ich ein Dictionary erstellt habe?
+
+- item400122:
+    answer_id: 400060
+    question_options: []
+    content: |
+        Angenommen das Dictionary oder die Liste mehrerer Dictionaries hat den Namen parameters, dann kannst du param_distributions=parameters setzen.
+
+- item400123:
+    question_id: 400062
+    following_answer_id: 400061
+    content: |
+        Bei dem Parameter n_iter.
+
+- item400124:
+    answer_id: 400061
+    question_options: [400063]
+    content: |
+        Dieser Parameter gibt an, wie viele Parametereinstellungen probiert werden. Die Eingabe ist ein int.
+
+- item400125:
+    question_id: 400063
+    following_answer_id: 400062
+    content: |
+        Welchen Wert kann ich f�r n_iter w�hlen?
+
+- item400126:
+    answer_id: 400062
+    question_options: []
+    content: |
+        Per Default ist n_iter=10. Eine h�here Zahl ist auch m�glich, hier kannst du auch n_iter=25 setzen ohne die Laufzeit stark zu verl�ngern.
+
+- item400127:
+    question_id: 400064
+    following_answer_id: 400063
+    content: |
+        Bei dem Parameter cv.
+
+- item400128:
+    answer_id: 400063
+    question_options: [400065]
+    content: |
+        Dieser Parameter setzt die Strategie, nach der die Kreuzvalidierung vorgenommen wird.
+
+- item400129:
+    question_id: 400065
+    following_answer_id: 400064
+    content: |
+        Wie kann ich diesen Parameter w�hlen?
+
+- item400130:
+    answer_id: 400064
+    question_options: [400066]
+    content: |
+        Wenn du bereits die Funktion RepeatedStratifiedKFold oder eine andere Funktion zur Kreuzvalidierung verwendet hast, dann sollte die Ausgabe der Funktion gleich diesem Parameter gesetzt werden.
+
+- item400131:
+    question_id: 400066
+    following_answer_id: 400065
+    content: |
+        Wie genau sieht das dann aus?
+
+- item400132:
+    answer_id: 400065
+    question_options: []
+    content: |
+        Angenommen das Ergebnis von RepeatedStratifiedKFold wurde als Variable cv gesetzt, dann kannst du den Parameter cv=cv setzen.
+
+- item400133:
+    question_id: 400067
+    following_answer_id: 400066
+    content: |
+        Bei dem Parameter verbose.
+
+- item400134:
+    answer_id: 400066
+    question_options: [400068]
+    content: |
+        Dieser Parameter kontrolliert die Ausf�hrlichkeit. Das bedeutet je h�her der Eingabewert als in int ist, desto mehr Nachrichten werden ausgegeben,
+
+- item400135:
+    question_id: 400068
+    following_answer_id: 400067
+    content: |
+        Wie kann ich diesen Parameter w�hlen?
+
+- item400136:
+    answer_id: 400067
+    question_options: []
+    content: |
+        Du kannst zum Beispiel verbose=50 w�hlen.
+
+- item400137:
+    question_id: 400069
+    following_answer_id: 400068
+    content: |
+        Bei dem Parameter n_jobs.
+
+- item400138:
+    answer_id: 400068
+    question_options: [400070]
+    content: |
+        Dieser Parameter ist zust�ndig daf�r, wie viele Aufgaben parallel durchgef�hrt werden. Die Eingabe ist ein int.
+
+- item400139:
+    question_id: 400070
+    following_answer_id: 400069
+    content: |
+        Wie kann ich diesen Parameter w�hlen?
+
+- item400140:
+    answer_id: 400069
+    question_options: []
+    content: |
+        Du kannst zum Beispiel n_jobs=8 w�hlen, oder auch n_jobs=-1 was bedeutet, dass alle Prozessoren verwendet werden.
+
+- item400141:
+    question_id: 400071
+    following_answer_id: 400070
+    content: |
+        Bei dem Parameter random_state.
+
+- item400142:
+    answer_id: 400070
+    question_options: [400072]
+    content: |
+        Dieser Parameter kontrolliert die Generierung der Zufallswerte. Die Eingabe ist ein int, eine Instanz von RandomState oder None.
+
+- item400143:
+    question_id: 400072
+    following_answer_id: 400071
+    content: |
+        Welcher Wert w�re f�r diesen Parameter sinnvoll?
+
+- item400144:
+    answer_id: 400071
+    question_options: [400073, 400074, 400076]
+    content: |
+        Sinnvoll ist hier code<random_state=RANDOM_STATE/>.
+
+
+- item400145:
+    question_id: 400073
+    following_answer_id: 400072
+    content: |
+        Wie kann der Aufruf von RandomizedSearchCV aussehen?
+
+- item400146:
+    answer_id: 400072
+    question_options: [400074, 400076]
+    content: |
+        Um eine R�ckgabe f�r code<hyperparameters_search/> zu bekommen, sollte das Modell gespeichert werden. Daher kann der Aufruf von code<RandomizedSearchCV/> so aussehen: code<model = RandomizedSearchCV(estimator=randfor, scoring="f1_macro", param_distributions=parameters, n_iter=25, cv=cv, verbose=50, n_jobs=8, random_state=RANDOM_STATE)/>.
+        Dabei ist randfor der Random Forest Klassifikator und parameters die Menge der Parameter mit deren Wertebereich, die betrachtet werden sollen.
+
+- item400147:
+    question_id: 400074
+    following_answer_id: 400073
+    content: |
+        Was sollte ich zur�ckgeben?
+
+- item400148:
+    answer_id: 400073
+    question_options: [400075, 400076]
+    content: |
+        Du solltest hier das Modell zur�ckgeben.
+
+- item400149:
+    question_id: 400075
+    following_answer_id: 400074
+    content: |
+        Wie kann das aussehen?
+
+- item400150:
+    answer_id: 400074
+    question_options: [400076]
+    content: |
+        Die R�ckgabe eines Modells, das als model gespeichert wurde, erfolgt mit code<return model/>.
+ 
+- item400151:
+    question_id: 400076
+    following_answer_id: 400075
+    content: |
+        Ich habe Probleme in der code<main/>.
+
+- item400152:
+    answer_id: 400075
+    question_options: [400077, 400080, 400086, 400105]
+    content: |
+        In welcher Zeile liegt das Problem?
+
+- item400153:
+    question_id: 400077
+    following_answer_id: 400076
+    content: |
+        Das Problem liegt in der Zeile, in der ein Modell erstellt werden soll.
+
+- item400154:
+    answer_id: 400076
+    question_options: [400078]
+    content: |
+        Um in dieser Zeile ein Modell zu erstellen, erinnere dich an die bereits geschriebene Funktion code<hyperparameters_search/> weiter oben.
+
+- item400155:
+    question_id: 400078
+    following_answer_id: 400077
+    content: |
+        Was ist denn hier mit dieser Funktion zu tun?
+
+- item400156:
+    answer_id: 400077
+    question_options: [400079]
+    content: |
+        Da die R�ckgabe von code<hyperparameters_search/> ein Modell ist, reicht es hier aus die Funktion aufzurufen.
+
+- item400157:
+    question_id: 400079
+    following_answer_id: 400078
+    content: |
+        Leider ist mir nicht ganz klar wie dieser Aufruf aussieht.
+
+- item400158:
+    answer_id: 400078
+    question_options: []
+    content: |
+        Der Funktionsaufruf kann so aussehen: code<model = hyperparameters_search(fixed_hyperparams=True)/>, oder code<model = hyperparameters_search(fixed_hyperparams=False)/>, falls keine Hyperparametersuche durchgef�hrt werden soll.
+
+- item400159:
+    question_id: 400080
+    following_answer_id: 400079
+    content: |
+        Das Problem liegt in der Zeile, in der das Modell trainiert werden soll.
+
+- item400160:
+    answer_id: 400079
+    question_options: [400081]
+    content: |
+        Zum Trainieren des Modells, kann die Funktion code<fit(X,�y[,�sample_weight])/>, link< https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.fit/> hilfreich sein.
+
+- item400161:
+    question_id: 400081
+    following_answer_id: 400080
+    content: |
+        Wie verwende ich die Funktion code<fit/>?
+
+- item400162:
+    answer_id: 400080
+    question_options: [400082, 400083]
+    content: |
+        Das Modell soll auf den Trainingsdaten trainiert werden.
+
+- item400163:
+    question_id: 400082
+    following_answer_id: 400081
+    content: |
+        Leider ist mir noch nicht klar, wie die Funktion code<fit/> anzuwenden ist.
+
+- item400164:
+    answer_id: 400081
+    question_options: [400083]
+    content: |
+        Die Parameter von code<fit/> sind die Trainingsdaten X_train und y_train.
+
+- item400165:
+    question_id: 400083
+    following_answer_id: 400082
+    content: |
+        Nur mit den Parametern klappt der Aufruf von code<fit/> nicht.
+
+- item400166:
+    answer_id: 400082
+    question_options: [400084]
+    content: |
+        Es muss angegeben sein, welches Modell trainiert werden soll.
+
+- item400167:
+    question_id: 400084
+    following_answer_id: 400083
+    content: |
+        Wie gebe ich an welches Modell trainiert werden soll?
+
+- item400168:
+    answer_id: 400083
+    question_options: [400085]
+    content: |
+        Indem code<model.fit()/> mit den Trainingsdaten als Parameter aufgerufen wird, stellst du sicher, dass dein erstelltes Modell trainiert wird.
+
+- item400169:
+    question_id: 400085
+    following_answer_id: 400084
+    content: |
+        Kannst du mir bitte vorgeben wie der Aufruf von code<fit/> hier aussehen kann?
+
+- item400170:
+    answer_id: 400084
+    question_options: []
+    content: |
+        Der Aufruf lautet dann code<model.fit(X_train, y_train)/>.
+
+- item400171:
+    question_id: 400086
+    following_answer_id: 400085
+    content: |
+        Das Problem liegt in der Zeile, in der die Metriken ausgegeben werden sollen.
+
+- item400172:
+    answer_id: 400085
+    question_options: [400087, 400088]
+    content: |
+        Zum Ausgeben der Metriken kannst du dir die Funktion code<print_metrics/> weiter oben anschauen.
+
+- item400173:
+    question_id: 400087
+    following_answer_id: 400086
+    content: |
+        Was ist denn hier mit dieser Funktion zu tun?
+
+- item400174:
+    answer_id: 400086
+    question_options: [400088, 400090, 400092]
+    content: |
+        Es reicht aus die Funktion hier aufzurufen.
+
+- item400175:
+    question_id: 400088
+    following_answer_id: 400087
+    content: |
+        Wie sind die Parameter von code<print_metrics/> hier zu setzen?
+
+- item400176:
+    answer_id: 400087
+    question_options: [400089, 400090]
+    content: |
+        code<print_metrics/> erwartet als Eingabeparameter die Label des Datensatzes, dessen Metriken betrachtet werden m�chten, die vorhergesagten Label dieser Daten und die Bezeichnung des betrachteten Datensatzes als String.
+
+- item400177:
+    question_id: 400089
+    following_answer_id: 400088
+    content: |
+        Was sind Label?
+
+- item400178:
+    answer_id: 400088
+    question_options: [400090]
+    content: |
+        Das sind die Klassen, in diesem Fall also ob die Blaubeeren �gut� oder �schlecht� sind.
+
+- item400179:
+    question_id: 400090
+    following_answer_id: 400089
+    content: |
+        Wo finde ich die Label des Datensatzes?
+
+- item400180:
+    answer_id: 400089
+    question_options: [400091, 400092]
+    content: |
+        Die Label der hier betrachteten Trainingsdaten sind durch das Einlesen der Bilder gespeichert.
+
+- item400181:
+    question_id: 400091
+    following_answer_id: 400090
+    content: |
+        Wie hei�t die Variable, die als erster Parameter in code<print_metrics/> �bergeben werden soll?
+
+- item400182:
+    answer_id: 400090
+    question_options: []
+    content: |
+        In der Regel werden die Label des Datensatzes als y_train bezeichnet.
+
+- item400183:
+    question_id: 400092
+    following_answer_id: 400091
+    content: |
+        Wo finde ich die vorhergesagten Label der Trainingsdaten?
+
+- item400184:
+    answer_id: 400091
+    question_options: [400093]
+    content: |
+        Die vorhergesagten Label der Trainingsdaten sind von dir zu bestimmen.
+
+- item400185:
+    question_id: 400093
+    following_answer_id: 400092
+    content: |
+        Wie mache ich diese Vorhersage?
+
+- item400186:
+    answer_id: 400092
+    question_options: [400094, 400095]
+    content: |
+        Eine hilfreiche Funktion daf�r ist code<predict(X)/> link< https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict/>.
+
+- item400187:
+    question_id: 400094
+    following_answer_id: 400093
+    content: |
+        Wie verwende ich diese Funktion?
+
+- item400188:
+    answer_id: 400093
+    question_options: [400095]
+    content: |
+        Als Parameter erwartet code<predict(X)/> link< https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict/> die Stichprobe, f�r die die Label vorhergesagt werden m�chten.
+
+- item400189:
+    question_id: 400095
+    following_answer_id: 400094
+    content: |
+        Welchen Parameter muss ich hier �bergeben?
+
+- item400190:
+    answer_id: 400094
+    question_options: [400096]
+    content: |
+        Der Parameter ist die Menge der Merkmale in den Trainingsdaten.
+
+- item400191:
+    question_id: 400096
+    following_answer_id: 400095
+    content: |
+        Wo finde ich diese Menge?
+
+- item400192:
+    answer_id: 400095
+    question_options: [400097]
+    content: |
+        Die Merkmale der hier betrachteten Trainingsdaten sind durch das Einlesen der Bilder gespeichert.
+        In der Regel werden die Merkmale des Datensatzes als X_train bezeichnet.
+
+- item400193:
+    question_id: 400097
+    following_answer_id: 400096
+    content: |
+        Warum funktioniert der Aufruf von code<predict(X_train)/> nicht?
+
+- item400194:
+    answer_id: 400096
+    question_options: [400098]
+    content: |
+        Es muss angegeben sein, auf Basis welchen Modells vorhergesagt werden soll.
+
+- item400195:
+    question_id: 400098
+    following_answer_id: 400097
+    content: |
+        Wie gebe ich an welches Modell genommen werden soll?
+
+- item400196:
+    answer_id: 400097
+    question_options: [400099]
+    content: |
+        Indem code<model.predict()/> mit den Trainingsdaten als Parameter aufgerufen wird, stellst du sicher, dass dein erstelltes Modell zur Vorhersage genutzt wird.
+
+- item400197:
+    question_id: 400099
+    following_answer_id: 400098
+    content: |
+        Kannst du mir bitte vorgeben wie der Aufruf von code<predict/> hier aussehen kann?
+
+- item400198:
+    answer_id: 400098
+    question_options: [400100]
+    content: |
+        Wichtig ist, dass die Vorhersage in einer Variablen gespeichert wird.
+
+- item400199:
+    question_id: 400100
+    following_answer_id: 400099
+    content: |
+        Kannst du mir bitte vorgeben, wie das aussehen kann?
+
+- item400200:
+    answer_id: 400099
+    question_options: [400101]
+    content: |
+        Das Speichern der Vorhersage kann wie folgt aussehen: code<train_predictions = model.predict(X_train)/>.
+
+- item400201:
+    question_id: 400101
+    following_answer_id: 400100
+    content: |
+        Wie hei�t die Variable, die als zweiter Parameter in code<print_metrics/> �bergeben werden soll?
+
+- item400202:
+    answer_id: 400100
+    question_options: [40102]
+    content: |
+        Die Bezeichnung hast du selbst gew�hlt, bei dem Aufruf der Funktion code<predict(X)/> link<https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict/>. Eine passende Bezeichnung kann zum Beispiel train_predictions sein.
+
+- item400203:
+    question_id: 400102
+    following_answer_id: 400101
+    content: |
+        Welcher String ist der dritte Parameter der Funktion code<print_metrics/>?
+
+- item400204:
+    answer_id: 400101
+    question_options: [400103]
+    content: |
+        Diesen String kannst du selbst w�hlen, beachte, dass hier die Trainingsdaten betrachtet werden.
+
+- item400205:
+    question_id: 400103
+    following_answer_id: 400102
+    content: |
+        Kannst du mir sagen, welche Bezeichnung sinnvoll ist?
+
+- item400206:
+    answer_id: 400102
+    question_options: [400104]
+    content: |
+        Sinnvoll ist zum Beispiel der String �training�.
+
+- item400207:
+    question_id: 400104
+    following_answer_id: 400103
+    content: |
+        Wie sieht der gesamte Aufruf von code<print_metrics/> aus?
+
+- item400208:
+    answer_id: 400103
+    question_options: []
+    content: |
+        Der Aufruf kann so aussehen: code<print_metrics(y_train, train_predictions, "training")/>.
+
+- item400209:
+    question_id: 400105
+    following_answer_id: 400104
+    content: |
+        Das Problem liegt in der Zeile, in der das Modell evaluiert werden soll.
+
+- item400210:
+    answer_id: 400105
+    question_options: [400105]
+    content: |
+        Hier sollte wieder die Funktion predict verwendet werden.
+
+- item400211:
+    question_id: 400106
+    following_answer_id: 400105
+    content: |
+        Und wo liegt der Unterschied zu dem Aufruf von predict auf den Trainingsdaten?
+
+- item400212:
+    answer_id: 400105
+    question_options: [400106]
+    content: |
+        Der einzige Unterschied besteht darin, dass die Funktion nicht auf den Trainings-, sondern auf den Testdaten aufgerufen wird.
+
+- item400213:
+    question_id: 400106
+    following_answer_id: 400106
+    content: |
+        Und wie sieht der Aufruf dann aus?
+
+- item400214:
+    answer_id: 400106
+    question_options: [400107]
+    content: |
+        Wichtig ist, dass die Vorhersage in einer Variablen gespeichert wird.
+
+- item400215:
+    question_id: 400107
+    following_answer_id: 400107
+    content: |
+        Kannst du mir bitte vorgeben, wie das aussehen kann?
+
+- item400216:
+    answer_id: 400107
+    question_options: []
+    content: |
+        Das Speichern der Vorhersage kann wie folgt aussehen: code<predictions = model.predict(X_test)/>.
+        Auch hier k�nnen dann wieder die Metriken ausgegeben werden.
+
+
+
+
+- item300001:
+    question_id: 300001
+    following_answer_id: 300001
+    content: |
+        Ich möchte etwas über Merkmalsextraktion erfahren.
+
+- item300002:
+    question_id: 300002
+    following_answer_id: 300002
+    content: |
+        Was bringen mir diese Merkmale?
+
+- item300003:
+    question_id: 300003
+    following_answer_id: 300003
+    content: |
+        Was sind Beispiele für solche Merkmale für dieses Problem?
+
+- item300004:
+    question_id: 300004
+    following_answer_id: 300004
+    content: |
+        Ich möchte mir einfache Methoden angucken.
+
+- item300005:
+    question_id: 300005
+    following_answer_id: 300005
+    content: |
+        Ich möchte mir mittlere Methoden angucken..
+
+- item300006:
+    question_id: 300006
+    following_answer_id: 300006
+    content: |
+        Ich möchte mir fortgeschrittene Methoden angucken..
+
+- item300007:
+    question_id: 300007
+    following_answer_id: 300007
+    content: |
+        Welche Merkmale sollte ich nutzen?
+
+- item300008:
+    question_id: 300008
+    following_answer_id: 300008
+    content: |
+        Was sind Histogramme?
+
+- item300009:
+    question_id: 300009
+    following_answer_id: 300009
+    content: |
+        Wie nutze ich Histogramme für Bilder?
+
+- item300010:
+    question_id: 300011
+    following_answer_id: 300011
+    content: |
+        Wie sieht ein Code-Beispiel dafür aus?
+
