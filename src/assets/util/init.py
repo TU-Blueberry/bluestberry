@@ -44,12 +44,6 @@ async def load_packages():
 
 async def run_code():
   try:
-    print(sys.path)
-    for root, dirs, files in os.walk("/sortierroboter"):
-      path = root.split(os.sep)
-      print((len(path) - 1) * '--', os.path.basename(root))
-      for file in files:
-        print(len(path) * '--', file)
     await load_packages()
     exec(editor_input, {})
   except:
