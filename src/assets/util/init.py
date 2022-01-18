@@ -53,12 +53,7 @@ async def run_code():
         print(len(path) * '--', file)
     await load_packages()
     
-    # workaround to get access of local variables inside of exec(...)
-    inner_locals = {}
-    exec(editor_input, {}, inner_locals)
-    
-    if('plotly_output' in inner_locals.keys()):
-      globals()['plotly_output'] = inner_locals['plotly_output']
-      
+    exec(editor_input, {})
+  
   except:
     traceback.print_exc()

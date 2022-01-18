@@ -31,7 +31,7 @@ export class CodeViewerComponent implements OnInit {
   constructor(
     private pyodideService: PyodideService,
     private fileTabDirective: FileTabDirective,
-    private tabManagementService: TabManagementService
+    private tabManagementService: TabManagementService,
     private filesystemService: FilesystemService,
   ) {}
 
