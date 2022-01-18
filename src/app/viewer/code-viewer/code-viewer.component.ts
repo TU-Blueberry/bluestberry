@@ -6,6 +6,7 @@ import ICodeEditor = editor.ICodeEditor
 import { FileTabDirective } from 'src/app/tab/file-tab.directive'
 import {forkJoin, Subject} from 'rxjs'
 import { concatMap, debounceTime, switchMap, tap } from 'rxjs/operators'
+import { TabManagementService } from 'src/app/tab/tab-management.service';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
 
 @Component({
@@ -29,8 +30,9 @@ export class CodeViewerComponent implements OnInit {
   saveSubject = new Subject<void>()
   constructor(
     private pyodideService: PyodideService,
+    private fileTabDirective: FileTabDirective,
+    private tabManagementService: TabManagementService,
     private filesystemService: FilesystemService,
-    private fileTabDirective: FileTabDirective
   ) {}
 
   ngOnInit(): void {
