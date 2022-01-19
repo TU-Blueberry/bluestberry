@@ -12,8 +12,8 @@ RUN yarn
 COPY . .
 RUN yarn build /$PREFIX/
 
-RUN cd /app/dist/bluestberry/assets/sortierroboter; zip sortierroboter.zip *; mv sortierroboter.zip ..
-RUN cd /app/dist/bluestberry/assets/experience2; zip experience2.zip *; mv experience2.zip ..
+RUN cd /app/dist/bluestberry/assets/sortierroboter; zip -r sortierroboter.zip *; mv sortierroboter.zip ..
+RUN cd /app/dist/bluestberry/assets/experience2; zip -r experience2.zip *; mv experience2.zip ..
 
 FROM nginxinc/nginx-unprivileged:alpine
 
