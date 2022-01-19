@@ -3,7 +3,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "types": ["emscripten"]
+    "types": ["emscripten"],
+    "paths": {
+      "vscode": ["node_modules/monaco-languageclient/lib/vscode-compatibility"]
+    },
+    "skipLibCheck": true,
   },
   "files": [
     "src/main.ts",
