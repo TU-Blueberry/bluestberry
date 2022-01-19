@@ -129,7 +129,11 @@ export class UnityService {
         reader.onloadend = () => {
           var base64data = reader.result
           if (base64data) {
-            this.sendImage(base64data.toString().split(',')[1])
+            this.gameInstance.SendMessage(
+              'AngularCommunicator',
+              'queueBerryWithImage',
+              berry + ',' + base64data.toString().split(',')[1]
+            )
           }
         }
       }
