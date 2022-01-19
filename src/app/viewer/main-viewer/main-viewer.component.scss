@@ -49,6 +49,11 @@ $icon-size: 24px;
   width: 100%;
 }
 
+app-terminal-viewer {
+  height: 98%;
+  display: inherit;
+}
+
 :host {
   as-split {
     max-height: calc(100vh - 48px); // subtract height of navbar
@@ -64,7 +69,7 @@ $icon-size: 24px;
     }
 
     &.as-horizontal ::ng-deep .as-split-gutter .as-split-gutter-icon {
-      background-image: none !important; 
+      background-image: none !important;
 
       &:hover {
         cursor: col-resize;

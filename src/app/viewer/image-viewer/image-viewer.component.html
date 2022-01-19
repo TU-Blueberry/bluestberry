@@ -1,3 +1,40 @@
 <div #imageContainer class="image-container" >
     <img #imageLoaded class="image-responsive" [src]="imagePath" (click)="mouseClick($event)" (load)="onImageLoad($event)" (mouseover)="mouseOver($event)" (mouseout)="mouseOut($event)" [style.cursor]="hoverMode" />
+    <div class="footer-bar">
+      <div class="footer-bar-button" (click)="decreaseSize()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke="currentColor"
+          stroke-linejoin="round"
+        >
+          <title>Bild verkleinern</title>
+          <path d="M16 12H8"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+      </div>
+
+      <div class="footer-bar-button" (click)="increaseSize()">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke="currentColor"
+          stroke-linejoin="round"
+        >
+          <title>Bild vergrößern</title>
+          <path d="M17 12L7 12M12 17L12 7"></path>
+          <circle cx="12" cy="12" r="10"></circle>
+        </svg>
+      </div>
+    </div>
 </div>

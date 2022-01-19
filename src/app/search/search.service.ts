@@ -14,7 +14,7 @@ export class SearchService {
   filePaths: string[] = [
     '/sortierroboter',
     '/sortierroboter/BlueberryData/TrainingData',
-    '/sortierroboter/Glossary',
+    '/sortierroboter/glossary',
     '/sortierroboter/test_files'  //TODO: Remove eventually
   ];
 

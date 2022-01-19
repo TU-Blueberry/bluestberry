@@ -2,10 +2,10 @@
   <div class="action-bar-top">
     <button class="action-bar-button" (click)="toggleFiles()">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="fileIconTitle"
-        stroke="currentColor" 
-        stroke-width="1" 
-        stroke-linecap="square" 
-        stroke-linejoin="miter" 
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="square"
+        stroke-linejoin="miter"
         fill="none"
         [class.active]="showFiles">
         <title id="fileIconTitle">Dateien</title>
@@ -15,7 +15,7 @@
     </button>
     <button class="action-bar-button" (click)="toggleTerminal()">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-           stroke="currentColor" stroke-width="1" stroke-linecap="square"
+           stroke="currentColor" stroke-width="2" stroke-linecap="square"
            stroke-linejoin="miter" fill="none"
            [class.active]="showTerminal">
         <title id="terminalIconTitle">Terminal anzeigen/verstecken</title>
@@ -28,7 +28,7 @@
     </button>
     <div class="help">
       <button class="action-bar-button" (click)="openHints()">
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="square" stroke-linejoin="miter">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter">
           <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
           <title id="extensionIconTitle">Hinweise</title>
         </svg>
@@ -36,7 +36,7 @@
     </div>
       <button class="action-bar-button" (click)="startTour()">
         <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-             stroke="currentColor" stroke-width="1" stroke-linecap="square"
+             stroke="currentColor" stroke-width="2" stroke-linecap="square"
              stroke-linejoin="miter" fill="none">
           <title id="helpIconTitle">Info-Tour</title>
           <path d="M12 14C12 12 13.576002 11.6652983 14.1186858 11.1239516 14.663127 10.5808518 15 9.82976635 15 9 15 7.34314575 13.6568542 6 12 6 11.1040834 6 10.2998929 6.39272604 9.75018919 7.01541737 9.49601109 7.30334431 9.29624369 7.64043912 9.16697781 8.01061095"></path>
@@ -44,5 +44,20 @@
           <circle cx="12" cy="12" r="10"></circle>
         </svg>
       </button>
-    </div>
   </div>
+  <div class="action-bar-bottom">
+    <button class="action-bar-button" (click)="openAbout($event)">
+      <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="infoIconTitle"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="square"
+        stroke-linejoin="miter"
+        fill="none">
+        <title id="infoIconTitle">Informationen</title>
+        <path d="M12,12 L12,15"/>
+        <line x1="12" y1="9" x2="12" y2="9"/>
+        <circle cx="12" cy="12" r="10"/>
+      </svg>
+    </button>
+  </div>
+</div>

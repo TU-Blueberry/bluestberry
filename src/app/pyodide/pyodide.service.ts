@@ -1,27 +1,35 @@
-import {EventEmitter, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Location} from '@angular/common';
-import initCode from '!raw-loader!../../assets/util/init.py';
-import {BehaviorSubject, concat, defer, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
-import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
+import {defer, Observable, Subject} from 'rxjs';
+import {filter, map, shareReplay} from 'rxjs/operators';
+import {MessageType, PyodideWorkerMessage, PythonCallableData} from 'src/app/pyodide/pyodide.types';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PyodideService {
-  // standard packages included with pyodide
-  static readonly DEFAULT_LIBS = ['micropip'];
-  private results$ = new BehaviorSubject([]);
-  // cache 1000 lines of stdout and stderr
-  private stdOut$ = new ReplaySubject<string>(1000);
-  private stdErr$ = new ReplaySubject<string>(1000);
-  private afterExecution$ = new EventEmitter<void>();
+  // This pyodide is only used for FS access
   pyodide = this.initPyodide();
+  private worker!: Worker;
 
-  // Overwrite stderr and stdout. Sources:
-  // https://pyodide.org/en/stable/usage/faq.html#how-can-i-control-the-behavior-of-stdin-stdout-stderr
-  // https://github.com/pyodide/pyodide/issues/8
+  onMessageListener$ = new Subject<PyodideWorkerMessage>();
+
+  _modulePaths: string[] = [];
+  set modulePaths(paths: string[]) {
+    this._modulePaths = paths;
+    this.worker.postMessage({ type: MessageType.SET_SYSPATH, data: paths })
+  }
 
   constructor(private location: Location) {
+    if (typeof Worker !== 'undefined') {
+      this.worker = new Worker(new URL('./pyodide.worker', import.meta.url));
+      this.worker.onmessage = ({ data }) => {
+        this.onMessageListener$.next(data);
+      };
+      this.worker.postMessage({ type: MessageType.SET_PYODIDE_LOCATION, data: location.prepareExternalUrl('/assets/pyodide')})
+    } else {
+      console.error('WebWorkers not supported by this Environment...');
+    }
   }
 
   private initPyodide(): Observable<Pyodide> {
@@ -33,49 +41,39 @@ export class PyodideService {
 
       return loadPyodide({
         indexURL: this.location.prepareExternalUrl('/assets/pyodide'),
-        stdout: (text) => {
-          this.stdOut$.next(text)
-        },
-        stderr: (text) => {
-          this.stdErr$.next(text)
-        }
       }).then(pyodide => {
         // restore define to original value
         anyWindow.define = define;
         return pyodide;
       });
     }).pipe(
-     switchMap(pyodide => forkJoin(
-        PyodideService.DEFAULT_LIBS.map(lib => from(pyodide.loadPackage(lib)))
-      ).pipe(map(() => pyodide))),
-      switchMap(pyodide => from(pyodide.runPythonAsync(initCode)).pipe(map(() => pyodide))),
       shareReplay(1),
     );
   }
 
-  // TODO: There is another function named loadPackagesFromImport which loads all packages found in a given code snippet
-  // This might be helpful for us?
-  // see https://pyodide.org/en/stable/usage/api/js-api.html
   runCode(code: string): Observable<any> {
-    return this.pyodide.pipe(switchMap(pyodide => {
-      pyodide.globals.set('editor_input', code);
-      return defer(() => from(pyodide.runPythonAsync('await run_code()')))
-        .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
-    }));
+    this.worker.postMessage({ type: MessageType.EXECUTE, data: { code }})
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.AFTER_EXECUTION),
+      map(message => message.data),
+    );
   }
 
   // We use python globals() to store the result from matplotlib
   getGlobal(key: string): Observable<string[]> {
-    return this.pyodide.pipe(map(pyodide => {
-      const strings = pyodide.globals.get(key)?.toJs();
-      return strings !== undefined ? strings : [];
-    }));
+    this.worker.postMessage({ type: MessageType.GET_GLOBAL, data: { key }})
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.GET_GLOBAL),
+      map(message => message.data as string[]),
+    );
   }
 
   setGlobal(key:string, value: any): Observable<void> {
-    return this.pyodide.pipe(map(pyodide => {
-      pyodide.globals.set(key, value);
-    }));
+    this.worker.postMessage({ type: MessageType.SET_GLOBAL, data: { key, value }})
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.SET_GLOBAL),
+      map(_ => {})
+    );
   }
 
   deleteGlobal(key: string): Observable<void> {
@@ -87,46 +85,45 @@ export class PyodideService {
   }
 
   getResults(): Observable<any> {
-    return this.results$.asObservable();
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.RESULT),
+      map(message => message.data),
+    );
   }
 
   getStdOut(): Observable<string> {
-    return this.stdOut$.asObservable();
-  }
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.STD_OUT),
+      map(message => message.data as string),
+    );  }
 
   getStdErr(): Observable<string> {
-    return this.stdErr$.asObservable();
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.STD_ERR),
+      map(message => message.data as string),
+    );
   }
 
-  getAfterExecution(): EventEmitter<void> {
-    return this.afterExecution$;
+  getAfterExecution(): Observable<void> {
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.AFTER_EXECUTION),
+      map(_ => {}),
+    );
   }
 
-  private runCodeSilently(code: string): Observable<void> {
-    return this.pyodide.pipe(switchMap(pyodide => {
-      return defer(() => from(pyodide.runPythonAsync(code)));
-    }));
+  setupPythonCallables(callbacks: string[]): Observable<PythonCallableData> {
+    this.worker.postMessage({ type: MessageType.SETUP_PYTHON_CALLABLE, data: callbacks });
+    return this.onMessageListener$.pipe(
+      filter(({ type }) => type === MessageType.PYTHON_CALLABLE),
+      map(({ data }) => data as PythonCallableData),
+    );
   }
 
-  public addToSysPath(lessonName: string): Observable<void> {
-    console.log("ADD TO SYS PATH!")
-
-    const code = `
-import sys
-
-if "${lessonName}" not in sys.path:
-    sys.path.append("/${lessonName}")`
-
-    return this.runCodeSilently(code);
+  addToSysPath(path: string): void {
+    this.modulePaths = [...this._modulePaths, path];
   }
 
-  public removeFromSysPath(lessonName: string): Observable<void> {
-    const code = `
-import sys
-
-if "/${lessonName}" in sys.path:
-    sys.path.remove("/${lessonName}")`
-
-    return this.runCodeSilently(code);
+  removeFromSysPath(path: string) {
+    this.modulePaths = this._modulePaths.filter(p => p === path);
   }
 }

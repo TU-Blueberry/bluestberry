@@ -48,7 +48,6 @@ export class FileTabDirective implements OnInit {
     this.filesystemEventService.onWriteToFile
       .pipe(
         filter((event) => this.tab?.data?.path === event.path),
-        tap(() => console.log("TAB DIRECTIVE!")),
         switchMap((event) =>
           this.filesystemService.getFileAsBinary(event.path)
         ),

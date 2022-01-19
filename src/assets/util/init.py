@@ -2,9 +2,12 @@ import traceback
 import pyodide
 import pyodide_js
 import micropip
+import sys
+import os
 
 # Used to run code via the PyodideService
 editor_input = ""
+# plotly_output = "test"
 IMPORT_PACKAGE_MAPPING = {
   'skimage': 'scikit-image',
   'sklearn': 'scikit-learn'
@@ -43,6 +46,8 @@ async def load_packages():
 async def run_code():
   try:
     await load_packages()
+    
     exec(editor_input, {})
+  
   except:
     traceback.print_exc()

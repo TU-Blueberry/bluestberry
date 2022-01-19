@@ -28,8 +28,7 @@ button:disabled {
  
 .filetree-headline {
   color: white;
-  padding: 10px;
- }
+}
 
 .filetree-header-icon, .file-type {
   width: 16px;
@@ -72,6 +71,7 @@ button:disabled {
   justify-items: center;
 }
 
+// TODO: Move to modal component
 .modal-background {
   background-color: rgba(1, 1, 1, 0.75);
   width: 100%;

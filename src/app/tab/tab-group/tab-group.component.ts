@@ -75,9 +75,9 @@ export class TabGroupComponent implements AfterViewInit {
       
       if (tab.type === "HINT" || tab.type === "UNITY") {
         existingTab = this.dataSource.find(t => t.type === tab.type);
-      } else {
-        existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
-      }
+      } else if(tab.type != 'PLOTLY') {
+        existingTab = undefined;
+      } 
 
       if (!existingTab) {
         this.dataSource.push(tab);
@@ -87,7 +87,7 @@ export class TabGroupComponent implements AfterViewInit {
         this.activeTab = existingTab;
       }
     });
-    this.lessonEventService.onLessonClosed.subscribe(() => this.closeAllTabs());    
+    this.lessonEventService.onExperienceClosed.subscribe(() => this.closeAllTabs());    
   }
 
   handleScroll(event: WheelEvent) {

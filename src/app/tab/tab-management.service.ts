@@ -24,7 +24,7 @@ export class TabManagementService {
     private filesystemService: FilesystemService,
     private lessonEventService: LessonEventsService
   ) {
-    const lesson$ = lessonEventService.onLessonOpened.pipe(
+    const lesson$ = lessonEventService.onExperienceOpened.pipe(
         switchMap(({open}) => concat(...open.map(file => {
           if (file.path.toLowerCase().endsWith('unity')) {
             return of({
@@ -55,6 +55,10 @@ export class TabManagementService {
 
   openHintsManually(data: {path: string, content: Uint8Array}): void {
     this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, data: data});
+  }
+
+  openPlotly(htmlContent: Uint8Array): void {
+    this._openTab.next({groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, data: {path: '', content: htmlContent}});
   }
 
   createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {

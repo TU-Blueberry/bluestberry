@@ -1,4 +1,5 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FilesystemService } from '../filesystem.service';
@@ -7,12 +8,17 @@ import { TreeNode } from '../model/tree-node';
 @Component({
   selector: 'app-file',
   templateUrl: './file.component.html',
-  styleUrls: ['./file.component.scss']
+  styleUrls: ['./file.component.scss'],
 })
-export class FileComponent implements OnInit {
+export class FileComponent implements OnInit, OnDestroy {
   isRenaming = false;
   isActive = false;
   tentativeName = '';
+  showContextMenu = false;
+  offsetX = 0;
+  offsetY = 0;
+  closeContextMenuSubscription: Subscription;
+  activeElementChangeSubscription?: Subscription;
   
   private _node: TreeNode;
 
@@ -21,8 +27,13 @@ export class FileComponent implements OnInit {
     this.isRenaming = this._node.isTentativeNode;
 
     if (this._node.isTentativeNode) {
-      this.uiEv.changeUserInputLocation(this._node.parentPath + `/${this.generateUUID()}`)
+      this.uiEv.changeUserInputLocation(this._node.parentPath + `/${this.generateRandomName()}`)
     }
+
+    this.activeElementChangeSubscription = this.uiEv.onActiveElementChange.subscribe(newActiveElementPath => {
+      this.isActive = this._node.path === newActiveElementPath
+      this.cd.detectChanges();
+    });
 
     this._node.onNewUserInputLocation().subscribe(() => {
       this.isRenaming = false;
@@ -38,18 +49,26 @@ export class FileComponent implements OnInit {
   }
 
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
-  constructor(private fsService: FilesystemService, private ev: FilesystemEventService, private uiEv: UiEventsService) {
+  constructor(private fsService: FilesystemService, private ev: FilesystemEventService, private uiEv: UiEventsService, private cd: ChangeDetectorRef) {
     this._node = new TreeNode(this.uiEv, this.fsService, this.ev);
+    this.closeContextMenuSubscription = this.uiEv.onCloseAllContextMenues.subscribe(() => {
+      this.showContextMenu = false;
+      this.cd.detectChanges();
+    });
   }
 
-  // TODO: this isn't a UUID but a random gist i found
-  // Might look into libraries like uuid to do the job. this should only be temporary (luckily it isn't important in any way)
-  private generateUUID(): string {
+  // copied from some random gist. only purpose is to create some random new name to stop renaming in any other component
+  private generateRandomName(): string {
     return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 
   ngOnInit(): void {
     this.isRenaming = this._node.isTentativeNode;
+  }
+  
+  ngOnDestroy(): void {
+    this.closeContextMenuSubscription.unsubscribe();
+    this.activeElementChangeSubscription?.unsubscribe();
   }
 
   deleteFile(ev: Event) {
@@ -59,7 +78,7 @@ export class FileComponent implements OnInit {
   }
 
   onClick(): void {
-    if (this._node?.ref?.contents instanceof Uint8Array) {
+    if (this.fsService.isFile(this._node.path) && !this.isRenaming && this._node.ref) {
       this.ev.onUserOpenFile(this._node.path, this._node.ref);
       this.uiEv.onActiveElementChange.emit(this._node.path);
     } 
@@ -101,12 +120,33 @@ export class FileComponent implements OnInit {
     this.onDeleteRequested.emit(true);
   }
 
-  updateTentativeName(event: Event) {   
+  updateTentativeName(event: Event) {
     this.tentativeName = (event.target as HTMLInputElement)?.value;
   }
 
   getExtensionFromTentativeName(): string {
     const extension = this.tentativeName.split(".");
     return extension.length > 1 ? extension[extension.length - 1].toUpperCase() : "UNKNOWN";
+  }
+
+  closeContextMenu(): void {
+    this.showContextMenu = false;
+  }
+
+  toggleContextMenu(ev: MouseEvent): void {
+    ev.stopPropagation();
+    ev.preventDefault();
+    this.offsetX = ev.clientX;
+    this.offsetY = ev.clientY;
+
+    if (!this.isRenaming) {
+      if (!this.showContextMenu) {
+        this.uiEv.closeAllContextMenues();
+      }
+
+      this.showContextMenu = !this.showContextMenu;
+    }
+
+    this.cd.detectChanges();
   }
 }

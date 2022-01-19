@@ -9,10 +9,8 @@ import { FilesystemService } from "../filesystem.service";
 
 export class TreeNode {
     private _ref?: FSNode;
-    private _activeElementChangeSubscription: Subscription;
 
     private _isEmptyNode = false;
-    private _isActive = false;
     private _path = '';
     private _depth = 0;
     private _parentPath = '';
@@ -20,10 +18,7 @@ export class TreeNode {
     private _rootName = '';
     private _tempName = '';
 
-    constructor(private uiEv: UiEventsService, private fs: FilesystemService, private ev: FilesystemEventService) {
-        this._activeElementChangeSubscription = this.uiEv.onActiveElementChange
-            .subscribe(newActiveElementPath => this.isActive = this.path === newActiveElementPath);
-    }
+    constructor(private uiEv: UiEventsService, private fs: FilesystemService, private ev: FilesystemEventService) { }
 
     // ----- Methods provided by this class -----
     public getSubfolders() {
@@ -33,10 +28,6 @@ export class TreeNode {
     public getNodes() {
         return this.fs.scan(this._path, this._depth, true)
             .pipe(tap(([files, folders]) => this._isEmptyNode = folders.length === 0 && files.length === 0));
-    }
-
-    public checkPermissions() {
-        this.fs.checkPermissions(this._path, false);
     }
 
     private isDirectChild(pathToCheck: string): boolean {
@@ -53,8 +44,8 @@ export class TreeNode {
     public updateEmptyStatus() {
         const entries = this._ref?.contents;
         
-        if (this._path !== '' && entries !== undefined && entries !== null && !(entries instanceof Uint8Array)) {
-             this.fs.scanWithoutFetch(entries, this._path, this._depth, true).subscribe(([folders, files]) => {
+        if (this._path !== '' && this._ref && entries !== undefined && entries !== null && !this.fs.N_isFile(this._ref)) {
+             this.fs.scanWithoutFetch((entries as FSNode), this._path, this._depth, true).subscribe(([folders, files]) => {
                 this._isEmptyNode = folders.length === 0 && files.length === 0;
             }); 
         }
@@ -89,19 +80,15 @@ export class TreeNode {
             ...files.map(node => this.generateTreeNode(this._depth + 1,`${this._path}/${node.name}`, node))]));
     }
 
-    public destroy() {
-        this._activeElementChangeSubscription.unsubscribe();
-    }
-
     // ----- Observables for events -----
     public onDelete() {
         return this.ev.onDeletePath.pipe(filter(path => this.isDirectChild(path)), tap(() => this.updateEmptyStatus()));
     }
 
-    public addNewFilesListener(fileMap: Map<string, Array<ComponentRef<FileComponent>>>) {
+    public addNewFilesListener(fileMap: Map<string, ComponentRef<FileComponent>>) {
        return this.ev.onWriteToFile.pipe(
-           filter(params => this.isDirectChild(params.path) && !fileMap.has(params.path)), 
-           tap(params => this.updateEmptyStatus()),
+           filter(params => this.isDirectChild(params.path) && !fileMap.has((params.path.split('/').pop() || params.path))), 
+           tap(() => this.updateEmptyStatus()),
            switchMap(params => this.fs.getNodeByPath(params.path).pipe(
                 filter(node => node !== undefined),
                 map(node => ({node: node, path: params.path})))
@@ -144,14 +131,6 @@ export class TreeNode {
     }
 
     // ----- Getters and setters -----
-    public set isActive(isActive: boolean) {
-        this._isActive = isActive;
-    }
-    
-    public get isActive() : boolean {
-        return this._isActive;
-    }
-
     public set path(path : string) {
         this._path = path;
         this.fs.getNodeByPath(this._path).subscribe(ref => this._ref = ref);

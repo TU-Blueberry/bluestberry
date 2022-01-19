@@ -17,6 +17,46 @@ body {
   font-family: "Roboto", sans-serif;
 }
 
+.mt-0 {
+  margin-top: 0px;
+}
+
+* {
+  scrollbar-color: #6969dd rgb(38, 38, 38);
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: rgb(38, 38, 38);
+  }
+  &::-webkit-scrollbar-thumb {
+    background-color: #6969dd;
+  }
+}
+
+.wrapper {
+  position: absolute;
+  inset: 0 0 0 0;
+  background-color: rgba(0, 0, 0, 0.75);
+  z-index: 99;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: #262626;
+  color: #d4d4d4;
+  border-radius: 5px;
+  width: 50vw;
+  max-height: 70vh;
+  overflow-y: scroll;
+  padding: 25px;
+}
+
 .invisible {
   display: none !important;
 }
@@ -68,16 +108,55 @@ body {
   }
 }
 
-/** Glossary start */
+/** Icon bar for hint and image viewer */
+.footer-bar {
+  position: absolute;
 
-.glossary-image {
-  height: 150px;
+  display: flex;
+  justify-items: center;
+  justify-content: center;
+
+  padding-top: 5px;
+  padding-bottom: 5px;
+  bottom: 10px;
 }
 
-/** Glossary end */
+.footer-bar-button {
+  height: 24px;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 50%;
+  color: #ffffff66;
+  background-color: rgb(46, 49, 56);
 
-/** ngx-guided-tour start */
+  &:hover {
+    background-color: rgb(66, 70, 80);
+    cursor: pointer;
+    color: rgb(240, 240, 240);
+  }
+}
 
+/** Markdown styling */
+.markdown-entry a {
+  color: #0080ff;
+}
+
+.small-image {
+  max-width: 25%;
+  height: auto;
+}
+
+.medium-image {
+  max-width: 50%;
+  height: auto;
+}
+
+.big-image {
+  max-width: 75%;
+  height: auto;
+}
+
+/** ngx-guided-tour */
 .tour-block {
   border-radius: 10px;
 }
@@ -96,4 +175,4 @@ $tour-back-button-color : white;                // Back button color.
 
 @import '../node_modules/ngx-guided-tour/scss/guided-tour-base-theme.scss';
 
-/** ngx-guided-tour start end */
+/** ngx-guided-tour end */

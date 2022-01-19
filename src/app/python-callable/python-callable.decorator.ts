@@ -1,6 +1,9 @@
 import {Injector} from '@angular/core';
+import {PyodideService} from 'src/app/pyodide/pyodide.service';
 
 const pythonCalls: ((injector: Injector) => void)[] = [];
+
+const pyodideWorkerReverseProxy: { [key: string]: (...args: any) => void } = {};
 
 export function PythonCallable(target: any, propertyKey: string, descriptor: PropertyDescriptor) {
     pythonCalls.push((injector: Injector) => {
@@ -10,11 +13,14 @@ export function PythonCallable(target: any, propertyKey: string, descriptor: Pro
         return;
       }
       // @ts-ignore
-      globalThis[propertyKey] = (...args) => serviceInstance[propertyKey](...args);
+      pyodideWorkerReverseProxy[propertyKey] = (...args) => serviceInstance[propertyKey](...args);
     });
 }
 
-export const setupPythonCalls = (injector: Injector) => {
+export const setupPythonCalls = (injector: Injector, pyodideService: PyodideService) => {
   pythonCalls.forEach(setup => setup(injector));
+  pyodideService.setupPythonCallables(Object.keys(pyodideWorkerReverseProxy)).subscribe(({ name, params}) => {
+    pyodideWorkerReverseProxy[name](...params);
+  });
 }
 

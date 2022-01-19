@@ -13,6 +13,10 @@
     }
 }
 
+.file-icons {
+    margin-right: 5px;
+}
+
 .active {
     background-color: #0068b3;
 
@@ -22,17 +26,19 @@
 }
 
 .file-heading {
-    padding-left: 16px;
+    padding-left: 20px;
     display: flex;
     align-items: center;
 }
 
-.file:hover > .common-actions {
-    display: inline-block;
-}
-
 .common-actions {
     display: none;
+    position: absolute;
+    z-index: 99;
+}
+
+.show {
+    display: inline-block !important;
 }
 
 .file-type-image {

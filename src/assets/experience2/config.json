@@ -1,0 +1,14 @@
+{
+  "open": [
+    { "path": "exp2.py", "on": "left" },
+    { "path": "toucan.jpg", "on": "right" }
+  ],
+  "type": "LESSON",
+  "tabSizes": [10, 45, 45],
+  "unityEntryPoint":"",
+  "name": "experience2",
+  "hidden": [],
+  "external": [],  
+  "readonly": [],
+  "modules": []
+}
