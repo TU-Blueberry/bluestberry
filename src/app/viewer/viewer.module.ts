@@ -16,6 +16,8 @@ import { MarkdownViewerComponent } from "./markdown-viewer/markdown-viewer.compo
 import { MarkdownModule } from "ngx-markdown";
 import { TabModule } from 'src/app/tab/tab.module';
 import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group-facade.component';
+import { TableViewerComponent } from './table-viewer/table-viewer.component';
+import { PblNgridModule, PblNgridRegistryService } from '@pebula/ngrid';
 
 /**
  * Module used for all the Viewer-Components.
@@ -39,6 +41,7 @@ import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group
     HintViewerComponent,
     MarkdownViewerComponent,
     TabGroupFacadeComponent,
+    TableViewerComponent,
   ],
   imports: [
     CommonModule,
@@ -50,6 +53,7 @@ import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group
     FilesystemModule,
     MarkdownModule,
     TabModule,
+    PblNgridModule
   ],
   exports: [
     CodeViewerComponent,

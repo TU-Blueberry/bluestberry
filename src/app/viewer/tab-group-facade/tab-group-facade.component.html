@@ -15,6 +15,10 @@
     <app-hint-viewer [appFileTab]="tab" (close)="close()"></app-hint-viewer>
   </div>
 
+  <div *appTabTemplate="let tab = tab; let close = close; type: 'TABLE'">
+    <app-table-viewer [appFileTab]="tab" (close)="close()"></app-table-viewer>
+  </div>
+
   <div *appTabTemplate="let tab = tab; let close = close; type: 'MARKDOWN'">
     <app-markdown-viewer [appFileTab]="tab" (close)="close()"></app-markdown-viewer>
   </div>
