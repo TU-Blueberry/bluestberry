@@ -1,7 +1,7 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors } from '@angular/forms';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
-import { LessonManagementService } from '../lesson-management/lesson-management.service';
+import { ExperienceManagementService } from '../experience-management/experience-management.service';
 import { Experience } from '../model/experience';
 
 @Component({
@@ -16,13 +16,13 @@ export class SandboxCreationComponent {
 
   @Output() cancel = new EventEmitter<void>();
   @Output() create = new EventEmitter<string>();
-  constructor(public lessonMgmt: LessonManagementService, private fsService: FilesystemService) { 
+  constructor(public expMgmt: ExperienceManagementService, private fsService: FilesystemService) { 
     this.nameFormControl = new FormControl('', { updateOn: "change", validators: this.validateInput.bind(this) });
     this.formGroup = new FormGroup({
       nameFormControl: this.nameFormControl 
     });
 
-    this.lessonMgmt.experiences$.subscribe(experiences => { 
+    this.expMgmt.experiences$.subscribe(experiences => { 
       this.availableSandboxes = experiences.sandboxes;
     });
   }

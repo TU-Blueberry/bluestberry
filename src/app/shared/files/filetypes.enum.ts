@@ -1,3 +1,5 @@
+import { TabType } from "src/app/tab/model/tab-type.model";
+
 export enum FileType {
     IMAGE,
     DATA,
@@ -51,5 +53,23 @@ export class FileTypes {
     public static getType(extension: string): FileType {
         const type = this.extToType.get(extension.toUpperCase());
         return type !== undefined ? type : FileType.OTHER;
+    }
+
+    public static getFileIconPath(type: FileType | undefined): string {
+        switch (type) {
+            case FileType.IMAGE: return FileTypes.imageIconPath;
+            case FileType.DATA: return FileTypes.tableIconPath;
+            case FileType.PLAIN_TEXT: return FileTypes.plainTextPath;
+            case FileType.OTHER: return FileTypes.unknownFilePath;
+            default: return FileTypes.unknownFilePath;
+        }
+    }
+
+    public static getTabIconPath(type: TabType | undefined): string {
+        switch (type) {
+            case 'UNITY': return FileTypes.unityPath;
+            case 'HINT': return FileTypes.hintPath;
+            default: return FileTypes.unknownFilePath;
+        }
     }
 }

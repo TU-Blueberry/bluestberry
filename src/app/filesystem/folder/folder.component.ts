@@ -110,16 +110,13 @@ export class FolderComponent implements OnInit, OnDestroy {
   // need to use catchError here as the node that was just deleted will also attempt to scan its children, thus yielding and error as the path doesn't exist anymore
   // (in which case we do nothing as this component will be deleted soon anyways)
   private checkForNewFolders() {
-    this._node.getSubfolders().pipe(catchError(() => of([]))).subscribe(folders => {
+    this._node.getSubfolders().pipe(
+      catchError(() => of([]))
+    ).subscribe(folders => {
         folders.filter(folder => !this.folders.has(this.getName(folder.path)))
-          .forEach(folder => this.createSubcomponent(false, folder.path, folder.node));
-          this.cd.detectChanges();
+               .forEach(folder => this.createSubcomponent(false, folder.path, folder.node));
+        this.cd.detectChanges();
       });
-
-      // TODO: Braucht es das?
-    /* if (this._node.isRoot) {
-      this._node.checkPermissions(); // set permissions after every execution
-    } */
   }
 
   // called once new node from user is synced to fs

@@ -18,7 +18,7 @@ import { MarkdownModule, MarkedOptions, MarkedRenderer } from "ngx-markdown";
 import { NgIconsModule } from '@ng-icons/core';
 import { SharedModule } from './shared/shared.module';
 import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
-import { LessonModule } from './lesson/lesson.module';
+import { ExperienceModule } from './experience/experience.module';
 import { SearchComponent } from './search/search.component';
 
 /**
@@ -53,7 +53,7 @@ export function markedOptionsFactory(): MarkedOptions {
         useFactory: markedOptionsFactory,
       },
     }),
-    LessonModule,
+    ExperienceModule,
   ],
   providers: [
     GuidedTourService,

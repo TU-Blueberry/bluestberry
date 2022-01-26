@@ -1,4 +1,10 @@
 [
-  "sortierroboter",
-  "experience2"
+  {
+  	"name": "sortierroboter",
+  	"uuid": "abc"
+  },
+  {
+  	"name": "experience2",
+  	"uuid": "def"
+  }
 ]

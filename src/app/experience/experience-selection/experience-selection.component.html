@@ -27,14 +27,14 @@
     </div>
     <div id="select-lesson">
         <div (click)="showOptions = !showOptions" class="current-selection">
-            <ng-template *ngIf="selectedLesson.name === ''; else showEntries">
+            <ng-template *ngIf="selectedExperience.uuid === ''; else showEntries">
                 <div class="current-selection-text">
                     Kein Workspace gewählt
                 </div>
             </ng-template>
             <ng-template #showEntries>
                 <div class="current-selection-text">
-                    {{ selectedLesson.name }}
+                    {{ selectedExperience.name }}
                 </div>
             </ng-template>
             <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -52,13 +52,16 @@
                 class="entry" 
                 (click)="onSelectChange(lesson)"
                 title="Öffnen">
-                <img src="/assets/icons/industrial-robot.png">
+                <img src="assets/icons/mortarboard.png">
                 <div class="content">
                     <div class="content-heading">
                         {{ lesson.name }}
                     </div>
                     <div class="content-description">
-                        <div class="status-indiciator available" title="Verfügbar"></div>
+                        <div class="status-indiciator" 
+                            [class.available-local]="lesson.availableOffline" 
+                            [class.available-remote]="!lesson.availableOffline"
+                            title="{{ lesson.availableOffline == true ? 'Offline verfügbar' : 'Noch nicht heruntergeladen' }}"></div> 
                         <div class="link disabled" title="Exportiere deinen Fortschritt">Export (bald)</div>
                         <div class="link disabled" title="Fortschritt zurücksetzen">Zurücksetzen (bald)</div>
                     </div>
@@ -77,15 +80,15 @@
                 class="entry" 
                 (click)="onSelectChange(sandbox)"
                 title="Öffnen">
-                <img src="/assets/icons/industrial-robot.png">
+                <img src="assets/icons/industrial-robot.png">
                 <div class="content">
                     <div class="content-heading">
                         {{ sandbox.name }}
                     </div>
                     <div class="content-description">
-                        <div class="status-indiciator available" title="Verfügbar"></div>
+                        <div class="status-indiciator available-local" title="Offline verfügbar"></div>
                         <div class="link" title="Sandbox exportieren">Export (bald)</div>
-                        <div class="link" title="Sandbox löschen" (click)="openSandboxDeletionDialog($event, sandbox)">Löschen (bald)</div>
+                        <div class="link" title="Sandbox löschen" (click)="openSandboxDeletionDialog($event, sandbox)">Löschen</div>
                     </div>
                 </div>
                 <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
@@ -111,4 +114,3 @@
         </div>
     </div>
 </div>
-

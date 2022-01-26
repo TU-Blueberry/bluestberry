@@ -52,6 +52,7 @@ $icon-size: 24px;
 :host {
   as-split {
     max-height: calc(100vh - 48px); // subtract height of navbar
+    max-width: calc(100vw - 48px); // subtract width of actionbar
 
     ::ng-deep .as-split-gutter {
       background-color: #262626;

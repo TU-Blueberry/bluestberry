@@ -1,68 +1,86 @@
-import { AfterViewInit, Component, OnInit, QueryList, ViewChild, ViewChildren } from '@angular/core';
-import { FileType } from 'src/app/shared/files/filetypes.enum';
+import { ChangeDetectorRef, Component, OnInit, ViewChild } from '@angular/core';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { TabManagementService } from 'src/app/tab/tab-management.service';
 import { GuidedTourService } from "ngx-guided-tour";
 import { tour } from "../../../assets/guided-tour/guided-tour.data";
-import { SplitAreaDirective, SplitComponent } from 'angular-split';
-import { IArea } from 'angular-split/lib/interface';
+import { SplitComponent } from 'angular-split';
+import { Tab } from 'src/app/tab/model/tab.model';
+import { SplitAreaSettings } from '../model/split-settings';
 
 @Component({
   selector: 'app-main-viewer',
   templateUrl: './main-viewer.component.html',
   styleUrls: ['./main-viewer.component.scss']
 })
-export class MainViewerComponent implements OnInit, AfterViewInit {
+export class MainViewerComponent implements OnInit {
   filetreeVisible = true;
   terminalVisible = true;
-  types = FileType;
 
-  // TODO: left/right side closed + no tab open at all (keep in mind that lesson may be opened with no tabs as well)
-
-  // percent of viewport width
+  // percent of parent width
   readonly minSizeFiletree = 10;
-  readonly minSizeLeftTab = 10;
-  readonly minSizeRightTab = 10;
   readonly maxSizeFiletree = 30;
+  readonly minSizeTab = 10;
+  readonly maxSizeTab = 100;
   
+  // pixel
   readonly collapseSize = 34;
   readonly navbarHeight = 48;
   readonly minHeightExpanded = 200;
 
-  public testHeight = 0;
+  private _tabs: { [id: string]: Tab[]} = { 'left': [], 'right': []};
+  public _splitAreaOptions : Map<string, SplitAreaSettings> = new Map([ // use map to guarantee order of insertion when iterating 
+    ['filetree', { size: this.minSizeFiletree, visible: true }],
+    ['left', { size: 0, visible: false }],
+    ['right', { size: 0, visible: false }],
+    ['emptyMessage', { size: 0, visible: true }]
+  ])
 
-  public maxSizeLeftTab = 100
-  public maxSizeRightTab = 100;
+  @ViewChild("sidebar") sidebar?: SplitComponent;
+  @ViewChild("parent") parent?: SplitComponent;
+  constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private guidedTourService: GuidedTourService,
+    private tabManagementService: TabManagementService, private cd: ChangeDetectorRef) { 
+      this.tabManagementService.currentlyOpenTabs$.subscribe((tabs) => {
+        this.updateTabSizes(tabs);
+      });
+  }
 
-  public currentSizeFiletree = this.minSizeFiletree;
-  public currentSizeLeftTab = 45;
-  public currentSizeRightTab = 45;
+  ngOnInit(): void {
+    this.uiEv.onToggleTerminal.subscribe(() => this.terminalVisible = !this.terminalVisible);
+    this.uiEv.onStartTour.subscribe(() => {
+        this.filetreeVisible = true;
+        this.terminalVisible = true;
+        this.guidedTourService.startTour(tour);
+    });
+    this.uiEv.onHintChange.subscribe(() => {
+      // TODO
+      const path = "/abc/hint_files/root.yml"
 
-  private lastSizeFiletree = this.currentSizeFiletree;
-  private lastSizeLeftTab = 45;
-  private lastSizeRightTab = 45;
+      this.fsService.getFileAsBinary(path).subscribe(data => {
+        this.tabManagementService.openHintsManually({path: path, content: data});
+      });
+    });
+  }
 
-  private filesDirective?: IArea;
-  private glossaryDirective?: IArea;
+  // TODO: Zeug in Service verschieben
+  public updateTabSizes(tabGroups: { [id: string]: Tab[] }) {
+    const change = this.getChangeOriginAndType(tabGroups);
+    const visible = change.type === 'open';
 
-  @ViewChild(SplitComponent) splitEl!: SplitComponent
-  @ViewChildren(SplitComponent) splitEl2!: QueryList<SplitComponent>
-  @ViewChildren(SplitAreaDirective) areasEl!: QueryList<SplitAreaDirective>
-  constructor(
-    private uiEv: UiEventsService,
-    private fsService: FilesystemService,
-    private guidedTourService: GuidedTourService,
-    private tabManagementService: TabManagementService
-  ) { }
-
-  onGlossaryExpandChange(isExpanded: boolean): void {
-    this.updateSizes(true, isExpanded);
+    if (change.type !== 'other') {
+      this._splitAreaOptions.get(change.id)!.visible = visible;
+      this._splitAreaOptions.get(change.id)!.size = 0;
+      this._splitAreaOptions.get('emptyMessage')!.visible = this.isEmpty();
+      this.cd.detectChanges(); // manual call necessary, otherwise displayedAreas wouldn't update in time
+      this.redistribute();
+    }
+    
+    this._tabs = Object.assign(this._tabs, {...tabGroups})
   }
 
   // minSize doesnt work, see https://github.com/angular-split/angular-split/issues/255
-  updateSizes(isGlossary: boolean, isExpanded: boolean) {
-    const directive = isGlossary ? this.glossaryDirective : this.filesDirective;
+  public updateSidebarSizes(isGlossary: boolean, isExpanded: boolean) {
+    const directive = isGlossary ? this.sidebar?.displayedAreas[1] : this.sidebar?.displayedAreas[0] 
     let size: number;
 
     if (isExpanded) {
@@ -76,105 +94,67 @@ export class MainViewerComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onFilesExpandChange(isExpanded: boolean): void {
-    this.updateSizes(false, isExpanded);
+  // event only returns an array of sizes (ordered by the component's order number) 
+  // we assume that splitAreaOptions uses the same ordering as the components
+  public onDragEnd(ev: any): void {
+    this.parent?.setVisibleAreaSizes(ev.sizes);
+
+    [...this._splitAreaOptions.entries()]
+      .filter(([_, options]) => options.visible)
+      .forEach(([_, settings], index) => settings.size = ev.sizes[index])
   }
 
-  ngAfterViewInit(): void {
-    const areas = this.splitEl2?.get(1)?.displayedAreas;
-    this.filesDirective = areas?.[0];
-    this.glossaryDirective = areas?.[1];
+  // find first tab group where either its last tab was closed or its first tab was opened
+  private getChangeOriginAndType(tabs: {[id: string]: Tab[]}) {
+    const hasChange = Object.entries(tabs).find(([id, tabs]) => (this._tabs[id].length === 1 && tabs.length === 0) 
+                                                             || (this._tabs[id].length === 0 && tabs.length === 1))
+
+    if (hasChange) {
+      const [id, tabs] = hasChange;
+      return { id: id, type: tabs.length === 0 ? 'close' : 'open' }
+    } else {
+      return { id: '', type: 'other'}
+    }
+  }
+
+  // equally redistribute space to all visible tab groups
+  // if filetree is currently visible, its current size will be subtracted before redistributing
+  private redistribute() {
+    let areas = this.parent?.displayedAreas;
+
+    if (areas) {
+      const length = areas.length;
+      const filetreeSettings = this._splitAreaOptions.get('filetree')
+
+      const sizes = areas.map((_, index) => {
+        if (!filetreeSettings?.visible) {
+          return 100 / length;
+        } else {
+          return index === 0 ? filetreeSettings.size : (100 - filetreeSettings.size) / (length - 1)
+        }        
+      })
+      
+      this.parent?.setVisibleAreaSizes(sizes);
+      [...this._splitAreaOptions.entries()]
+          .filter(([_, options]) => options.visible)
+          .forEach(([_, settings], index) => settings.size = sizes[index])
+    }
   }
 
   public onRightClick(ev: MouseEvent, isGlossary: boolean) {
     this.uiEv.clickOutsideOfFiletree(ev, isGlossary);
   }
 
-  test(): void {
-    // assumption: lastSize has been set before calling this method
-    const hiddenElements = [this.currentSizeFiletree, this.currentSizeLeftTab, this.currentSizeRightTab].filter(size => size = 0).length;
-
-    // Würde erstmal objekte mit min, current und maxSize machen
-    // dann array von objekten
-    // vielleicht kann jedes objekt ne methode set haben, die neue größe und #anderer tabs kriegt und die difference zurückgibt
-  
-    // TODO: Muss auch maxSize anpassen (wenn rechter tab geschlossen wird kann linker z.B. größer werden)
+  public getVisibility(id: string): boolean {
+    const mapRes = this._splitAreaOptions.get(id);
+    return mapRes ? mapRes.visible : false;
   }
 
-  ngOnInit(): void {
-    // TODO: Das muss vmtl auch berechnet werden, wenn tabs geschlossen/geöffnet werden
-    this.uiEv.onFiletreeToggle.subscribe(next => { 
-      const currentSizes = this.splitEl.getVisibleAreaSizes(); 
-
-      // TODO: Store in localstorage (key: name der lektion)
-      // --> Service dafür anlegen
-      // on lesson open: load from localstorage
-      // on lesson close: store in localstorage
-      if (currentSizes[0] !== '*') {
-        let difference;
-        const openTabGroups = Number(this.currentSizeLeftTab > 0) + Number(this.currentSizeRightTab > 0)
-        this.currentSizeLeftTab = Number(currentSizes[1].valueOf())
-        this.currentSizeRightTab = Number(currentSizes[2].valueOf())
-
-        // TODO: ablauf ist ja immer ähnlich, kann man vmtl verallgemeinern?
-        // Im Sinne von: nur currentSizeFileTree setzen, dann andere Methode aufrufen die neu verteilt
-        if (next === false) { // wenn filetree gleich eingeklappt wird
-          this.lastSizeFiletree = Number(currentSizes[0].valueOf()); // müsste bei close left/close right dann deren größe sein
-          this.currentSizeFiletree = 0;
-          
-          if (openTabGroups === 0) {
-            return; // no division by zero
-          }
-
-          if (this.currentSizeLeftTab > 0) {
-            this.currentSizeLeftTab = Math.round(this.currentSizeLeftTab + (this.lastSizeFiletree / openTabGroups));
-          }
-
-          if (this.currentSizeRightTab > 0) {
-            this.currentSizeRightTab = Math.floor(this.currentSizeRightTab + (this.lastSizeFiletree / openTabGroups));
-          }
-
-          difference = 100 - (this.currentSizeRightTab + this.currentSizeLeftTab); // distribute difference to 100% equally among tabs
-        } else {
-          this.currentSizeFiletree = this.lastSizeFiletree;
-
-          if (openTabGroups === 0) {
-            return; // no division by zero
-          }
-
-          if (this.currentSizeLeftTab > 0) {
-            this.currentSizeLeftTab = Math.floor(this.currentSizeLeftTab - (this.lastSizeFiletree / openTabGroups));
-          }
-
-          if (this.currentSizeRightTab > 0) {
-            this.currentSizeRightTab = Math.floor(this.currentSizeRightTab - (this.lastSizeFiletree / openTabGroups));
-          }
-
-          difference = 100 - (this.currentSizeRightTab + this.currentSizeLeftTab + this.currentSizeFiletree); 
-        }
-
-        this.currentSizeLeftTab += difference / 2;
-        this.currentSizeRightTab += difference / 2;
-        this.lastSizeLeftTab = this.currentSizeLeftTab;
-        this.lastSizeRightTab = this.currentSizeRightTab;
-      }
-    });
-    this.uiEv.onToggleTerminal.subscribe(() => this.terminalVisible = !this.terminalVisible);
-    this.uiEv.onStartTour.subscribe(
-      () => {
-        this.filetreeVisible = true;
-        this.terminalVisible = true;
-        this.guidedTourService.startTour(tour);
-      }
-    );
-    this.uiEv.onHintChange.subscribe(() => {
-
-      // TODO
-      const path = "/sortierroboter/hint_files/root.yml"
-
-      this.fsService.getFileAsBinary(path).subscribe(data => {
-        this.tabManagementService.openHintsManually({path: path, content: data});
-      });
-    });
+  // empty if no tab group is visible
+  private isEmpty(): boolean {
+    return ![...this._splitAreaOptions.entries()]
+      .filter(([id, _]) => id !== 'filetree' && id !== 'emptyMessage')
+      .map(([_, settings]) => settings.visible)
+      .reduce((a, b) => a || b)
   }
 }

@@ -1,7 +1,7 @@
 import {EventEmitter, Injectable} from '@angular/core';
 import {Location} from '@angular/common';
 import initCode from '!raw-loader!../../assets/util/init.py';
-import {BehaviorSubject, concat, defer, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
+import {BehaviorSubject, concat, defer, EMPTY, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
 import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 
 @Injectable({
@@ -10,6 +10,7 @@ import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 export class PyodideService {
   // standard packages included with pyodide
   static readonly DEFAULT_LIBS = ['micropip'];
+  static readonly startFolderName = '';
   private results$ = new BehaviorSubject([]);
   // cache 1000 lines of stdout and stderr
   private stdOut$ = new ReplaySubject<string>(1000);
@@ -102,15 +103,16 @@ export class PyodideService {
     return this.afterExecution$;
   }
 
-  private runCodeSilently(code: string): Observable<void> {
+  private runCodeSilently(code: string): Observable<never> {
     return this.pyodide.pipe(switchMap(pyodide => {
-      return defer(() => from(pyodide.runPythonAsync(code)));
+      pyodide.runPythonAsync(code);
+      return EMPTY;
     }));
   }
 
-  public addToSysPath(path: string): Observable<void> {
-    console.log("ADD TO SYS PATH!")
-    const fullPath = path.startsWith("/") ? path : `/${path}`;
+  public addToSysPath(path: string): Observable<never> {
+    const fullPath = `${!path.startsWith('/') ? '/' : ''}${path}`;
+    console.log("ADD TO SYS PATH!", path, fullPath)
 
     const code = `
 import sys
@@ -121,8 +123,8 @@ if "${fullPath}" not in sys.path:
     return this.runCodeSilently(code);
   }
 
-  public removeFromSysPath(path: string): Observable<void> {
-    const fullPath = path.startsWith("/") ? path : `/${path}`;
+  public removeFromSysPath(path: string): Observable<never> {
+    const fullPath = `${!path.startsWith('/') ? '/' : ''}${path}`;
     const code = `
 import sys
 

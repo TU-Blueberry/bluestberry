@@ -35,7 +35,7 @@ declare class FSNode {
 }
 
 declare interface FSTypes {
-  IDBFS: any;
+  IDBFS: { "dbs": { [name: string]: IDBDatabase } };
 }
 
 type allowedEncodings = "binary" | "utf8";

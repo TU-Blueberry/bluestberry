@@ -3,9 +3,9 @@
     (contextmenu)="toggleContextMenu($event)">
     <div class="file-heading">
         <app-file-icons class="file-icons" [data]="isRenaming ? {path: tentativeName} : {path: node.path}" [isTentative]="node.isTentativeNode"></app-file-icons>
-        <ng-container class="file-name" *ngIf="!isRenaming">
+        <div class="file-name" *ngIf="!isRenaming">
             {{ node.name }}
-        </ng-container> 
+        </div> 
         <div *ngIf="isRenaming">
             <app-user-input [parentPath]="node.parentPath" [depth]="node.depth" [isFile]="true" [editMode]="true" 
             [currentName]="node.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"
@@ -14,6 +14,6 @@
     </div>
     <div *ngIf="!isRenaming" class="common-actions" [class.show]="showContextMenu" [style.top.px]="offsetY - 20" [style.left.px]="offsetX">
         <app-common-actions [isRoot]="node.isRoot" [isFile]="true" [mode]="node.mode || -1 "(close)="closeContextMenu()"
-        (delete)="this.deleteFile($event)" (startRenaming)="this.startRenaming($event)"></app-common-actions>
+        (delete)="this.deleteFile($event)" (startRenaming)="this.startRenaming($event)" [isVisible]="showContextMenu"></app-common-actions>
     </div>
 </div>

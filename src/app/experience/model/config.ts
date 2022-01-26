@@ -1,11 +1,13 @@
-import { ExperienceType } from "src/app/lesson/model/experience-type";
+import { ExperienceType } from "src/app/experience/model/experience-type";
+import { SplitAreaSettings } from "src/app/viewer/model/split-settings";
 
-export interface ConfigObject {
-    open: { path: string, on: string}[];
+export interface Config {
+    open: { path: string, on: string }[];
+    uuid: string;
     name: string;
     type: ExperienceType;
-    tabSizes: number[];
-    unityEntryPoint: string;
+    splitSettings: [string, SplitAreaSettings][] // info about sizes and visibility of filetree (stored as array for easier use as a Map later on)
+    unityEntryPoint?: string;
     encrypted: string[]; // paths which will be encrypted upon export (config.json is always encrypted)
     hidden: string[]; // paths which will be hidden from the UI and (recursive)
     external: string[]; // paths which be mounted to a seperate mountpoint (read only, recursive) before pyodide execution and dismounted afterwards

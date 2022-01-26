@@ -110,8 +110,12 @@ hr {
     background-color: #8f8f8f;
 }
 
-.available {
+.available-local {
     background-color: #219653;
+}
+
+.available-remote {
+    background-color: #f2b32c;
 }
 
 .empty, .content-description {

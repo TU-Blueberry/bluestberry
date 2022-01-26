@@ -1,4 +1,6 @@
 import {Component, Input, OnInit} from '@angular/core';
+import { Tab } from 'src/app/tab/model/tab.model';
+import { TabManagementService } from 'src/app/tab/tab-management.service';
 
 @Component({
   selector: 'app-tab-group-facade',
@@ -10,9 +12,12 @@ export class TabGroupFacadeComponent implements OnInit {
   @Input()
   id = '';
 
-  constructor() { }
+  constructor(private tabService: TabManagementService) { }
 
   ngOnInit(): void {
   }
 
+  updateTabGroup(tabs: Tab[]): void {
+    this.tabService.updateTabGroups(this.id, tabs);
+  }
 }

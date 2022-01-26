@@ -8,8 +8,8 @@ import { ZipService } from '../zip/zip.service';
 import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
-import { LessonEventsService } from 'src/app/lesson/lesson-events.service';
-import { Experience } from 'src/app/lesson/model/experience';
+import { ExperienceEventsService } from 'src/app/experience/experience-events.service';
+import { Experience } from 'src/app/experience/model/experience';
 import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
 
 @Component({
@@ -41,16 +41,16 @@ export class FiletreeComponent implements OnDestroy{
   @ViewChild('content', { read: ViewContainerRef }) ref!: ViewContainerRef;
   constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
     private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
-    private lse: LessonEventsService, private gs: GlossaryService, private cd: ChangeDetectorRef) { }
+    private ees: ExperienceEventsService, private gs: GlossaryService, private cd: ChangeDetectorRef) { }
 
   private init(): void {
     if (!this._isGlossary) {
-      this.lse.onExperienceOpened.subscribe((lesson) => {
+      this.ees.onExperienceOpened.subscribe((lesson) => {
         this.SELECTED_LESSON = lesson;
         this.kickstartTreeGeneration();
       })
 
-      this.lse.onExperienceClosed.subscribe(() => {
+      this.ees.onExperienceClosed.subscribe(() => {
         this.ref.clear();
       })
     }
@@ -66,7 +66,7 @@ export class FiletreeComponent implements OnDestroy{
   private kickstartTreeGeneration(additionalGlossaryEntries?: { path: string; node: FSNode; }[]) {  
     this.ref.clear();
 
-    const path = this._isGlossary ? '/glossary' : `/${this.SELECTED_LESSON?.name}`;
+    const path = this._isGlossary ? '/glossary' : `/${this.SELECTED_LESSON?.uuid}`;
     const name = this._isGlossary ? 'Glossar' : this.SELECTED_LESSON?.name;
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     const folderComp = this.ref.createComponent(folderFactory).instance;
@@ -79,7 +79,6 @@ export class FiletreeComponent implements OnDestroy{
       folderComp.closeContextMenu();
       folderComp.toggleContextMenu(click.ev);
     });
-
 
     this.fsService.getNodeByPath(path).subscribe((node) => {
       folderComp.node = baseNode.generateTreeNode(0, path, node, name);

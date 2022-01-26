@@ -4,8 +4,9 @@ import { Injectable } from '@angular/core';
 import { concat, forkJoin, Observable, of, ReplaySubject, zip } from 'rxjs';
 import { filter, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
-import { LessonEventsService } from 'src/app/lesson/lesson-events.service';
-import { ExperienceType } from 'src/app/lesson/model/experience-type';
+import { ExperienceEventsService } from 'src/app/experience/experience-events.service';
+import { ExperienceType } from 'src/app/experience/model/experience-type';
+import { SplitAreaSettings } from 'src/app/viewer/model/split-settings';
 
 @Injectable({
   providedIn: 'root'
@@ -13,11 +14,11 @@ import { ExperienceType } from 'src/app/lesson/model/experience-type';
 export class GlossaryService {
   public glossaryEntries$ = new ReplaySubject<{path: string, node: FSNode}[]>();
 
-  constructor(private lse: LessonEventsService, private fs: FilesystemService, private http: HttpClient, private location: Location) {
-    lse.onExperienceOpened.subscribe((exp) => this.changeGlossary(exp))
+  constructor(private ees: ExperienceEventsService, private fs: FilesystemService, private http: HttpClient, private location: Location) {
+    ees.onExperienceOpened.subscribe((exp) => this.changeGlossary(exp))
   }
 
-  private changeGlossary(exp: {open: {path: string, on: string}[], name: string, type: ExperienceType, tabSizes: number[]}) {
+  private changeGlossary(exp: {open: {path: string, on: string}[], name: string, type: ExperienceType, splitSettings: [string, SplitAreaSettings][] }) {
     const expGlossary: Observable<FSNode[][]> = this.fs.exists(`/${exp.name}/glossary`).pipe(
       switchMap(exists => {
         const empty: FSNode[][] = [[], []];
@@ -61,17 +62,17 @@ export class GlossaryService {
         return concat(
           this.fetchNewEntries(newEntries),
           this.deleteEntries(toDelete),
-          this.checkRemaining(remaining)
+          this.checkRemaining(remaining),
+          this.fs.sync(false)
         )
       })
     )
   }
 
-  // TODO: wegen sync gucken
   private fetchNewEntries(newEntries: string[]) {
     return forkJoin(
       newEntries.map(entry => this.http.get(this.location.prepareExternalUrl(`/assets/glossary/${entry}`), {responseType: 'text'}).pipe(
-        switchMap(res => this.fs.createFile(`/glossary/${entry}`, res, true, 0o555))
+        switchMap(res => this.fs.createFile(`/glossary/${entry}`, res, false, 0o555))
       ))
     )
   }

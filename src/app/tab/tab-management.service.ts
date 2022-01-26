@@ -6,25 +6,31 @@ import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event
 import {OpenTabEvent} from 'src/app/tab/model/open-tab-event';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
 import {FileType} from '../shared/files/filetypes.enum';
-import {LessonEventsService} from '../lesson/lesson-events.service';
-
+import {ExperienceEventsService} from '../experience/experience-events.service';
+import { Tab } from './model/tab.model';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TabManagementService {
   private _openTab = new Subject<OpenTabEvent>();
+  private _openTabGroups = new Subject<{[id: string]: Tab[]}>();
+  private _tabGroups: { [id: string]: Tab[] } = {};
 
   get openTab$() {
     return this._openTab.asObservable();
   }
 
+  get currentlyOpenTabs$() {
+    return this._openTabGroups.asObservable();
+  }
+
   constructor(
     private filesystemEventService: FilesystemEventService,
     private filesystemService: FilesystemService,
-    private lessonEventService: LessonEventsService
+    private experienceEventService: ExperienceEventsService
   ) {
-    const lesson$ = lessonEventService.onExperienceOpened.pipe(
+    const lesson$ = experienceEventService.onExperienceOpened.pipe(
         switchMap(({open}) => concat(...open.map(file => {
           if (file.path.toLowerCase().endsWith('unity')) {
             return of({
@@ -82,6 +88,11 @@ export class TabManagementService {
       default:
         return 'CODE';
     }
+  }
+  
+  updateTabGroups(id: string, tabs: Tab[]): void {
+    this._tabGroups[id] = [...tabs];
+    this._openTabGroups.next(this._tabGroups);
   }
 
   private mapFileTypeToTabGroup(fileType?: FileType): string {

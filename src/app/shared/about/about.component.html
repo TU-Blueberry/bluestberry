@@ -5,10 +5,12 @@
 <div>
     Icons (Suche und Aktionselemente): <a href="https://github.com/mikolajdobrucki/ikonate">Ikonate</a>
 </div>
-<div>
-    <div *ngFor="let icon of icons" class="entry">
-        <img src='/assets/icons/{{icon.path}}.png'>
-        <div>Icons made by <a href='{{icon.url}}' title='{{icon.name}}'>{{icon.name}}</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a></div>
-    </div>
+<div class="icon-grid"> 
+    <a *ngFor="let icon of icons" class="entry" href='{{icon.url}}' title='{{icon.name}}' target="_blank">
+        <img src='assets/icons/{{icon.path}}.png'>
+        <div>Icons made by </div>
+    </a>
 </div>
+
+<!-- <a href='{{icon.url}}' title='{{icon.name}}'>{{icon.name}}</a> from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a> -->
 

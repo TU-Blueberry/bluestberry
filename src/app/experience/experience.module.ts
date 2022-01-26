@@ -1,19 +1,18 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { LessonSelectionComponent } from './lesson-selection/lesson-selection.component';
+import { ExperienceSelectionComponent } from './experience-selection/experience-selection.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../shared/shared.module';
 import { SandboxCreationComponent } from './sandbox-creation/sandbox-creation.component';
-import { ModalComponent } from '../shared/modal/modal.component';
 
 @NgModule({
-  declarations: [LessonSelectionComponent, SandboxCreationComponent],
+  declarations: [ExperienceSelectionComponent, SandboxCreationComponent],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     SharedModule
   ],
-  exports: [LessonSelectionComponent]
+  exports: [ExperienceSelectionComponent]
 })
-export class LessonModule { }
+export class ExperienceModule { }

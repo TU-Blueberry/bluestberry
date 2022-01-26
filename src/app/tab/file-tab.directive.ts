@@ -64,6 +64,6 @@ export class FileTabDirective implements OnInit {
       console.warn('Tried to save file without path')
       return EMPTY
     }
-    return this.filesystemService.writeToFile(this.tab?.data?.path, content)
+    return this.filesystemService.writeToFile(this.tab?.data?.path, content, true)
   }
 }

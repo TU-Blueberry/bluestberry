@@ -8,7 +8,7 @@ import { UserInputComponent } from './user-input/user-input.component';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonActionsComponent } from './common-actions/common-actions.component';
 import { SharedModule } from '../shared/shared.module';
-import { LessonModule } from '../lesson/lesson.module';
+import { ExperienceModule } from '../experience/experience.module';
 
 /**
  * Module for Filesystem-Management related Classes.
@@ -29,7 +29,7 @@ import { LessonModule } from '../lesson/lesson.module';
     FormsModule, 
     ReactiveFormsModule,
     SharedModule,
-    LessonModule
+    ExperienceModule
   ],
   exports: [
     FiletreeComponent

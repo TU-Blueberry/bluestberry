@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { delay } from 'rxjs/operators';
-import { LessonEventsService } from './lesson/lesson-events.service';
+import { ExperienceEventsService } from './experience/experience-events.service';
 import { UiEventsService } from './ui-events.service';
 
 @Component({
@@ -13,10 +13,10 @@ export class AppComponent {
   isLoading = true;
   showAbout = false;
 
-  constructor(private lse: LessonEventsService, private uiEv: UiEventsService) {
-    this.lse.onExperienceOpened.pipe(delay(1000)).subscribe(
-      () => {this.isLoading = false}, 
-      (err: any) => { console.error(err) }, 
+  constructor(private ees: ExperienceEventsService, private uiEv: UiEventsService) {
+    this.ees.onExperienceOpened.pipe(delay(200)).subscribe(
+      (exp) => this.isLoading = false, 
+      (err: any) => console.error(err), 
       () => this.isLoading = false
     )
 

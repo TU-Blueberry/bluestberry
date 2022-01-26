@@ -4,7 +4,7 @@ import { JSZipObject } from 'jszip';
 import { from, Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { FilesystemService } from '../filesystem.service';
-import { ConfigObject } from '../model/config';
+import { Config } from 'src/app/experience/model/config';
 import { saveAs } from 'file-saver';
 
 @Injectable({
@@ -13,16 +13,18 @@ import { saveAs } from 'file-saver';
 export class ZipService {
   constructor(private fsService: FilesystemService) { }
 
-  getConfigFromStream(unzipped: JSZip): Observable<ConfigObject> {
+  // TODO: nicht löschen!
+  // Kann für Reset umfunktioniert werden!
+  getConfigFromStream(unzipped: JSZip): Observable<Config> {
     return this.getFileFromZip("config.json", unzipped).pipe(switchMap(config => {
       const stream = config.internalStream("string");
 
-      return new Observable<ConfigObject>(subscriber => {
+      return new Observable<Config>(subscriber => {
         stream.on("error", () => subscriber.error("Error trying to stream config"));
         stream.accumulate().then((data => {
-          const parsedConfig: ConfigObject = JSON.parse(data);
+          const parsedConfig: Config = JSON.parse(data);
         
-          if (parsedConfig.name) {
+          if (parsedConfig.uuid) {
             subscriber.next(parsedConfig);
             subscriber.complete();
           } else {
