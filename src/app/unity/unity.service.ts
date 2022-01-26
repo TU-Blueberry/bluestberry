@@ -1,3 +1,4 @@
+import { ThrowStmt } from '@angular/compiler'
 import { Injectable } from '@angular/core'
 import { FilesystemService } from '../filesystem/filesystem.service'
 import { PythonCallable } from '../python-callable/python-callable.decorator'
@@ -109,18 +110,18 @@ export class UnityService {
   // Send a Berry delimited by commata: trait,classification,imagePath
   @PythonCallable
   public sendManualBerry(berry: string) {
-    const berryParts: string[] = berry.split(',')
-    const imagePath = berryParts[2]
-    const berryImage = this.fsService.getFileAsBinary(imagePath)
+    var berryParts: string[] = berry.split(',')
+    var imagePath = berryParts[2]
+    var berryImage = this.fsService.getFileAsBinary(imagePath)
     console.log(imagePath)
 
     // TODO: This is bad practice but I can't help it right now.
     if (!berryImage) {
       return
     }
-    this.gameInstance.SendMessage('AngularCommunicator', 'queueBerry', berry)
 
     berryImage.subscribe((result) => {
+      console.log(berryImage)
       if (result instanceof Uint8Array) {
         var blob = new Blob([result], { type: 'image/png' })
 

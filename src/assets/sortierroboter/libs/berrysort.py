@@ -51,7 +51,8 @@ class TestDataLoader:
         test_images = [entry[0] for entry in self._loaded_test_data]
         y_pred = predict_func(test_images)
 
-        js.enableManual()
+        js.reset()
+        
         for i in range(len(self._loaded_test_data)):
             arg = "{},{},{}".format(self._loaded_test_data[i][1], y_pred[i], self._loaded_test_data[i][2])
             js.sendManualBerry(arg)
