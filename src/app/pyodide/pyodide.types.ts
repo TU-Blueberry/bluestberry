@@ -16,6 +16,8 @@ export enum MessageType {
   SETUP_PYTHON_CALLABLE = 'SETUP_PYTHON_CALLABLE',
   PYTHON_CALLABLE = 'PYTHON_CALLABLE',
   SET_PYODIDE_LOCATION = 'SET_PYODIDE_LOCATION',
+  PRELOAD_LIBS = 'PRELOAD_LIBS',
+  LOADED_LIB = 'LOADED_LIB',
 }
 
 export type MessageData = ExecutionRequestData | GlobalRequestData | PythonCallableData | string | string[];

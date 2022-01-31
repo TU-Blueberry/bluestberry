@@ -3,6 +3,7 @@ import {Location} from '@angular/common';
 import {defer, Observable, Subject} from 'rxjs';
 import {filter, map, shareReplay} from 'rxjs/operators';
 import {MessageType, PyodideWorkerMessage, PythonCallableData} from 'src/app/pyodide/pyodide.types';
+import {LessonEventsService} from 'src/app/lesson/lesson-events.service';
 
 @Injectable({
   providedIn: 'root',
@@ -14,22 +15,23 @@ export class PyodideService {
 
   onMessageListener$ = new Subject<PyodideWorkerMessage>();
 
-  _modulePaths: string[] = [];
+  private loadedLibs: string[] = [];
+  private pythonCallbacks: string[] = [];
+  private _modulePaths: string[] = [];
   set modulePaths(paths: string[]) {
     this._modulePaths = paths;
-    this.worker.postMessage({ type: MessageType.SET_SYSPATH, data: paths })
+    this.worker.postMessage({ type: MessageType.SET_SYSPATH, data: paths });
   }
 
-  constructor(private location: Location) {
-    if (typeof Worker !== 'undefined') {
-      this.worker = new Worker(new URL('./pyodide.worker', import.meta.url));
-      this.worker.onmessage = ({ data }) => {
-        this.onMessageListener$.next(data);
-      };
-      this.worker.postMessage({ type: MessageType.SET_PYODIDE_LOCATION, data: location.prepareExternalUrl('/assets/pyodide')})
-    } else {
-      console.error('WebWorkers not supported by this Environment...');
-    }
+  constructor(private location: Location,
+              private lessonEventService: LessonEventsService) {
+    this.lessonEventService.onExperienceOpened.pipe(
+      map(lessonEvent => lessonEvent.preloadPythonLibs),
+    ).subscribe(preloadedPythonLibs => {
+      this.loadedLibs = this.loadedLibs.concat(preloadedPythonLibs);
+      this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: preloadedPythonLibs });
+    })
+    this.initWorker();
   }
 
   private initPyodide(): Observable<Pyodide> {
@@ -51,6 +53,25 @@ export class PyodideService {
     );
   }
 
+  private initWorker() {
+    if (typeof Worker !== 'undefined') {
+      this.worker = new Worker(new URL('./pyodide.worker', import.meta.url));
+      this.worker.onmessage = ({ data }) => {
+        this.onMessageListener$.next(data);
+      };
+      this.worker.postMessage({ type: MessageType.SET_PYODIDE_LOCATION, data: this.location.prepareExternalUrl('/assets/pyodide')});
+      if (this._modulePaths.length > 0) {
+        // just execute the setter again
+        this.modulePaths = this._modulePaths;
+      }
+      if (this.pythonCallbacks.length > 0) {
+        this.setupPythonCallables(this.pythonCallbacks);
+      }
+    } else {
+      console.error('WebWorkers not supported by this Environment...');
+    }
+  }
+
   runCode(code: string): Observable<any> {
     this.worker.postMessage({ type: MessageType.EXECUTE, data: { code }})
     return this.onMessageListener$.pipe(
@@ -60,7 +81,7 @@ export class PyodideService {
   }
 
   // We use python globals() to store the result from matplotlib
-  getGlobal(key: string): Observable<string[]> {
+  private getGlobal(key: string): Observable<string[]> {
     this.worker.postMessage({ type: MessageType.GET_GLOBAL, data: { key }})
     return this.onMessageListener$.pipe(
       filter(message => message.type === MessageType.GET_GLOBAL),
@@ -68,7 +89,7 @@ export class PyodideService {
     );
   }
 
-  setGlobal(key:string, value: any): Observable<void> {
+  private setGlobal(key:string, value: any): Observable<void> {
     this.worker.postMessage({ type: MessageType.SET_GLOBAL, data: { key, value }})
     return this.onMessageListener$.pipe(
       filter(message => message.type === MessageType.SET_GLOBAL),
@@ -76,7 +97,7 @@ export class PyodideService {
     );
   }
 
-  deleteGlobal(key: string): Observable<void> {
+  private deleteGlobal(key: string): Observable<void> {
     return this.pyodide.pipe(map(pyodide => {
       if (pyodide.globals.has(key)) {
         pyodide.globals.delete(key);
@@ -112,6 +133,7 @@ export class PyodideService {
   }
 
   setupPythonCallables(callbacks: string[]): Observable<PythonCallableData> {
+    this.pythonCallbacks = callbacks;
     this.worker.postMessage({ type: MessageType.SETUP_PYTHON_CALLABLE, data: callbacks });
     return this.onMessageListener$.pipe(
       filter(({ type }) => type === MessageType.PYTHON_CALLABLE),

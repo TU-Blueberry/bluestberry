@@ -18,6 +18,7 @@ const stdOut$ = new ReplaySubject<string>(1000);
 const stdErr$ = new ReplaySubject<string>(1000);
 const afterExecution$ = new Subject<void>();
 const pythonCallable$ = new Subject<PythonCallableData>();
+const loadedLib$ = new Subject<string>();
 let _modulePaths: string[] = [];
 let pyodide: Observable<Pyodide>;
 
@@ -29,6 +30,7 @@ merge(
   stdErr$.pipe(messageMapper(MessageType.STD_ERR)),
   afterExecution$.pipe(messageMapper(MessageType.AFTER_EXECUTION)),
   pythonCallable$.pipe(messageMapper(MessageType.PYTHON_CALLABLE)),
+  loadedLib$.pipe(messageMapper(MessageType.LOADED_LIB)),
 ).subscribe(message => {
   console.log('posting message to main thread: ', message);
   postMessage(message);
@@ -55,6 +57,9 @@ addEventListener('message', ({ data }: { data: PyodideWorkerMessage }) => {
           pythonCallable$.next({ name, params });
         };
       });
+      break;
+    case MessageType.PRELOAD_LIBS:
+      preloadLibs(data.data as string[]);
       break;
     default:
       console.warn(`unknown messageType: ${data.type} Ingoring...`);
@@ -100,42 +105,15 @@ function runCode(code: string): Observable<any> {
   }));
 }
 
-// We use python globals() to store the result from matplotlib
-function getGlobal(key: string): Observable<string[]> {
-  return pyodide.pipe(map(pyodide => {
-    const strings = pyodide.globals.get(key)?.toJs();
-    return strings !== undefined ? strings : [];
-  }));
+function preloadLibs(libs: string[]) {
+  const libString = `["${libs.join('","')}"]`;
+  pyodide.pipe(
+    switchMap(pyodide => pyodide.runPythonAsync(`await load_libs(${libString})`))
+  ).subscribe();
 }
 
-function setGlobal(key: string, value: any): Observable<void> {
-  return pyodide.pipe(map(pyodide => {
-    pyodide.globals.set(key, value);
-  }));
-}
-
-function deleteGlobal(key: string): Observable<void> {
-  return pyodide.pipe(map(pyodide => {
-    if (pyodide.globals.has(key)) {
-      pyodide.globals.delete(key);
-    }
-  }));
-}
-
-function getResults(): Observable<any> {
-  return results$.asObservable();
-}
-
-function getStdOut(): Observable<string> {
-  return stdOut$.asObservable();
-}
-
-function getStdErr(): Observable<string> {
-  return stdErr$.asObservable();
-}
-
-function getAfterExecution(): Subject<void> {
-  return afterExecution$;
+function notifyLoadedPackage(lib: string) {
+  loadedLib$.next(lib);
 }
 
 function addToSysPath(): string {

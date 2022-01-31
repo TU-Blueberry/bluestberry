@@ -6,14 +6,14 @@ import { ExperienceType } from './model/experience-type';
   providedIn: 'root'
 })
 export class LessonEventsService {
-  onExperienceOpened: EventEmitter<{open: {path: string, on: string}[], name: string, type: ExperienceType, tabSizes: number[]}> = new EventEmitter();
+  onExperienceOpened: EventEmitter<{open: {path: string, on: string}[], name: string, type: ExperienceType, tabSizes: number[], preloadPythonLibs: string[]}> = new EventEmitter();
   onExperienceClosed: EventEmitter<string> = new EventEmitter();
 
   constructor() { }
 
   emitExperienceOpened(config: ConfigObject): void {
     const fullPath = config.type === 'LESSON' ? `/${config.name}` : `/sandboxes/${config.name}`;
-    this.onExperienceOpened.emit({open: config.open.map(({path, on}) => ({path: `${fullPath}/${path}`, on})), name: config.name, type: config.type, tabSizes: config.tabSizes});
+    this.onExperienceOpened.emit({open: config.open.map(({path, on}) => ({path: `${fullPath}/${path}`, on})), name: config.name, type: config.type, tabSizes: config.tabSizes, preloadPythonLibs: config.preloadPythonLibs});
   }
 
   emitExperienceClosed(name: string): void {

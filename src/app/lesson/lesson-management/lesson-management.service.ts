@@ -59,7 +59,8 @@ export class LessonManagementService {
       hidden: [],
       external: [],
       readonly: [],
-      glossaryEntryPoint: ''
+      glossaryEntryPoint: '',
+      preloadPythonLibs: [],
     }
 
     const helper = new Observable(subscriber => {

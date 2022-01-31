@@ -12,4 +12,5 @@ export interface ConfigObject {
     readonly: string[]; // paths which should be read only (recursive), e.g. lesson description
     modules?: string[]; // Optional: paths to our custom python modules; will be set to hidden and read-only if specified
     glossaryEntryPoint: string; // will be copied to global glossary scope (read only, recursive)
+    preloadPythonLibs: string[];
 }

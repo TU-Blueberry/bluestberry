@@ -17,5 +17,6 @@
   ],
   "external": [],
   "readonly": ["BlueberryData/TrainingData", "hint_files", "unity"],
-  "modules": ["libs"]
+  "modules": ["libs"],
+  "preloadPythonLibs": ["skimage", "plotly"]
 }
