@@ -244,7 +244,7 @@ export class HintViewerComponent implements OnInit {
 
   openGlossary(glossaryFileName: string): void {
 
-    const path = "glossary/" + glossaryFileName
+    const path = "/glossary/" + glossaryFileName
     console.log("opening glossary at " + path)
 
     this.fsService.getFileAsBinary(path).subscribe(node => {
