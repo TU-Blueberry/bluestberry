@@ -1,5 +1,11 @@
 $icon-size: 24px;
 
+#main-wrapper {
+  display: grid;
+  height: 100%;
+  width: 100%;
+}
+
 .svg-icon {
   width: $icon-size;
   height: $icon-size;
@@ -8,6 +14,10 @@ $icon-size: 24px;
 .monaco-editor {
   overflow: hidden;
   height: 100%;
+}
+
+#split-left, #split-terminal {
+  overflow-y: hidden;
 }
 
 /* über variablen berechnen? speichere in var wie breit die trenner + seitenleiste links ist */
@@ -50,7 +60,7 @@ $icon-size: 24px;
 }
 
 app-terminal-viewer {
-  height: 98%;
+  height: 99%;
   display: inherit;
 }
 
