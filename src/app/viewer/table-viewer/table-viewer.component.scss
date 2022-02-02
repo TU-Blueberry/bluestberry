@@ -1,0 +1,11 @@
+
+@import '@pebula/ngrid/themes/default-dark.css';
+
+.root { 
+    flex-direction: column;
+    max-width: 100%;
+}
+
+.pbl-ngrid-container {
+    height: 100vh;
+}

@@ -1,4 +1,32 @@
-<div>
-    <p>table-viewer works!</p>
-    <pbl-ngrid [dataSource]="decodedData"></pbl-ngrid>
+<div class="root">
+    <button (click)="test()">Save Changes</button>
+    <pbl-ngrid 
+        #pblTbl
+        matSort
+        rowReorder columnReorder
+        [dataSource]="pblDatasource" 
+        [columns]="pblColumns"
+        class="pbl-ngrid-cell-ellipsis pbl-ngrid-header-cell-ellipsis">
+        
+        <div *pblNgridHeaderCellDef="'*'; col as col">
+            <span 
+                style="font-size: 22px; font-weight: bold">
+                {{col.label}}
+            </span>
+        </div>
+
+        <div *pblNgridNoDataRef class="pbl-ngrid-no-data">
+            <span>No Results</span>
+        </div>
+
+        <div *pblNgridCellDef="'*'; let ctx">
+            <a (click)="ctx.startEdit(true)">{{ ctx.value }}</a>
+        </div>
+
+        <div *pblNgridCellEditorDef="'*'; let ctx">
+            <input #input [value]="ctx.value" [pblCellEditAutoFocus]="ctx" (change)="ctx.value = input.value" (blur)="ctx.stopEdit()" />
+        </div>
+        
+    </pbl-ngrid>
+  
 </div>

@@ -1,4 +1,6 @@
+@use '@angular/material' as mat;
 @import '../styles.scss';
+
 
 // Sorry I had to Disable the flexing for a bit since a "ResizeObserver Loop" error occured that I couldn't fix for now.
 // https://stackoverflow.com/questions/49384120/resizeobserver-loop-limit-exceeded Schon dabei es zu fixen.

@@ -78,6 +78,7 @@ export class TabManagementService {
     switch (fileType) {
       case FileType.IMAGE: return 'IMAGE';
       case FileType.PROGRAMMING_LANGUAGE: return 'CODE';
+      case FileType.TABULAR: return 'TABLE';
       case FileType.MARKDOWN: return 'MARKDOWN';
       default:
         return 'CODE';
@@ -89,8 +90,9 @@ export class TabManagementService {
       case FileType.PROGRAMMING_LANGUAGE:
       case FileType.JSON:
       case FileType.TEX:
-      case FileType.DATA:
-        return 'left';
+        case FileType.DATA:
+          return 'left';
+      case FileType.TABULAR:
       case FileType.IMAGE:
       case FileType.MARKDOWN:
         return 'right';

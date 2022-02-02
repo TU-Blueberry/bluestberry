@@ -10,6 +10,7 @@ import { TerminalViewerComponent } from './terminal-viewer/terminal-viewer.compo
 import { ImageViewerComponent } from './image-viewer/image-viewer.component'
 import { MainViewerComponent } from './main-viewer/main-viewer.component'
 import { AngularSplitModule } from 'angular-split'
+import { MatSortModule } from '@angular/material/sort'
 import { HintViewerComponent } from './hint-viewer/hint-viewer.component'
 import { FilesystemModule } from '../filesystem/filesystem.module'
 import { MarkdownViewerComponent } from "./markdown-viewer/markdown-viewer.component";
@@ -53,6 +54,7 @@ import { PblNgridModule, PblNgridRegistryService } from '@pebula/ngrid';
     FilesystemModule,
     MarkdownModule,
     TabModule,
+    MatSortModule,
     PblNgridModule
   ],
   exports: [

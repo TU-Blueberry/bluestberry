@@ -6,6 +6,7 @@ export enum FileType {
     TEX,
     JSON, 
     PLAIN_TEXT,
+    TABULAR, 
     OTHER
 }
 
@@ -27,10 +28,10 @@ export class FileTypes {
         ["JPEG", FileType.IMAGE],
         ["PNG", FileType.IMAGE],
         ["TIFF", FileType.IMAGE],
-        ["CSV", FileType.DATA],
+        ["CSV", FileType.TABULAR],
         ["XLS", FileType.DATA],
         ["XLSX", FileType.DATA],
-        ["JSON", FileType.JSON],
+        ["JSON", FileType.DATA],
         ["TXT", FileType.PLAIN_TEXT]
     ])
 
