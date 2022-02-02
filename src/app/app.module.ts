@@ -20,7 +20,9 @@ import { SharedModule } from './shared/shared.module';
 import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
 import { LessonModule } from './lesson/lesson.module';
 import { SearchComponent } from './search/search.component';
-import {PyodideService} from 'src/app/pyodide/pyodide.service';
+import { PlotlyModule } from './plotly/plotly.module';
+import { PyodideService } from 'src/app/pyodide/pyodide.service';
+
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -43,6 +45,7 @@ export function markedOptionsFactory(): MarkedOptions {
     FormsModule,
     FilesystemModule,
     UnityModule,
+    PlotlyModule,
     SharedModule, 
     HttpClientModule,
     GuidedTourModule,

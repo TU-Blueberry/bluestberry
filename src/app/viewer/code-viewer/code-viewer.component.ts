@@ -10,6 +10,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import { FileTabDirective } from 'src/app/tab/file-tab.directive'
 import {forkJoin, Subject} from 'rxjs'
 import { concatMap, debounceTime, switchMap, tap } from 'rxjs/operators'
+import { TabManagementService } from 'src/app/tab/tab-management.service';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
 
 @Component({
@@ -141,8 +142,9 @@ main()
   saveSubject = new Subject<void>()
   constructor(
     private pyodideService: PyodideService,
-    private filesystemService: FilesystemService,
-    private fileTabDirective: FileTabDirective
+    private fileTabDirective: FileTabDirective,
+    private tabManagementService: TabManagementService,
+    private filesystemService: FilesystemService
   ) {
     monaco.languages.register({
       id: 'python',

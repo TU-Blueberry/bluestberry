@@ -76,6 +76,14 @@ export class PyodideService {
     );
   }
 
+  deleteGlobal(key: string): Observable<void> {
+    return this.pyodide.pipe(map(pyodide => {
+      if (pyodide.globals.has(key)) {
+        pyodide.globals.delete(key);
+      }
+    }));
+  }
+
   getResults(): Observable<any> {
     return this.onMessageListener$.pipe(
       filter(message => message.type === MessageType.RESULT),

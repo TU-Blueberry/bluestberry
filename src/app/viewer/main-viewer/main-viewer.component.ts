@@ -22,8 +22,8 @@ export class MainViewerComponent implements OnInit, AfterViewInit {
 
   // percent of viewport width
   readonly minSizeFiletree = 10;
-  readonly minSizeLeftTab = 10;
-  readonly minSizeRightTab = 10;
+  readonly minSizeLeftTab = 20;
+  readonly minSizeRightTab = 20;
   readonly maxSizeFiletree = 30;
 
   readonly collapseSize = 34;
