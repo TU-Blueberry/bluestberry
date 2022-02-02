@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {concat, EMPTY, merge, Observable, of, Subject} from 'rxjs';
+import {concat, defer, EMPTY, merge, Observable, of, Subject} from 'rxjs';
 import {catchError, filter, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
@@ -8,6 +8,7 @@ import {FilesystemService} from 'src/app/filesystem/filesystem.service';
 import {FileType} from '../shared/files/filetypes.enum';
 import {ExperienceEventsService} from '../experience/experience-events.service';
 import { Tab } from './model/tab.model';
+import { Store } from '@ngxs/store';
 
 @Injectable({
   providedIn: 'root'
@@ -15,7 +16,10 @@ import { Tab } from './model/tab.model';
 export class TabManagementService {
   private _openTab = new Subject<OpenTabEvent>();
   private _openTabGroups = new Subject<{[id: string]: Tab[]}>();
+  private _activeTabSubject = new Subject<{ [id: string]: Tab | undefined }>();
+
   private _tabGroups: { [id: string]: Tab[] } = {};
+  private _activeTabs: { [id: string]: Tab | undefined } = {}
 
   get openTab$() {
     return this._openTab.asObservable();
@@ -25,10 +29,15 @@ export class TabManagementService {
     return this._openTabGroups.asObservable();
   }
 
+  get activeTabs$() {
+    return this._activeTabSubject.asObservable();
+  }
+
   constructor(
     private filesystemEventService: FilesystemEventService,
     private filesystemService: FilesystemService,
-    private experienceEventService: ExperienceEventsService
+    private experienceEventService: ExperienceEventsService,
+    private store: Store
   ) {
     const lesson$ = experienceEventService.onExperienceOpened.pipe(
         switchMap(({open}) => concat(...open.map(file => {
@@ -37,12 +46,14 @@ export class TabManagementService {
               groupId: file.on,
               title: 'Simulation',
               type: 'UNITY' as TabType,
+              path: ''
             });
           } else if (file.path.toLowerCase().endsWith('hint')) {
             return of({
               groupId: file.on,
               title: 'Hinweise',
               type: 'HINT' as TabType,
+              path: ''
             });
           }
           return this.createOpenTabEvent(file.path).pipe(map(ote => ({...ote, groupId: file.on})))
@@ -59,8 +70,15 @@ export class TabManagementService {
     merge(lesson$, userOpenEvent$).subscribe(t => this._openTab.next(t));
   }
 
-  openHintsManually(data: {path: string, content: Uint8Array}): void {
-    this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, data: data});
+  openHintsManually(): Observable<never> {
+    return this.getCurrentExperience().pipe(
+      switchMap(path => this.filesystemService.getFileAsBinary(path).pipe(
+        switchMap(data => defer(() => {
+          const full = ({ content: data });
+          this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, path: path, data: full})
+        }))
+      ))
+    );
   }
 
   createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
@@ -76,7 +94,8 @@ export class TabManagementService {
       title: path.split('/').pop() || path,
       groupId: this.mapFileTypeToTabGroup(fileType),
       type: this.mapFileTypeToTabType(fileType),
-      data: { path: path, content: fileContent },
+      data: { content: fileContent },
+      path: path
     })));
   }
 
@@ -90,9 +109,15 @@ export class TabManagementService {
     }
   }
   
+  // TODO: probably need to clear tabGroups and active tabs on expclose
   updateTabGroups(id: string, tabs: Tab[]): void {
     this._tabGroups[id] = [...tabs];
     this._openTabGroups.next(this._tabGroups);
+  }
+
+  updateActiveTabs(id: string, tab?: Tab): void {
+    this._activeTabs[id] = tab;
+    this._activeTabSubject.next(this._activeTabs);
   }
 
   private mapFileTypeToTabGroup(fileType?: FileType): string {
@@ -108,5 +133,10 @@ export class TabManagementService {
       default:
         return 'left';
     }
+  }
+
+  // TODO: Load currentExp from Store
+  private getCurrentExperience(): Observable<string> {
+    return of('/abc/hint_files/root.yml');
   }
 }

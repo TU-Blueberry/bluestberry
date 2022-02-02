@@ -20,14 +20,12 @@ export class FileIconsComponent {
   public fileTypeString = '';
   public fillColor = '';
 
-  @Input('data')
-  set data(data: any) {
-    if (data !== undefined) {
-      const extension = this.fsService.getExtension(data.path || '');
-      this._fileType = FileTypes.getType(extension); 
-      this.fileTypeString = this._fileType === FileType.JSON ? '{..}' : extension;
-      this.fillColor = FileTypes.getColorCode(extension);
-    } 
+  @Input('path')
+  set path(path: string ) {
+    const extension = this.fsService.getExtension(path);
+    this._fileType = FileTypes.getType(extension); 
+    this.fileTypeString = this._fileType === FileType.JSON ? '{..}' : extension;
+    this.fillColor = FileTypes.getColorCode(extension);
   }
 
   @Input('isTentative')

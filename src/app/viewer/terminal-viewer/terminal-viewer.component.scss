@@ -1,6 +1,11 @@
+.terminal-parent {
+  height: 100%;
+  overflow: hidden;
+}
+
 .terminal {
   padding: 10px;
-  height: 240px;
+  height: 100%;
   resize: none;
   background: #262626;
   border: 1px solid #424242;

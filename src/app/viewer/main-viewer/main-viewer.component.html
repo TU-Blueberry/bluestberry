@@ -1,10 +1,11 @@
 <as-split (dragEnd)="onDragEnd($event)" direction="horizontal"
   class="main-split" #parent [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
   <as-split-area
-    [visible]="getVisibility('filetree')"
-    [minSize]="minSizeFiletree"
-    [maxSize]="maxSizeFiletree"
-    [order]="0">
+    [visible]="viewSettings.filetree.visible"
+    [size]="viewSettings.filetree.size"
+    [minSize]="viewSettings.filetree.minSize"
+    [maxSize]="viewSettings.filetree.maxSize"  
+    [order]="viewSettings.filetree.order">
     <as-split direction="vertical" [gutterSize]="4" [unit]="'pixel'" [useTransition]="true" #sidebar>
       <as-split-area [order]="0" [minSize]="200" [size]="400" (contextmenu)="onRightClick($event, false)">
         <app-filetree [isGlossary]="false" (expandChange)="updateSidebarSizes(false, $event)"></app-filetree>
@@ -15,32 +16,43 @@
     </as-split>
   </as-split-area>
   <as-split-area
-    [order]="1" 
-    [minSize]="minSizeTab" 
-    [maxSize]="maxSizeTab"
-    [visible]="getVisibility('left')">
-    <as-split direction="vertical" [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
-      <as-split-area [order]="0" [minSize]="20">
+    [order]="viewSettings.left.order"
+    [size]="viewSettings.left.size"
+    [minSize]="viewSettings.left.minSize"
+    [maxSize]="viewSettings.left.maxSize"     
+    [visible]="viewSettings.left.visible">
+    <as-split direction="vertical" [gutterSize]="4" (dragEnd)="onDragEndLeftGroup($event)" [restrictMove]="true" [useTransition]="true">
+      <as-split-area 
+        [order]="viewSettings.code.order" 
+        [minSize]="viewSettings.code.minSize"
+        [maxSize]="viewSettings.code.maxSize"
+        [size]="viewSettings.code.size">
         <app-tab-group-facade id="left"></app-tab-group-facade>
       </as-split-area>
-      <as-split-area [order]="1" [minSize]="34" [visible]="terminalVisible">
+      <as-split-area 
+        [order]="viewSettings.terminal.order" 
+        [minSize]="viewSettings.terminal.minSize"
+        [maxSize]="viewSettings.terminal.maxSize"
+        [size]="viewSettings.terminal.size"
+        [visible]="viewSettings.terminal.visible">
         <app-terminal-viewer></app-terminal-viewer>
       </as-split-area>
     </as-split>
   </as-split-area>
   <as-split-area 
-    [order]="2" 
-    [minSize]="minSizeTab" 
-    [maxSize]="maxSizeTab"
-    [visible]="getVisibility('right')">
+    [order]="viewSettings.right.order"
+    [size]="viewSettings.right.size"
+    [minSize]="viewSettings.right.minSize"
+    [maxSize]="viewSettings.right.maxSize"  
+    [visible]="viewSettings.right.visible">
     <app-tab-group-facade id="right"></app-tab-group-facade>
   </as-split-area>
   <as-split-area
-    [visible]="getVisibility('emptyMessage')"
-    [minSize]="minSizeTab" 
-    [maxSize]="maxSizeTab"
-    [order]="3"
-    [lockSize]="false">
+    [size]="viewSettings.emptyMessage.size"
+    [minSize]="viewSettings.emptyMessage.minSize"
+    [maxSize]="viewSettings.emptyMessage.maxSize"  
+    [visible]="viewSettings.emptyMessage.visible"
+    [order]="viewSettings.emptyMessage.order">
       empty :(
   </as-split-area>
 </as-split>

@@ -3,7 +3,7 @@ import { Tab } from 'src/app/tab/model/tab.model'
 import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service'
 import { FilesystemService } from 'src/app/filesystem/filesystem.service'
 import { filter, map, switchMap, tap } from 'rxjs/operators'
-import { EMPTY, Observable, ReplaySubject, Subject } from 'rxjs'
+import { EMPTY, Observable, ReplaySubject } from 'rxjs'
 
 @Directive({
   selector: '[appFileTab]',
@@ -35,19 +35,19 @@ export class FileTabDirective implements OnInit {
 
   ngOnInit(): void {
     this.filesystemEventService.onDeletePath
-      .pipe(filter((path) => this.tab?.data?.path.startsWith(path)))
+      .pipe(filter((path) => this.tab?.path.startsWith(path) || false))
       .subscribe(() => this.close.next())
 
     this.filesystemEventService.onMovePath
-      .pipe(filter((event) => this.tab?.data?.path?.startsWith(event.oldPath)))
+      .pipe(filter((event) => this.tab?.path?.startsWith(event.oldPath) || false))
       .subscribe((event) => {
-        this.tab!.data.path.replace(event.oldPath, event.newPath)
+        this.tab!.path.replace(event.oldPath, event.newPath)
         this.tab!.title = event.newPath.split('/').pop() || event.newPath
       })
 
     this.filesystemEventService.onWriteToFile
       .pipe(
-        filter((event) => this.tab?.data?.path === event.path),
+        filter((event) => this.tab?.path === event.path),
         switchMap((event) =>
           this.filesystemService.getFileAsBinary(event.path)
         ),
@@ -60,10 +60,10 @@ export class FileTabDirective implements OnInit {
   }
 
   saveCurrentFile(content: Uint8Array): Observable<void> {
-    if (!this.tab?.data?.path) {
+    if (!this.tab?.path) {
       console.warn('Tried to save file without path')
       return EMPTY
     }
-    return this.filesystemService.writeToFile(this.tab?.data?.path, content, true)
+    return this.filesystemService.writeToFile(this.tab?.path, content, true)
   }
 }

@@ -12,6 +12,7 @@ import { Config } from 'src/app/experience/model/config';
 import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
 import { ExperienceService } from '../experience.service';
 import { ConfigService } from 'src/app/shared/config/config.service';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -53,7 +54,7 @@ export class ExperienceManagementService {
   }
  
   public createAndStoreSandbox(name: string): Observable<never> {
-    const uuid = "TEMP";  // TODO: uuid
+    const uuid = uuidv4();
 
     const newConfig: Config = {
       open: [],
@@ -83,7 +84,7 @@ export class ExperienceManagementService {
   }
 
   // TODO: Delete from localStorage!
-  public deleteSandbox(isMounted: boolean, sandbox?: Experience, ): Observable<never> {
+  public deleteSandbox(isMounted: boolean, sandbox?: Experience): Observable<never> {
     if (!sandbox) {
       return throwError("Fehler: Es wurde keine Sandbox zum Löschen übergeben");
     }

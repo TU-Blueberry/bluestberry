@@ -20,4 +20,8 @@ export class TabGroupFacadeComponent implements OnInit {
   updateTabGroup(tabs: Tab[]): void {
     this.tabService.updateTabGroups(this.id, tabs);
   }
+
+  updateActiveTab(active: Tab | undefined) {
+    this.tabService.updateActiveTabs(this.id, active);
+  }
 }

@@ -2,7 +2,7 @@ import { ExperienceType } from "src/app/experience/model/experience-type";
 import { SplitAreaSettings } from "src/app/viewer/model/split-settings";
 
 export interface Config {
-    open: { path: string, on: string }[];
+    open: { path: string, on: string }[]; // active: boolean 
     uuid: string;
     name: string;
     type: ExperienceType;

@@ -2,7 +2,7 @@
     [class.active]="isActive"
     (contextmenu)="toggleContextMenu($event)">
     <div class="file-heading">
-        <app-file-icons class="file-icons" [data]="isRenaming ? {path: tentativeName} : {path: node.path}" [isTentative]="node.isTentativeNode"></app-file-icons>
+        <app-file-icons class="file-icons" [path]="isRenaming ? tentativeName : node.path" [isTentative]="node.isTentativeNode"></app-file-icons>
         <div class="file-name" *ngIf="!isRenaming">
             {{ node.name }}
         </div> 

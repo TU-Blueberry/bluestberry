@@ -14,6 +14,10 @@ import {Tab} from 'src/app/tab/model/tab.model';
 import {TabManagementService} from 'src/app/tab/tab-management.service';
 import {filter} from 'rxjs/operators';
 import {ExperienceEventsService} from 'src/app/experience/experience-events.service';
+import { Store } from '@ngxs/store';
+import { TabChange } from '../actions/tab.action';
+import { ActiveChange } from '../actions/active.actions';
+import { Hints } from 'src/app/actionbar/actions/hints.action';
 
 @Component({
   selector: 'app-tab-group',
@@ -35,12 +39,25 @@ export class TabGroupComponent implements AfterViewInit {
   @Output()
   dataSourceChange = new EventEmitter<Tab[]>();
 
+  @Output()
+  activeTabChange = new EventEmitter<Tab | undefined>();
+
   @Input()
   id = '';
 
   _activeTab?: Tab;
   set activeTab(value) {
+    if (this._activeTab && this._activeTab.type === 'HINT') {
+      this.store.dispatch(new Hints.Inactive());
+    }
+
+    if (value?.type === 'HINT') {
+      this.store.dispatch(new Hints.Active());
+    }
+
     this._activeTab = value;
+    this.activeTabChange.emit(value);
+    this.dispatchActiveChange();
     this.viewContainerRef?.detach();
     if (value) {
       if (!value.view) {
@@ -60,12 +77,14 @@ export class TabGroupComponent implements AfterViewInit {
   }
 
   constructor(private tabEventService: TabManagementService,
-    private experienceEventsService: ExperienceEventsService) {
+    private experienceEventsService: ExperienceEventsService, private store: Store) {
   }
 
   ngAfterViewInit(): void {
     setTimeout(() => {
       this.activeTab = this.dataSource[0];
+      this.activeTabChange.emit(this.activeTab);
+      this.dispatchActiveChange();
     });
     this.tabEventService.openTab$.pipe(
       filter(tab => !!this.templates?.find(template => template.type === tab.type)),
@@ -76,7 +95,7 @@ export class TabGroupComponent implements AfterViewInit {
       if (tab.type === "HINT" || tab.type === "UNITY") {
         existingTab = this.dataSource.find(t => t.type === tab.type);
       } else {
-        existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+        existingTab = this.dataSource.find(t => t.path === tab.path);
       }
 
       if (!existingTab) {
@@ -86,6 +105,12 @@ export class TabGroupComponent implements AfterViewInit {
       } else {
         this.activeTab = existingTab;
       }
+
+      // Tab contains view and data (latter can be arbitrarly nested), which doesnt bode well with NGXS
+      // Need to clone here as everything passed to NGXS is frozen; freezing EmbeddedViewRef causes significant
+      // performance degradation (not worth as EmbeddedViewRef isn't even stored)
+      this.dispatchTabChange()
+      this.activeTabChange.emit(this.activeTab);
     });
     this.experienceEventsService.onExperienceClosed.subscribe(() => this.closeAllTabs());    
   }
@@ -100,10 +125,11 @@ export class TabGroupComponent implements AfterViewInit {
     //TBD
   }
 
+  // only used when closing an experience, thus no state changes intended
   closeAllTabs(): void {
     this.viewContainerRef?.clear();
     this.dataSource = [];
-    this.dataSourceChange.emit(this.dataSource);
+    this._activeTab = undefined;
   }
 
   closeTab(index: number) {
@@ -111,10 +137,35 @@ export class TabGroupComponent implements AfterViewInit {
     tab.view?.destroy();
     this.dataSource.splice(index, 1);
     this.dataSourceChange.emit(this.dataSource);
+
+    if (tab.type === 'HINT') {
+      this.store.dispatch(new Hints.Close());
+    }
+
     if (this._activeTab === tab) {
       // if activeTab is closed, set activeTab to tab on the right. If last tab is closed, set to tab on the left.
       // setter handles undefined correctly (in case last tab is closed)
       this.activeTab = this.dataSource[index] || this.dataSource[index - 1];
+      this.activeTabChange.emit(this.activeTab);
+      this.dispatchActiveChange();
     }
+
+    this.dispatchTabChange();
+  }
+
+  private dispatchTabChange(): void {
+    this.store.dispatch(new TabChange(this.id, this.cloneDataSource()))
+  }
+
+  private dispatchActiveChange(): void {
+    this.store.dispatch(new ActiveChange(this.id, this.cloneActiveTab()));
+  }
+
+  private cloneActiveTab(): Tab | undefined {
+    return this.activeTab ? [{ ...this.activeTab }].map(t => ({ type: t.type, title: t.title, path: t.path })).shift() : undefined;
+  }
+
+  private cloneDataSource() {
+    return [...this.dataSource].map(t => ({ type: t.type, title: t.title, path: t.path }));
   }
 }

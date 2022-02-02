@@ -20,6 +20,13 @@ import { SharedModule } from './shared/shared.module';
 import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
 import { ExperienceModule } from './experience/experience.module';
 import { SearchComponent } from './search/search.component';
+import { NgxsModule } from '@ngxs/store';
+import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
+import { environment } from 'src/environments/environment';
+import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
+import { TabState } from './tab/tab.state';
+import { ViewSizeState } from './viewer/states/sizes.state';
+import { ActionbarState } from './actionbar/actionbar.state';
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -36,7 +43,7 @@ export function markedOptionsFactory(): MarkedOptions {
   imports: [
     BrowserModule,
     AppRoutingModule,
-    AngularSplitModule,
+    AngularSplitModule.forRoot(),
     MonacoEditorModule.forRoot(),
     ViewerModule,
     FormsModule,
@@ -54,6 +61,11 @@ export function markedOptionsFactory(): MarkedOptions {
       },
     }),
     ExperienceModule,
+    NgxsModule.forRoot([ViewSizeState, TabState, ActionbarState], {
+      developmentMode: !environment.production
+    }),
+    NgxsReduxDevtoolsPluginModule.forRoot(),
+    NgxsLoggerPluginModule.forRoot()
   ],
   providers: [
     GuidedTourService,

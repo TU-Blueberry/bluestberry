@@ -99,7 +99,8 @@ export class FilesystemService {
       }
 
       try {
-        this.PyFS!.syncfs(fromPersistentToVirtual, err => {          
+        this.PyFS!.syncfs(fromPersistentToVirtual, err => {     
+          console.log("in callback")     
           err ? (console.log(err), subscriber.error("Couldn't complete sync")) : (console.log("Sync complete! " + r), subscriber.complete());
         });
       } catch (e) {

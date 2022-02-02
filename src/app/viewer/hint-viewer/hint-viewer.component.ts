@@ -37,15 +37,14 @@ export class HintViewerComponent implements OnInit {
     private fileTabDirective: FileTabDirective, private fsService: FilesystemService, private fsEventService: FilesystemEventService) {}
 
   ngOnInit() {
-    this.fileTabDirective.dataChanges.subscribe(data => {
-      if(data) {
-        this.base_path_ = data.path.split("/").slice(0,-1).join("/");
-        var rootFileString = new TextDecoder().decode(data.content);
-        console.log("Hints file " + data.path + " loaded");
-        this.loadFile(rootFileString);
-      }
-    });
+    const tab = this.fileTabDirective.tab;
 
+    if(tab) {
+      this.base_path_ = tab.path.split("/").slice(0,-1).join("/");
+      var rootFileString = new TextDecoder().decode(tab.data?.content);
+      console.log("Hints file " + tab.path + " loaded");
+      this.loadFile(rootFileString);
+    }
     
     const imagesPath = [this.base_path_, "img"].join("/")
 

@@ -19,7 +19,7 @@
   <div class="expand" [class.hidden]="searchTerm === '' || isBlurred">
     <ng-container *ngFor="let entry of matchingEntries; let i = index;">
       <a tabIndex="0" class="matching-entry expand-entry" (click)="clickSuggestion(entry)" [class.active]="i === highlightedIndex">
-        <app-file-icons [data]="{path: entry.path}"></app-file-icons>
+        <app-file-icons [path]="entry.path"></app-file-icons>
         <div class="result-info">
           <span>{{entry.file.name}}</span>
         </div>

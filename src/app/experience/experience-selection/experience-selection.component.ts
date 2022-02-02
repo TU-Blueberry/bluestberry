@@ -34,6 +34,8 @@ export class ExperienceSelectionComponent implements OnInit {
         }
       }
 
+      console.log("test-----")
+
       if (elements.switchTo !== undefined) {
         this.onSelectChange(elements.switchTo);
       } else {
