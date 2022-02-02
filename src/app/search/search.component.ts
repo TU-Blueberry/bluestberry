@@ -30,7 +30,7 @@ export class SearchComponent {
 
   clickSuggestion(entry: SearchEntry): void {
     if(entry.file.contents instanceof Uint8Array) {
-      this.ev.onUserOpenFile(entry.file.name, entry.file);
+      this.ev.onUserOpenFile(entry.path, entry.file);
       this.uiEv.onActiveElementChange.emit(entry.file.name);
     }
 
