@@ -19,6 +19,7 @@ import { TabModule } from 'src/app/tab/tab.module';
 import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group-facade.component';
 import { TableViewerComponent } from './table-viewer/table-viewer.component';
 import { PblNgridModule, PblNgridRegistryService } from '@pebula/ngrid';
+import { PlotlyViewerComponent } from './plotly-viewer/plotly-viewer.component';
 
 /**
  * Module used for all the Viewer-Components.
@@ -43,6 +44,7 @@ import { PblNgridModule, PblNgridRegistryService } from '@pebula/ngrid';
     MarkdownViewerComponent,
     TabGroupFacadeComponent,
     TableViewerComponent,
+    PlotlyViewerComponent
   ],
   imports: [
     CommonModule,

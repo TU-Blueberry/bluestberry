@@ -1,3 +1,4 @@
+<div id="main-wrapper">
 <as-split direction="horizontal" class="main-split" [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
   <as-split-area
     [visible]="filetreeVisible"
@@ -14,25 +15,26 @@
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area 
-    [order]="1" 
+  <as-split-area
+    [order]="1"
     [minSize]="minSizeLeftTab"
     [size]="currentSizeLeftTab"
     [maxSize]="maxSizeLeftTab">
     <as-split direction="vertical" [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
-      <as-split-area [order]="0" [minSize]="20">
+      <as-split-area id="split-left" [order]="0" [minSize]="20">
         <app-tab-group-facade id="left"></app-tab-group-facade>
       </as-split-area>
-      <as-split-area [order]="1" [minSize]="34" [visible]="terminalVisible">
+      <as-split-area id="split-terminal" [order]="1" [minSize]="34" [visible]="terminalVisible">
         <app-terminal-viewer></app-terminal-viewer>
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area 
-    [order]="2" 
-    [minSize]="minSizeRightTab" 
+  <as-split-area
+    [order]="2"
+    [minSize]="minSizeRightTab"
     [size]="currentSizeRightTab"
     [maxSize]="maxSizeRightTab">
     <app-tab-group-facade id="right"></app-tab-group-facade>
   </as-split-area>
 </as-split>
+</div>
