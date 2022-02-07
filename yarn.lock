@@ -1446,6 +1446,13 @@
   dependencies:
     "tslib" "^1.9.0"
 
+"@ngxs/storage-plugin@^3.7.3":
+  "integrity" "sha512-NSQdOJ2WKhRXY++UaXeuGIxTW4V3x2vunRutS2O28y7NViWwOz06SpwnD9McU868G6R0xxcmEiZvj8EYBMZuaQ=="
+  "resolved" "https://registry.npmjs.org/@ngxs/storage-plugin/-/storage-plugin-3.7.3.tgz"
+  "version" "3.7.3"
+  dependencies:
+    "tslib" "^1.9.0"
+
 "@ngxs/store@^3.7.3", "@ngxs/store@^3.7.3 || ^3.7.3-dev":
   "integrity" "sha512-JjATXC7FsxxQu2SaayP/iLe4O+5/RkRov3/J7WkaQmV6/JWFNkkdOwbEa6pDbh/po0JO7DHHMk3huIUNpDu67g=="
   "resolved" "https://registry.npmjs.org/@ngxs/store/-/store-3.7.3.tgz"

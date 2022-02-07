@@ -1,11 +1,10 @@
 import { HttpClient } from '@angular/common/http';
 import { Location } from '@angular/common';
-import { concat, defer, EMPTY, iif, Observable, of, ReplaySubject, throwError, zip } from 'rxjs';
-import { switchMap, tap } from 'rxjs/operators';
+import { concat, EMPTY, Observable, of, throwError } from 'rxjs';
+import { switchMap, take, tap } from 'rxjs/operators';
 import { FilesystemService } from '../../filesystem/filesystem.service';
 import { ZipService } from '../../filesystem/zip/zip.service';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
-import { ExperienceEventsService } from '../experience-events.service';
 import { Injectable } from '@angular/core';
 import { Experience } from '../model/experience';
 import { Config } from 'src/app/experience/model/config';
@@ -13,47 +12,48 @@ import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
 import { ExperienceService } from '../experience.service';
 import { ConfigService } from 'src/app/shared/config/config.service';
 import { v4 as uuidv4 } from 'uuid';
+import { Store } from '@ngxs/store';
+import { ExperienceAction } from '../actions';
+import { AppAction } from 'src/app/app.actions';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ExperienceManagementService {
-  private lessons: Experience[] = [];
-  private sandboxes: Experience[] = [];
-  public experiences$ = new ReplaySubject<{lessons: Experience[], sandboxes: Experience[], switchTo?: Experience, deleted?: Experience}>();
-
   constructor(private http: HttpClient, private zipService: ZipService, private fsService: FilesystemService, 
-    private location: Location, private py: PyodideService, private ees: ExperienceEventsService, private gs: GlossaryService, 
-    private expService: ExperienceService, private configService: ConfigService) {
+    private location: Location, private py: PyodideService, private gs: GlossaryService, 
+    private expService: ExperienceService, private configService: ConfigService, private store: Store) {
+
       concat(
         this.fsService.test,
-        this.gs.loadGlobalGlossaryEntries(),
-        this.getAllOptions()
-      ).subscribe(() => {}) // TODO: Probably display errors
+        this.gs.loadGlobalGlossaryEntries() , // TODO: error catchen?
+        this.getAllOptions() // TODO: error catchen?
+      ).subscribe(() => {}, err => console.error(err), () => {
+        this.store.dispatch([
+          new AppAction.Change("READY"),
+          new ExperienceAction.RestoreLast()
+        ])
+      }); 
     }
 
   /** Checks whether lesson with the given name already exists in the local filesystem. 
    * If yes, the content from the local filesystem is used.
    * If no, the lesson with the given name will be requested from the server and stored afterwards */
-  public openLesson(lesson: Experience) {
-    return concat(
-      this.expService.exists(lesson.uuid)
-    ).pipe(
-      tap((existsAlready) => console.log(`%cexistsAlready? ${existsAlready}`, "color: red"))
-    ).pipe(
-      switchMap(existsAlready => iif(() => !existsAlready, 
-        this.loadAndStoreLesson(lesson), 
-        this.openExistingExperience(lesson)
-      )
-     )
-    ) 
+  public openLesson(lesson: Experience): Observable<never> {
+    return this.expService.available(lesson.uuid).pipe(
+      tap((existsAlready) => console.log(`%cexistsAlready? ${existsAlready}`, "color: red")),
+      take(1),
+      switchMap(existsAlready => {
+        return existsAlready ? this.openExistingExperience(lesson) : this.loadAndStoreLesson(lesson);        
+      })
+    )
   }
 
   public openSandbox(sandbox: Experience): Observable<never> {
     return this.openExistingExperience(sandbox);
   }
  
-  public createAndStoreSandbox(name: string): Observable<never> {
+  public createAndStoreSandbox(name: string): Observable<Experience> {
     const uuid = uuidv4();
 
     const newConfig: Config = {
@@ -75,15 +75,11 @@ export class ExperienceManagementService {
       this.configService.storeConfig(newConfig),
       this.fsService.sync(false),
       this.fsService.unmount(newConfig.uuid),
-      defer(() => {
-        const sandbox: Experience = {name: name, uuid: uuid, type: "SANDBOX", availableOffline: true}
-        this.sandboxes.push(sandbox);
-        this.experiences$.next({lessons: this.lessons, sandboxes: this.sandboxes, switchTo: sandbox})
-      })
+      of(({name: name, uuid: uuid, type: "SANDBOX", availableOffline: true} as Experience))
     )
   }
 
-  // TODO: Delete from localStorage!
+  // TODO: probably need to clear tabGroups and active tabs on expclose
   public deleteSandbox(isMounted: boolean, sandbox?: Experience): Observable<never> {
     if (!sandbox) {
       return throwError("Fehler: Es wurde keine Sandbox zum Löschen übergeben");
@@ -96,15 +92,11 @@ export class ExperienceManagementService {
     return concat(
       isMounted ? 
       this.closeExperience(sandbox, true) :
-      this.fsService.deleteIDB(`/${sandbox.uuid}`),
-      defer(() => {
-        this.sandboxes = this.sandboxes.filter(element => element.name !== sandbox.name);
-        this.experiences$.next({lessons: this.lessons, sandboxes: this.sandboxes, deleted: sandbox});
-      })
+      this.fsService.deleteIDB(`/${sandbox.uuid}`)
     )
   }
  
-  private openExistingExperience(exp: Experience): Observable<never> {
+  public openExistingExperience(exp: Experience): Observable<never> {
     return concat(
       this.fsService.mount(exp.uuid),
       this.fsService.sync(true),
@@ -123,49 +115,28 @@ export class ExperienceManagementService {
       this.fsService.changeWorkingDirectory('/'),
       this.fsService.unmount(exp.uuid),
       this.fsService.reset(),
-      !deleteBeforeClose ? this.fsService.sync(false) : EMPTY,
-      deleteBeforeClose ? this.fsService.deleteIDB(`/${exp.uuid}`) : EMPTY,
-      defer(() => this.ees.emitExperienceClosed(`/${exp.uuid}`))
+      this.fsService.sync(false),
+      deleteBeforeClose ? this.fsService.deleteIDB(`/${exp.uuid}`) : EMPTY
     )
-  }
-
-  public changeExperience(oldExperience: Experience, newExperience: Experience) {
-    // need to call "openLesson" when switching to a lesson as we need to check whether the lesson needs to be downloaded
-    return concat(
-      oldExperience.uuid !== '' ? 
-        this.closeExperience(oldExperience, false) : 
-        EMPTY,
-      newExperience.type === 'LESSON' ? 
-        this.openLesson(newExperience) : 
-        this.openExistingExperience(newExperience)
-    );
   }
 
   /** Get all possible lessons/sandbox. This includes lessons which are available on
    * the server, lessons which were removed from the server but are still stored locally
    * as well as all local sandboxes. */
   private getAllOptions() {
-    return zip(
-      this.expService.getAndCheckAllExperiences(),
-      this.getLessonList()
-    ).pipe(
-      tap(([validConfs, server]) => {
-        this.lessons = validConfs.filter(conf => conf.type === 'LESSON');
-        this.sandboxes = validConfs.filter(conf => conf.type === 'SANDBOX');
+    return concat(
+      this.expService.checkAllExperiences(),
+      this.getAndStoreAllLessons()
+    )
+  }
 
-        server.map(lesson => ({name: lesson.name, uuid: lesson.uuid, type: 'LESSON', availableOffline: false}) as Experience)
-          .filter(lesson => !validConfs.find(e => e.uuid === lesson.uuid))
-          .forEach(conf => {
-            if (conf.type === 'LESSON') {
-              this.lessons.push(conf);
-            }
+  private getAndStoreAllLessons(): Observable<never> {
+    return this.getLessonList().pipe(
+      switchMap(lessons => {
+        lessons.map(lesson => ({name: lesson.name, uuid: lesson.uuid, type: 'LESSON', availableOffline: false}) as Experience)
+          .forEach(lesson => this.store.dispatch(new ExperienceAction.Add(lesson)));
 
-            if (conf.type === 'SANDBOX') {
-              this.sandboxes.push(conf)
-            }
-          });
-
-        this.experiences$.next({lessons: this.lessons, sandboxes: this.sandboxes})
+        return EMPTY;
       })
     )
   }
@@ -191,17 +162,7 @@ export class ExperienceManagementService {
           this.fsService.sync(false),
           this.fsService.changeWorkingDirectory(`/${lesson.uuid}/${PyodideService.startFolderName}`),
           this.py.addToSysPath(lesson.uuid),
-          this.checkExperienceAfterMount(lesson),
-          defer(() => {
-            const current = this.lessons.findIndex(l => l.uuid === lesson.uuid);
-
-            if (current >= 0) {
-              // since switching to lesson was successful, we can assume that it was downloaded
-              // and stored in the filesystem, thus being available for offline use from now on
-              this.lessons[current] = { ... this.lessons[current], availableOffline: true } 
-              this.experiences$.next({lessons: this.lessons, sandboxes: this.sandboxes})
-            }
-          })
+          this.checkExperienceAfterMount(lesson)
         )
       )
     )  
@@ -213,23 +174,23 @@ export class ExperienceManagementService {
   private checkExperienceAfterMount(exp: Experience): Observable<never> {
     const fullPath = `/${exp.uuid}`;
 
-    return this.configService.getConfigByExperience(exp).pipe(switchMap(config => {
-      if (config) {
-        console.log("%c Config found!", "color: green", config)
-        this.fsService.EXP_HIDDEN_PATHS = new Set(this.filterPaths(fullPath, config.hidden));
-        this.fsService.EXP_MODULE_PATHS = new Set(this.filterPaths(fullPath, config.modules || []));
-        this.fsService.EXP_READONLY_PATHS = new Set(this.filterPaths(fullPath, config.readonly));
-        this.fsService.EXP_EXTERNAL_PATHS = new Set(this.filterPaths(fullPath, config.external));
-        this.fsService.EXP_GLOSSARY_PATH = `${fullPath}/glossary`;
-  
-        return concat(
-          this.fsService.checkPermissionsForExperience(fullPath),
-          this.fsService.checkPermissionsForGlossary(),
-          defer(() => this.ees.emitExperienceOpened(config))
-        );
-      } else {
-        return throwError("No config found!")
-      }
+    return this.configService.getConfigByExperience(exp).pipe(
+      switchMap(config => {
+        if (config) {
+          console.log("%c Config found!", "color: green", config)
+          this.fsService.EXP_HIDDEN_PATHS = new Set(this.filterPaths(fullPath, config.hidden));
+          this.fsService.EXP_MODULE_PATHS = new Set(this.filterPaths(fullPath, config.modules || []));
+          this.fsService.EXP_READONLY_PATHS = new Set(this.filterPaths(fullPath, config.readonly));
+          this.fsService.EXP_EXTERNAL_PATHS = new Set(this.filterPaths(fullPath, config.external));
+          this.fsService.EXP_GLOSSARY_PATH = `${fullPath}/glossary`;
+
+          return concat(
+            this.fsService.checkPermissionsForExperience(fullPath),
+            this.fsService.checkPermissionsForGlossary(),
+          );
+        } else {
+          return throwError("No config found!")
+        }
     }));
   }
 

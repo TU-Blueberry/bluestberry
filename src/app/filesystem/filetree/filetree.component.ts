@@ -8,9 +8,9 @@ import { ZipService } from '../zip/zip.service';
 import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
-import { ExperienceEventsService } from 'src/app/experience/experience-events.service';
 import { Experience } from 'src/app/experience/model/experience';
-import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
+import { Actions, ofActionSuccessful } from '@ngxs/store';
+import { ExperienceAction } from 'src/app/experience/actions';
 
 @Component({
   selector: 'app-filetree',
@@ -41,25 +41,22 @@ export class FiletreeComponent implements OnDestroy{
   @ViewChild('content', { read: ViewContainerRef }) ref!: ViewContainerRef;
   constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
     private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
-    private ees: ExperienceEventsService, private gs: GlossaryService, private cd: ChangeDetectorRef) { }
+    private cd: ChangeDetectorRef, private action$: Actions) { }
 
   private init(): void {
-    if (!this._isGlossary) {
-      this.ees.onExperienceOpened.subscribe((lesson) => {
-        this.SELECTED_LESSON = lesson;
-        this.kickstartTreeGeneration();
-      })
+    this.action$.pipe(
+      ofActionSuccessful(ExperienceAction.Open)
+    ).subscribe((action: ExperienceAction.Open) => {
+      if (!this.isGlossary) {
+        this.SELECTED_LESSON = action.exp;
+      }
 
-      this.ees.onExperienceClosed.subscribe(() => {
-        this.ref.clear();
-      })
-    }
+      this.kickstartTreeGeneration();
+    })
 
-    if (this._isGlossary) {
-      this.gs.glossaryEntries$.subscribe(entries => {
-        this.kickstartTreeGeneration(entries);
-      });   
-    }
+    this.action$.pipe(
+      ofActionSuccessful(ExperienceAction.Close)
+    ).subscribe(() =>  this.ref.clear());
   }
 
   // possible further optimization: only delete and create new components for glossary entries which changed
@@ -113,7 +110,7 @@ export class FiletreeComponent implements OnDestroy{
       switchMap(buffer => this.zipService.loadZip(buffer)),
       tap(unzipped => this.tempZip = unzipped),
       switchMap(res => this.zipService.getConfigFromStream(res)),
-      switchMap(conf => this.fsService.isNewLesson(conf.name)
+      switchMap(conf => this.fsService.isNewLesson(conf.uuid)
         .pipe(
             switchMap(isEmpty => { 
               this.conflictDetected = !isEmpty;

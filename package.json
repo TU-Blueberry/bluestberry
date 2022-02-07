@@ -24,6 +24,7 @@
     "@ng-icons/core": "^13.1.2",
     "@ng-icons/heroicons": "^13.1.2",
     "@ngxs/logger-plugin": "^3.7.3",
+    "@ngxs/storage-plugin": "^3.7.3",
     "@ngxs/store": "^3.7.3",
     "angular-split": "^13.1.0",
     "file-saver": "^2.0.5",

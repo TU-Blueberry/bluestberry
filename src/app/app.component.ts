@@ -1,9 +1,8 @@
 import { Component } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { delay } from 'rxjs/operators';
 import { About } from './actionbar/actions/about.action';
-import { ExperienceEventsService } from './experience/experience-events.service';
+import { AppState, AppStateModel } from './app.state';
 
 @Component({
   selector: 'app-root',
@@ -15,13 +14,14 @@ export class AppComponent {
   isLoading = true;
   showAbout = false;
   settings$: Observable<any>;
+  appState$: Observable<any>;
 
-  constructor(private ees: ExperienceEventsService, private store: Store) {
-    this.ees.onExperienceOpened.pipe(delay(200)).subscribe(
-      (exp) => this.isLoading = false, 
-      (err: any) => console.error(err), 
-      () => this.isLoading = false
-    )
+  constructor(private store: Store) {
+    this.appState$ = this.store.select<AppStateModel>(AppState);
+
+    this.appState$.subscribe(res => {
+      this.isLoading = (res.status === "LOADING" || res.status === "INITIALIZING");
+    })
 
     this.settings$ = this.store.select(state => state.actionbar.about);
     this.settings$.subscribe(s => {

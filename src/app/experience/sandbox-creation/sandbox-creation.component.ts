@@ -1,5 +1,6 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { AbstractControl, FormControl, FormGroup, ValidationErrors } from '@angular/forms';
+import { Store } from '@ngxs/store';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { ExperienceManagementService } from '../experience-management/experience-management.service';
 import { Experience } from '../model/experience';
@@ -16,14 +17,14 @@ export class SandboxCreationComponent {
 
   @Output() cancel = new EventEmitter<void>();
   @Output() create = new EventEmitter<string>();
-  constructor(public expMgmt: ExperienceManagementService, private fsService: FilesystemService) { 
+  constructor(public expMgmt: ExperienceManagementService, private fsService: FilesystemService, private store: Store) { 
     this.nameFormControl = new FormControl('', { updateOn: "change", validators: this.validateInput.bind(this) });
     this.formGroup = new FormGroup({
       nameFormControl: this.nameFormControl 
     });
 
-    this.expMgmt.experiences$.subscribe(experiences => { 
-      this.availableSandboxes = experiences.sandboxes;
+    this.store.select<Experience[]>(state => state.experiences.sandboxes).subscribe(exp => {
+      this.availableSandboxes = exp;
     });
   }
 

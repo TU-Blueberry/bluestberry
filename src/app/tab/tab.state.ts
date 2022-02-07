@@ -19,8 +19,6 @@ interface TabStateModel {
 
 @Injectable()
 export class TabState {
-
-    // TODO: welche der observables in tabgroup etc braucht es noch wirklich?
     @Action(TabChange)
     updateTabState(ctx: StateContext<TabStateModel>, action: TabChange) {
         const state = ctx.getState();

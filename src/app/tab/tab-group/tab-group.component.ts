@@ -13,11 +13,11 @@ import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {Tab} from 'src/app/tab/model/tab.model';
 import {TabManagementService} from 'src/app/tab/tab-management.service';
 import {filter} from 'rxjs/operators';
-import {ExperienceEventsService} from 'src/app/experience/experience-events.service';
-import { Store } from '@ngxs/store';
+import { Actions, ofActionSuccessful, Store } from '@ngxs/store';
 import { TabChange } from '../actions/tab.action';
 import { ActiveChange } from '../actions/active.actions';
 import { Hints } from 'src/app/actionbar/actions/hints.action';
+import { ExperienceAction } from 'src/app/experience/actions';
 
 @Component({
   selector: 'app-tab-group',
@@ -76,8 +76,7 @@ export class TabGroupComponent implements AfterViewInit {
     return this._activeTab;
   }
 
-  constructor(private tabEventService: TabManagementService,
-    private experienceEventsService: ExperienceEventsService, private store: Store) {
+  constructor(private tabEventService: TabManagementService, private store: Store, private action$: Actions) {
   }
 
   ngAfterViewInit(): void {
@@ -112,7 +111,9 @@ export class TabGroupComponent implements AfterViewInit {
       this.dispatchTabChange()
       this.activeTabChange.emit(this.activeTab);
     });
-    this.experienceEventsService.onExperienceClosed.subscribe(() => this.closeAllTabs());    
+    this.action$.pipe(
+      ofActionSuccessful(ExperienceAction.Close)
+    ).subscribe(() => this.closeAllTabs())
   }
 
   handleScroll(event: WheelEvent) {

@@ -4,9 +4,9 @@ import { Injectable } from '@angular/core';
 import { concat, forkJoin, Observable, of, ReplaySubject, zip } from 'rxjs';
 import { filter, map, mergeMap, switchMap, tap } from 'rxjs/operators';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
-import { ExperienceEventsService } from 'src/app/experience/experience-events.service';
-import { ExperienceType } from 'src/app/experience/model/experience-type';
-import { SplitAreaSettings } from 'src/app/viewer/model/split-settings';
+import { Actions, ofActionSuccessful } from '@ngxs/store';
+import { ExperienceAction } from 'src/app/experience/actions';
+import { Experience } from 'src/app/experience/model/experience';
 
 @Injectable({
   providedIn: 'root'
@@ -14,15 +14,17 @@ import { SplitAreaSettings } from 'src/app/viewer/model/split-settings';
 export class GlossaryService {
   public glossaryEntries$ = new ReplaySubject<{path: string, node: FSNode}[]>();
 
-  constructor(private ees: ExperienceEventsService, private fs: FilesystemService, private http: HttpClient, private location: Location) {
-    ees.onExperienceOpened.subscribe((exp) => this.changeGlossary(exp))
+  constructor(private action$: Actions, private fs: FilesystemService, private http: HttpClient, private location: Location) {
+    this.action$.pipe(
+      ofActionSuccessful(ExperienceAction.Open)
+    ).subscribe((action: ExperienceAction.Open) => this.changeGlossary(action.exp));
   }
 
-  private changeGlossary(exp: {open: {path: string, on: string}[], name: string, type: ExperienceType, splitSettings: [string, SplitAreaSettings][] }) {
-    const expGlossary: Observable<FSNode[][]> = this.fs.exists(`/${exp.name}/glossary`).pipe(
+  private changeGlossary(exp: Experience) {
+    const expGlossary: Observable<FSNode[][]> = this.fs.exists(`/${exp.uuid}/glossary`).pipe(
       switchMap(exists => {
         const empty: FSNode[][] = [[], []];
-        return exists ? this.fs.scan(`/${exp.name}/glossary`, 1, true, true) : of(empty);
+        return exists ? this.fs.scan(`/${exp.uuid}/glossary`, 1, true, true) : of(empty);
       })
     )
 
@@ -32,9 +34,9 @@ export class GlossaryService {
     ]).pipe(
         map(([[_, globalFiles], [__, expFiles]]) => {
           const globalEntries = globalFiles.map(file => ({ path: `/glossary/${file.name}`, node: file }));
-          const newEntries = expFiles.map(file => ({ path: `/${exp.name}/glossary/${file.name}`, node: file}))
+          const newEntries = expFiles.map(file => ({ path: `/${exp.uuid}/glossary/${file.name}`, node: file}))
                                      .filter(file => globalEntries.findIndex(e => e.path === file.path) === -1);
-          this.glossaryEntries$.next(newEntries); // [...globalEntries, ...newEntries]
+          this.glossaryEntries$.next(newEntries);
         })
     ).subscribe();
   }

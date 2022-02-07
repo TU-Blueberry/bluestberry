@@ -1,9 +1,14 @@
 import { Component, ElementRef, NgZone, OnInit } from '@angular/core';
+import { Actions, ofActionSuccessful, Store } from '@ngxs/store';
 import { fromEvent, Observable } from 'rxjs';
-import { delay, filter, tap } from 'rxjs/operators';
+import { filter, tap } from 'rxjs/operators';
+import { AppState, AppStatus, AppStateModel } from 'src/app/app.state';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
+import { ExperienceAction } from '../actions';
 import { ExperienceManagementService } from '../experience-management/experience-management.service';
+import { ExperienceState, ExperienceStateModel } from '../experience.state';
 import { Experience } from '../model/experience';
+
 
 @Component({
   selector: 'app-lesson-selection',
@@ -11,60 +16,42 @@ import { Experience } from '../model/experience';
   styleUrls: ['./experience-selection.component.scss']
 })
 export class ExperienceSelectionComponent implements OnInit {
-  experiences$: Observable<{lessons: Experience[], sandboxes: Experience[], switchTo?: Experience, deleted?: Experience}>;
+  experiences$: Observable<ExperienceStateModel>
+  app$: Observable<AppStateModel>;
+  appState: AppStatus = "INITIALIZING";
   selectedExperience: Experience = { name: '', type: "LESSON", uuid: ''};
+  lessons: Experience[] = [];
+  sandboxes: Experience[] = [];
+
   isSwitching = false;
   showOptions = false;
   showCreationDialog = false;
   showSandboxDeletionDialog = false;
   sandboxToDelete?: Experience;
 
-  constructor(private expManagementService: ExperienceManagementService, private ref: ElementRef, private fs: FilesystemService, private zone: NgZone) {
-    this.experiences$ = this.expManagementService.experiences$;
-    this.experiences$.subscribe(elements => {
-      const original = { ... this.selectedExperience }
-      const last = localStorage.getItem("lastExperience");
-      let preference: Experience | null = last ? JSON.parse(last) : null;
-
-      if (elements.deleted) {
-        localStorage.removeItem(elements.deleted.uuid);
-        
-        if (preference && preference.uuid === elements.deleted.uuid) {
-          preference = null;
-        }
-      }
-
-      console.log("test-----")
-
-      if (elements.switchTo !== undefined) {
-        this.onSelectChange(elements.switchTo);
-      } else {
-        if (preference !== null && (elements.lessons.find(element => element.uuid === preference?.uuid) !== undefined 
-                                   || elements.sandboxes.find(element => element.uuid === preference?.uuid) !== undefined)) {
-            this.selectedExperience = preference;
-        } else {
-          localStorage.removeItem("lastExperience");
-          this.selectedExperience = elements.lessons.length > 0 ? 
-              elements.lessons[0] : 
-              (elements.sandboxes.length > 0 ? 
-                  elements.sandboxes[0] : 
-                  {name: '', type: "LESSON", uuid: ''} // TODO: Wenn nix existiert: random sandbox anlegen und dahin wechseln!
-              ) 
-        }
-
-        if (this.selectedExperience.uuid !== '' && this.selectedExperience.uuid !== original.uuid) {
-          localStorage.setItem("lastExperience", JSON.stringify(this.selectedExperience));
-          this.selectedExperience.type === 'LESSON' ? 
-              this.expManagementService.openLesson(this.selectedExperience).subscribe(
-                (nxt) => {}, // console.log("Next in openLesson", nxt)
-                (err) => console.error(err),
-                () => console.log("open lesson complete")
-              ) :
-              this.expManagementService.openSandbox(this.selectedExperience).subscribe();
-        }
-      }
+  constructor(private action$: Actions, private store: Store, private expManagementService: ExperienceManagementService, private ref: ElementRef, private fs: FilesystemService, private zone: NgZone) {
+    // TODO: errors
+    action$.pipe(
+      ofActionSuccessful(ExperienceAction.Remove)
+    ).subscribe(() => {
+      this.sandboxToDelete = undefined;
+      this.showSandboxDeletionDialog = false;
     });
+        
+    this.app$ = this.store.select(AppState);
+    this.app$.subscribe(state => {
+      this.isSwitching = state.status === 'SWITCHING';
+      this.appState = state.status
+    })
+    
+    this.experiences$ = this.store.select(ExperienceState);
+    this.experiences$.subscribe(elements => {
+      this.sandboxes = elements.sandboxes;
+      this.lessons = elements.lessons;
+      this.selectedExperience = elements.current !== undefined ? elements.current : { name: '', type: "LESSON", uuid: ''};
+    }); 
   }
+
 
   ngOnInit(): void {
     this.zone.runOutsideAngular(() => {
@@ -87,14 +74,7 @@ export class ExperienceSelectionComponent implements OnInit {
       return;
     }
 
-    this.isSwitching = true;
-    this.expManagementService.changeExperience(this.selectedExperience, to).pipe(delay(200)).subscribe(
-      () => {}, (err: any) => { console.error(err); this.isSwitching = false }, () => {
-        this.isSwitching = false;
-        this.selectedExperience = to;
-        localStorage.setItem("lastExperience", JSON.stringify(this.selectedExperience));
-      }
-    )
+    this.store.dispatch(new ExperienceAction.Open(to));
   }
 
   public openCreationDialog(ev: Event): void {
@@ -121,35 +101,19 @@ export class ExperienceSelectionComponent implements OnInit {
 
   public onDeletionChoice(choice: boolean): void {
     if (choice === true && this.sandboxToDelete !== undefined) {
-      this.expManagementService.deleteSandbox(this.sandboxToDelete.name === this.selectedExperience.name, this.sandboxToDelete,).subscribe(
-        () => {},
-        (err) => console.error(err),
-        () => { 
-          console.log(`%c Sandbox ${this.sandboxToDelete?.name} erfolgreich gelöscht`, "color: green");
-          this.sandboxToDelete = undefined;
-        }
-      )
+      this.store.dispatch(new ExperienceAction.Remove(this.sandboxToDelete))
     } else {
       this.sandboxToDelete = undefined;
+      this.showSandboxDeletionDialog = false;
     }
-
-    this.showSandboxDeletionDialog = false;
   }
 
   public createNewSandbox(name: string): void {
     this.closeCreationDialog();
-    
-    if (name !== '') {
-      this.expManagementService.createAndStoreSandbox(name).subscribe(
-        () => {},
-        (err) => console.error(err),
-        () => console.log(`%c Successfully created new sandbox ${name}`, "color: green")
-      )
-    }
+    this.store.dispatch(new ExperienceAction.CreateSandbox(name));
   }
 
   private closeOptions(ev: Event): void {
-    console.log("close options")
     ev.preventDefault();
     ev.stopPropagation();
     this.showOptions = false;

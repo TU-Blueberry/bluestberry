@@ -24,9 +24,12 @@ import { NgxsModule } from '@ngxs/store';
 import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
 import { environment } from 'src/environments/environment';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
+import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
 import { TabState } from './tab/tab.state';
 import { ViewSizeState } from './viewer/states/sizes.state';
 import { ActionbarState } from './actionbar/actionbar.state';
+import { ExperienceState } from './experience/experience.state';
+import { AppState } from './app.state';
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -61,11 +64,18 @@ export function markedOptionsFactory(): MarkedOptions {
       },
     }),
     ExperienceModule,
-    NgxsModule.forRoot([ViewSizeState, TabState, ActionbarState], {
+    NgxsModule.forRoot([ViewSizeState, TabState, ActionbarState, ExperienceState, AppState], {
       developmentMode: !environment.production
     }),
-    NgxsReduxDevtoolsPluginModule.forRoot(),
-    NgxsLoggerPluginModule.forRoot()
+    NgxsReduxDevtoolsPluginModule.forRoot({
+      disabled: environment.production
+    }),
+    NgxsLoggerPluginModule.forRoot({
+      disabled: environment.production
+    }),
+    NgxsStoragePluginModule.forRoot({
+      key: "experiences"
+    })
   ],
   providers: [
     GuidedTourService,

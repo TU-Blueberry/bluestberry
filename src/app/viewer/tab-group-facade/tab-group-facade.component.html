@@ -1,5 +1,4 @@
-<app-tab-group [id]="id" (dataSourceChange)="updateTabGroup($event)" (activeTabChange)="updateActiveTab($event)">
-
+<app-tab-group [id]="id">
   <ng-container *appTabTemplate="let tab = tab; let close = close; type: 'CODE'">
     <app-code-viewer class="code-wrapper" [appFileTab]="tab" (close)="close()"></app-code-viewer>
   </ng-container>
