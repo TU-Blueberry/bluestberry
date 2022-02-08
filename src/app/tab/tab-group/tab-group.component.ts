@@ -39,9 +39,6 @@ export class TabGroupComponent implements AfterViewInit {
   @Output()
   dataSourceChange = new EventEmitter<Tab[]>();
 
-  @Output()
-  activeTabChange = new EventEmitter<Tab | undefined>();
-
   @Input()
   id = '';
 
@@ -56,7 +53,6 @@ export class TabGroupComponent implements AfterViewInit {
     }
 
     this._activeTab = value;
-    this.activeTabChange.emit(value);
     this.dispatchActiveChange();
     this.viewContainerRef?.detach();
     if (value) {
@@ -72,6 +68,7 @@ export class TabGroupComponent implements AfterViewInit {
       }
     }
   }
+
   get activeTab() {
     return this._activeTab;
   }
@@ -80,11 +77,6 @@ export class TabGroupComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.activeTab = this.dataSource[0];
-      this.activeTabChange.emit(this.activeTab);
-      this.dispatchActiveChange();
-    });
     this.tabEventService.openTab$.pipe(
       filter(tab => !!this.templates?.find(template => template.type === tab.type)),
       filter(tab => tab.groupId === this.id),
@@ -109,7 +101,6 @@ export class TabGroupComponent implements AfterViewInit {
       // Need to clone here as everything passed to NGXS is frozen; freezing EmbeddedViewRef causes significant
       // performance degradation (not worth as EmbeddedViewRef isn't even stored)
       this.dispatchTabChange()
-      this.activeTabChange.emit(this.activeTab);
     });
     this.action$.pipe(
       ofActionSuccessful(ExperienceAction.Close)
@@ -147,7 +138,6 @@ export class TabGroupComponent implements AfterViewInit {
       // if activeTab is closed, set activeTab to tab on the right. If last tab is closed, set to tab on the left.
       // setter handles undefined correctly (in case last tab is closed)
       this.activeTab = this.dataSource[index] || this.dataSource[index - 1];
-      this.activeTabChange.emit(this.activeTab);
       this.dispatchActiveChange();
     }
 

@@ -32,7 +32,12 @@ export namespace ExperienceAction {
     }
 
     export class RestoreLast {
-        static readonly type = '[Experience] Restore last selection (if exists)'
+        static readonly type = '[Experience] Restore last selection (if exists)';
         constructor() {}
+    }
+
+    export class ResetAvailability {
+        static readonly type = '[Experience] Reset availability for lesson';
+        constructor(public exp: Experience) {}
     }
 }

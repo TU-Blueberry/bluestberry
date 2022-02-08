@@ -2,10 +2,14 @@ import { Component, OnInit } from '@angular/core'
 import { load } from 'js-yaml'
 import {KatexOptions} from "ngx-markdown";
 import {DomSanitizer, SafeUrl} from '@angular/platform-browser';
-import {FileTabDirective} from 'src/app/tab/file-tab.directive';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service';
 import { FileType } from 'src/app/shared/files/filetypes.enum';
+import { ConfigService } from 'src/app/shared/config/config.service';
+import { defer, Observable, of } from 'rxjs';
+import { filter, map, mergeAll, switchMap } from 'rxjs/operators';
+import { ExperienceStateModel, ExperienceState } from 'src/app/experience/experience.state';
+import { Store } from '@ngxs/store';
 
 @Component({
   selector: 'app-hint-viewer',
@@ -28,54 +32,30 @@ export class HintViewerComponent implements OnInit {
     errorColor: '#cc0000',
   }
 
-  base_path_: string = '';
+  base_path: string = '';
 
   imagePathToSafeUrl = new Map<string, SafeUrl>();
 
 
-  constructor(private domSanitizer: DomSanitizer,
-    private fileTabDirective: FileTabDirective, private fsService: FilesystemService, private fsEventService: FilesystemEventService) {}
+  constructor(private domSanitizer: DomSanitizer, private conf: ConfigService, private store: Store,
+  private fsService: FilesystemService, private fsEventService: FilesystemEventService) {}
 
   ngOnInit() {
-    const tab = this.fileTabDirective.tab;
+    this.getHintRoot().pipe(
+      filter(path => path !== ''),
+      switchMap(path => this.fsService.getFileAsBinary(path).pipe(
+          switchMap(data => {
+            this.base_path = path.split("/").slice(0,-1).join("/");
+            var rootFileString = new TextDecoder().decode(data);
+            console.log("Hints file " + path + " loaded");
+            this.loadFile(rootFileString);
 
-    if(tab) {
-      this.base_path_ = tab.path.split("/").slice(0,-1).join("/");
-      var rootFileString = new TextDecoder().decode(tab.data?.content);
-      console.log("Hints file " + tab.path + " loaded");
-      this.loadFile(rootFileString);
-    }
-    
-    const imagesPath = [this.base_path_, "img"].join("/")
-
-    this.fsService.scan(imagesPath, 2, true, true).subscribe(nestedNodes => {
-      for(let arrayOfNodes of nestedNodes) {
-        if(arrayOfNodes.length > 0) {
-          for(let imageNode of arrayOfNodes) {
-            const imageFileName = imageNode.name
-
-            if(imageFileName.toLowerCase().endsWith(".png") || imageFileName.toLowerCase().endsWith("jpeg") || imageFileName.toLowerCase().endsWith("jpg")) {
-              const imageFilePath = [imagesPath, imageFileName].join("/");
-              console.log("Image loaded from filesystem " + imageFilePath);
-
-              this.fsService.getFileAsBinary(imageFilePath).subscribe(binary => {
-                const safeUrl = this.domSanitizer.bypassSecurityTrustUrl(
-                  URL.createObjectURL(
-                    new Blob([binary.buffer], {type: 'image/png'})
-                  )
-                );
-                this.imagePathToSafeUrl.set(imageFileName, safeUrl);
-              });
-            }
-          }
-        }
-      }
-    });
-   
-    setTimeout(() => {this.initDialogue(); console.log(this.imagePathToSafeUrl);}, 1000)
-
+            return this.generateSafeUrls();
+          }))
+      )
+    ).subscribe(() => {}, err => console.error(err), () => this.initDialogue());
   }
-  
+
   loadFile(yamlString: string): void {  
   
     var loadedYaml = load(yamlString) as Array<Object>
@@ -88,7 +68,7 @@ export class HintViewerComponent implements OnInit {
       if(name == "files") {
         for(let subfile_id in item) {
           const subfileName = item[subfile_id]
-          const subfilePath = [this.base_path_, subfileName].join("/");
+          const subfilePath = [this.base_path, subfileName].join("/");
 
           this.fsService.getFileAsString(subfilePath).subscribe(subfileContent => {
             console.log("Hints subfile " + subfilePath + " loaded");
@@ -250,6 +230,43 @@ export class HintViewerComponent implements OnInit {
     this.fsService.getFileAsBinary(path).subscribe(node => {
       this.fsEventService.onOpenFile.emit({path: path, byUser: true, fileContent: node, type: FileType.MARKDOWN});
     });
+  }
+
+
+  private generateSafeUrls(): Observable<never> {
+    const imagesPath = `${this.base_path}/img`;
+
+    return this.fsService.scan(imagesPath, 2, true, true).pipe(
+      map(([subfolders, files]) => files),
+      map(files => files.filter(file => this.isImage(file.name))),
+      switchMap(nodes => nodes.map(node => this.loadFileAndCreateSafeUrl(`${this.base_path}/img`, node.name))),
+      mergeAll()
+    );
+  }
+
+  private isImage(name: string): boolean {
+    return (name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpeg") || name.toLowerCase().endsWith("jpg"));
+  }
+
+  private loadFileAndCreateSafeUrl(path: string, name: string) {
+    return this.fsService.getFileAsBinary(`${path}/${name}`).pipe(
+      switchMap(binary => defer(() => {
+        const safeUrl = this.domSanitizer.bypassSecurityTrustUrl(
+          URL.createObjectURL(
+            new Blob([binary.buffer], {type: 'image/png'})
+          )
+        );
+        this.imagePathToSafeUrl.set(name, safeUrl);
+      }))
+    )
+  }
+
+  private getHintRoot(): Observable<string> {
+    return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
+      switchMap(state => {
+        return !state.current ? of('') : this.conf.getHintRoot(state.current);
+      })
+    )
   }
 }
 

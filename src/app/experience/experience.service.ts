@@ -29,7 +29,7 @@ export class ExperienceService {
     )
   }
 
-    /**
+  /**
    * Configs liegen regulär im Verzeichnis der Experience
    * Im LocalStorage werden lediglich uuid, name und type abgespeichert
    * Beim Start der Anwendung wird Inhalt von localStorage mit indexedb.databases() verglichen
@@ -42,13 +42,18 @@ export class ExperienceService {
     ).pipe(
       switchMap(([lessons, sandboxes, idb]) => {
         const state = [...lessons, ...sandboxes];
-        const unknownExp = [...idb.filter(exp => !state.find(lsExp => lsExp.uuid === exp.uuid))]
+        const fixable = [...idb.filter(exp => !state.find(lsExp => lsExp.uuid === exp.uuid))]
 
-        // remove all entries with no corresponding idb entry
-        state.filter(exp => !idb.find(idbExp => idbExp.uuid === exp.uuid))
-          .forEach(exp => this.store.dispatch(new ExperienceAction.Remove(exp)));
+        // remove all sandboxes with no corresponding idb entry
+        sandboxes.filter(sb => !idb.find(idbExp => idbExp.uuid === sb.uuid))
+          .forEach(sb => this.store.dispatch(new ExperienceAction.Remove(sb)));
 
-        return this.fixMissingExperiences(unknownExp).pipe(
+        // change available lessons with no idb entry back to not-available
+        lessons.filter(ls => ls.availableOffline === true)
+          .filter(ls => !idb.find(idbExp => idbExp.uuid === ls.uuid))
+          .forEach(ls => this.store.dispatch(new ExperienceAction.ResetAvailability(ls)))
+
+        return this.fixMissingExperiences(fixable).pipe(
           switchMap(fixed => {
             fixed.forEach(exp => this.store.dispatch(new ExperienceAction.Add(exp)));
             return EMPTY

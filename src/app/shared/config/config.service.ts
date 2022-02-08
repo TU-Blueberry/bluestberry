@@ -1,10 +1,16 @@
 import { Injectable } from '@angular/core';
-import { from, Observable, of } from 'rxjs';
-import { switchMap } from 'rxjs/operators';
+import { Store } from '@ngxs/store';
+import { concat, from, merge, Observable, of, throwError, zip } from 'rxjs';
+import { debounceTime, filter, switchMap, take, withLatestFrom } from 'rxjs/operators';
+import { AppState, AppStateModel } from 'src/app/app.state';
+import { ExperienceState, ExperienceStateModel } from 'src/app/experience/experience.state';
 import { Config } from 'src/app/experience/model/config';
 import { Experience } from 'src/app/experience/model/experience';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
-import { SplitAreaSettings } from 'src/app/viewer/model/split-settings';
+import { Tab } from 'src/app/tab/model/tab.model';
+import { TabState, TabStateModel } from 'src/app/tab/tab.state';
+import { SplitSettings } from 'src/app/viewer/model/split-sizes';
+import { ViewSizeState } from 'src/app/viewer/sizes.state';
 import { environment } from 'src/environments/environment';
 
 @Injectable({
@@ -12,7 +18,18 @@ import { environment } from 'src/environments/environment';
 })
 export class ConfigService {
 
-  constructor(private fs: FilesystemService) { }
+  constructor(private fs: FilesystemService, private store: Store) {
+    const appState$ = this.store.select<AppStateModel>(AppState);
+    appState$.subscribe();
+
+    // vlt zip und alle rausfiltern wo noch nicht READY?
+    merge(this.store.select<SplitSettings>(ViewSizeState), this.store.select<TabStateModel>(TabState)).pipe(
+      withLatestFrom(appState$),
+      filter(([_, appState]) => appState !== undefined && appState.status === 'READY'),
+      debounceTime(1000),
+      switchMap(() => this.saveStateOfCurrentExperience())
+    ).subscribe();
+  }
 
   public storeConfig(config: Config): Observable<never> {
     return this.encryptConfig(config).pipe(
@@ -20,53 +37,88 @@ export class ConfigService {
     )
   }
 
-  public updateConfig(config: Config): Observable<never> {
-    return this.encryptConfig(config).pipe(
-      switchMap(buffer => this.fs.overwriteFile(`/${config.uuid}/config.json`, new Uint8Array(buffer)))
-    )
-  }
-
   public getConfigByExperience(exp: Experience): Observable<Config> {
     return this.fs.getFileAsBinary(`/${exp.uuid}/config.json`).pipe(
      switchMap(buff => this.decryptConfig(buff)),
      switchMap(decrypted => {
-       console.log("decrypted", decrypted)
        const conf = <Config>JSON.parse(new TextDecoder().decode(decrypted))
+       console.log("decrypted", conf)
        return of(conf)
      })
    )
+ }
+
+ public getHintRoot(exp: Experience): Observable<string> {
+   return this.getConfigByExperience(exp).pipe(
+     switchMap(conf => of(conf.hintRoot))
+   )
+ }
+
+ public saveStateOfCurrentExperience(): Observable<never> {
+  console.log("SAVE CURRENT STATE!")
+
+  return this.getCurrentExperience().pipe(
+    take(1),
+    switchMap(exp => zip(
+      this.store.select<SplitSettings>(ViewSizeState),
+      this.store.select<TabStateModel>(TabState),
+      this.getConfigByExperience(exp)
+    )),
+    switchMap(([settings, tabs, conf]) => {
+      conf.splitSettings = settings
+      conf.open = this.convertTabStateModel(tabs);
+      return this.updateConfig(conf);
+    })
+  )
+ }
+
+private updateConfig(config: Config): Observable<never> {
+  return concat(
+    this.encryptConfig(config).pipe(
+      switchMap(buffer => this.fs.overwriteFile(`/${config.uuid}/config.json`, new Uint8Array(buffer), 0o555))
+    ),
+    this.fs.sync(false)
+  )
+}
+
+ private getCurrentExperience(): Observable<Experience> {
+  return this.store.select<ExperienceStateModel>(ExperienceState).pipe(
+    switchMap(state => {
+      return !state.current ? throwError("No current experience") : of(state.current);
+    }       
+  ))
+ }
+
+ private convertTabStateModel(tabs: TabStateModel): Array<{path: string, on: string, active: boolean}> {
+  const open: Array<{ path: string, on: string, active: boolean }> = [];
+
+  Object.entries(tabs).forEach(([groupId, content]) => {
+    content.tabs.forEach(tab => {
+      open.push(({
+        on: groupId, 
+        path: tab.path !== '' ? tab.path : tab.type,
+        active: this.checkIfActive(content, tab)
+      }))
+    })
+  })
+
+  return open;
+ }
+
+ private checkIfActive(group: { tabs: Tab[]; active?: Tab | undefined }, tab: Tab): boolean {
+   if (tab.path === '') {
+    return (group.active && group.active.type === tab.type && group.active.title === tab.title && group.active.path === tab.path) || false;
+   } else {
+    return (group.active && tab.path === group.active.path) || false
+   }
  }
 
  // TODO: On load of settings from config:
  // set minSizeTab, minSizeFiletree variables!
  // (But only if config.tabSizes isnt empty)
 
- /*
- NGXS:
-  was grade mit welchen größen offen ist
-  tour active y/n
-
-  später ggf. welche zeile im editor, wo bei den hints etc.
-
- */
-
- // TODO: Resize after toggle of sidebar
-
- // TODO: Aufrufende Methode muss sync machen!
-
- // TODO: Muss noch abspeichern, ob terminal gerade offen und wie groß dabei
  // TODO: After opening/after import/after switching:
     // check if hints/terminal is open and set buttons in sidebar accordingly!
- // TODO: probably allow configuring min/max sizes via config as well?!
- public updateTabsAndSizes(exp: Experience, settings: Map<string, SplitAreaSettings>, open: { path: string, on: string, active: boolean }[]) {
-  return this.getConfigByExperience(exp).pipe(
-    switchMap(conf => {
-      conf.open = open;
-      conf.splitSettings = [...settings];     
-      return this.updateConfig(conf)  
-    })
-  )
- }
 
   private getKey(): Observable<CryptoKey> {
     const key = window.crypto.subtle.importKey("jwk", environment.aesKey, { name: "AES-GCM" }, false, ["encrypt", "decrypt"])
@@ -89,8 +141,6 @@ export class ConfigService {
   private decryptConfig(data: ArrayBuffer): Observable<ArrayBuffer> {
     return this.getKey().pipe(
       switchMap(key => {
-        console.log("decryspt ", data)
-
         return from(window.crypto.subtle.decrypt({ 
           name: "AES-GCM",
           iv: environment.iv

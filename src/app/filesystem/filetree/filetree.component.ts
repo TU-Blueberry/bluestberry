@@ -91,9 +91,6 @@ export class FiletreeComponent implements OnDestroy{
   }
 
   // TODO: Dateien laden bugg bei FF irgendwie
-
-  // TODO: Config aus neuem Mountpoint laden und reinpacken
-  // Gleiches gilt für external dateien
   export(name: string): void {
     this.zipService.export(name).subscribe()
   }

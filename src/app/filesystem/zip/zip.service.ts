@@ -1,17 +1,18 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
 import { JSZipObject } from 'jszip';
-import { from, Observable } from 'rxjs';
+import { concat, from, Observable } from 'rxjs';
 import { map, switchMap } from 'rxjs/operators';
 import { FilesystemService } from '../filesystem.service';
 import { Config } from 'src/app/experience/model/config';
 import { saveAs } from 'file-saver';
+import { ConfigService } from 'src/app/shared/config/config.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ZipService {
-  constructor(private fsService: FilesystemService) { }
+  constructor(private fsService: FilesystemService, private conf: ConfigService) { }
 
   // TODO: nicht löschen!
   // Kann für Reset umfunktioniert werden!
@@ -48,8 +49,12 @@ export class ZipService {
     });
   }
 
+  // TODO: Wenn jemals "external" umgesetzt: mounten und Dateien in Zip packen
   export(name: string): Observable<void> {
-    return this.exportLesson(name).pipe(map(blob => saveAs(blob, name)));
+    return concat(
+      this.conf.saveStateOfCurrentExperience(),
+      this.exportLesson(name).pipe(map(blob => saveAs(blob, name)))
+    )
   }
 
   exportLesson(name: string): Observable<Blob> {
@@ -68,5 +73,4 @@ export class ZipService {
   loadZip(buff: ArrayBuffer): Observable<JSZip> {
     return from(new JSZip().loadAsync(buff));
   }
- 
 }

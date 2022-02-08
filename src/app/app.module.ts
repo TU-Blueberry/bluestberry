@@ -26,7 +26,7 @@ import { environment } from 'src/environments/environment';
 import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
 import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
 import { TabState } from './tab/tab.state';
-import { ViewSizeState } from './viewer/states/sizes.state';
+import { ViewSizeState } from './viewer/sizes.state';
 import { ActionbarState } from './actionbar/actionbar.state';
 import { ExperienceState } from './experience/experience.state';
 import { AppState } from './app.state';

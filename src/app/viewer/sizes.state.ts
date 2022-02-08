@@ -1,13 +1,14 @@
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext } from '@ngxs/store';
-import { ViewSizeDefaults } from '../model/view-defaults';
-import { ResizeMain } from '../actions/resize-main.action';
-import { OpenCloseTab } from '../actions/open-close-tab.action';
-import { SplitAreaSettings } from '../model/split-settings';
-import { SplitSettings } from '../model/split-sizes';
+import { ViewSizeDefaults } from './model/view-defaults';
+import { ResizeMain } from './actions/resize-main.action';
+import { OpenCloseTab } from './actions/open-close-tab.action';
+import { SplitAreaSettings } from './model/split-settings';
+import { SplitSettings } from './model/split-sizes';
 import { Filetree } from 'src/app/actionbar/actions/filetree.action';
-import { ResizeTerminal } from '../actions/resize-terminal.action';
-import { Terminal } from '../actions/terminal.actions';
+import { ResizeTerminal } from './actions/resize-terminal.action';
+import { Terminal } from './actions/terminal.actions';
+import { ConfigService } from '../shared/config/config.service';
 
 // group 0 = main view (split vertically)
 // group 1 = left tab group (split horizontally)
@@ -27,7 +28,8 @@ import { Terminal } from '../actions/terminal.actions';
 })
 
 @Injectable()
-export class ViewSizeState {   
+export class ViewSizeState {
+    constructor(private conf: ConfigService) {}
 
     @Action(ResizeMain)
     onResizeMain(ctx: StateContext<SplitSettings>, action: ResizeMain) {

@@ -9,6 +9,7 @@ import {FileType} from '../shared/files/filetypes.enum';
 import { Actions, ofActionSuccessful, Store } from '@ngxs/store';
 import { ExperienceAction } from '../experience/actions';
 import { ConfigService } from '../shared/config/config.service';
+import { ExperienceState, ExperienceStateModel } from '../experience/experience.state';
 
 @Injectable({
   providedIn: 'root'
@@ -52,6 +53,8 @@ export class TabManagementService {
       })
     )
 
+    // TODO: Set open tab wenn es mal zufällig nicht der letzte ist
+
     const userOpenEvent$ = filesystemEventService.onOpenFile.pipe(
       filter(e => e.byUser),
       switchMap(e => this.createOpenTabEvent(e.path, e.type, e.fileContent)),
@@ -61,11 +64,11 @@ export class TabManagementService {
   }
 
   openHintsManually(): Observable<never> {
-    return this.getCurrentExperience().pipe(
+    return this.getHintRoot().pipe(
       switchMap(path => this.filesystemService.getFileAsBinary(path).pipe(
         switchMap(data => defer(() => {
-          const full = ({ content: data });
-          this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, path: path, data: full})
+          const full = ({ content: data, base_path: path });
+          this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, path: '', data: full})
         }))
       ))
     );
@@ -114,8 +117,15 @@ export class TabManagementService {
     }
   }
 
-  // TODO: Load currentExp from Store
-  private getCurrentExperience(): Observable<string> {
-    return of('/abc/hint_files/root.yml');
+  private getHintRoot(): Observable<string> {
+    return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
+      switchMap(state => {
+        if (!state.current) {
+          return of('')
+        } else {
+          return this.conf.getHintRoot(state.current);
+        }
+      })
+    )
   }
 }

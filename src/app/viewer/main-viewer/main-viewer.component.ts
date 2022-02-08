@@ -4,7 +4,7 @@ import { SplitComponent } from 'angular-split';
 import { SplitAreaSettings } from '../model/split-settings';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { ViewSizeState } from '../states/sizes.state';
+import { ViewSizeState } from '../sizes.state';
 import { ResizeMain } from '../actions/resize-main.action';
 import { ViewSizeDefaults } from '../model/view-defaults';
 import { ResizeTerminal } from '../actions/resize-terminal.action';

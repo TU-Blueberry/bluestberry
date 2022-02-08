@@ -1,8 +1,9 @@
 import { Injectable } from "@angular/core";
 import { Action, State, StateContext } from "@ngxs/store";
 import { concat, EMPTY, Observable } from "rxjs";
-import { finalize, last, switchMap } from "rxjs/operators";
+import { finalize, ignoreElements, last, switchMap, take } from "rxjs/operators";
 import { AppAction } from "../app.actions";
+import { ConfigService } from "../shared/config/config.service";
 import { ExperienceAction } from "./actions";
 import { ExperienceManagementService } from "./experience-management/experience-management.service";
 import { Experience } from "./model/experience";
@@ -23,7 +24,7 @@ export interface ExperienceStateModel {
 
 @Injectable()
 export class ExperienceState {
-    constructor(private expMgmt: ExperienceManagementService) {}
+    constructor(private expMgmt: ExperienceManagementService, private conf: ConfigService) {}
 
     @Action(ExperienceAction.CreateSandbox)
     onSandboxCreate(ctx: StateContext<ExperienceStateModel>, action: ExperienceAction.CreateSandbox) {
@@ -89,7 +90,10 @@ export class ExperienceState {
     onExperienceClosed(ctx: StateContext<ExperienceStateModel>, action: ExperienceAction.Close) {
         const state = ctx.getState();
 
-        return this.expMgmt.closeExperience(action.exp, false).pipe(
+        return concat(
+            this.conf.saveStateOfCurrentExperience(),
+            this.expMgmt.closeExperience(action.exp, false)
+        ).pipe(
             finalize(() => {
                 ctx.setState({
                     ...state,
@@ -169,6 +173,24 @@ export class ExperienceState {
         } else {
             ctx.dispatch(new ExperienceAction.Open(state.current, true));
         }
+    }
+
+    @Action(ExperienceAction.ResetAvailability)
+    onResetAvailability(ctx: StateContext<ExperienceStateModel>, action: ExperienceAction.ResetAvailability) {
+        const state = ctx.getState();
+        const key = action.exp.type === 'LESSON' ? 'lessons' : 'sandboxes';
+        const elements = this.clone(state[key]);
+
+        const index = elements.findIndex(element => element.uuid === action.exp.uuid);
+
+        if (index > -1) {
+            elements[index].availableOffline = false
+        }
+
+        ctx.setState({
+            ...state,
+            [key]: elements
+        })
     }
 
     private clone(exps: Experience[]): Experience[] {

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext } from '@ngxs/store';
+import { ConfigService } from '../shared/config/config.service';
 import { OpenCloseTab } from '../viewer/actions/open-close-tab.action';
 import { ActiveChange } from './actions/active.actions';
 import { TabChange } from './actions/tab.action';
 import { Tab } from './model/tab.model';
 
-interface TabStateModel {
+export interface TabStateModel {
    [id: string]: {
        tabs: Tab[],
        active?: Tab
@@ -19,17 +20,18 @@ interface TabStateModel {
 
 @Injectable()
 export class TabState {
+    constructor(private conf: ConfigService) {}
+
     @Action(TabChange)
     updateTabState(ctx: StateContext<TabStateModel>, action: TabChange) {
         const state = ctx.getState();
         const change = this.getChangeOriginAndType(state, action.id, action.tabs);
         const clonedState = this.cloneState(state, action.id)
-
+  
         if (change.type !== 'other') {
-            ctx.dispatch(new OpenCloseTab({ group: change.id, visible: change.type === 'open' }, 0))
+            ctx.dispatch(new OpenCloseTab({ group: change.id, visible: change.type === 'open' }, 0));
         }
 
-   
         clonedState[action.id].tabs = action.tabs;
         ctx.setState({
             ...clonedState

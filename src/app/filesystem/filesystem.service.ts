@@ -331,16 +331,6 @@ export class FilesystemService {
     );
   }
 
-  // TODO: Move zip stuff to zip service
-  // TODO: Rewrite (probably also check if path exists)
-
-
-  // TODO: Sandbox macht dann automatisch:
-  // <uuid>
-  // ----- code
-  // ----- config.json
-
-
   // TODO: Paths have changed! 
   // Lesson: /name
   // sandbox: /sandbox_name
@@ -379,7 +369,7 @@ export class FilesystemService {
     }
   }
 
-  // todo: move to zip service?
+  // TODO: move to zip service?
   private getFileAsBuffer(unzippedLesson: JSZip, file: string): Observable<ArrayBuffer>{
     return defer(() => of(unzippedLesson.file(file)?.internalStream("arraybuffer"))). pipe(
       switchMap(stream => {
@@ -536,7 +526,7 @@ export class FilesystemService {
       )
     );
 
-    return withSync === true ? concat(createFileObservable, this.sync(false)) : createFileObservable;
+    return withSync ? concat(createFileObservable, this.sync(false)) : createFileObservable;
   }
 
   public deleteFile(path: string, withSync: boolean): Observable<never> {

@@ -61,13 +61,14 @@ export class ExperienceManagementService {
       uuid: uuid,
       name: name, 
       type: 'SANDBOX',
-      splitSettings: [],
+      splitSettings: {},
       unityEntryPoint: '',
       encrypted: [],
       hidden: [],
       external: [],
       readonly: [],
-      glossaryEntryPoint: ''
+      glossaryEntryPoint: '',
+      hintRoot: ''
     }
 
     return concat(
