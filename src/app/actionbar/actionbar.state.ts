@@ -8,6 +8,7 @@ import { Hints } from "./actions/hints.action";
 import { Tour } from "./actions/tour.action";
 import { tour } from "../../assets/guided-tour/guided-tour.data";
 import { About } from "./actions/about.action";
+import { FromConfig } from "../viewer/actions/from-config.action";
 
 export interface ActionbarModel {
     [itemId: string]: {
@@ -30,6 +31,17 @@ export interface ActionbarModel {
 @Injectable()
 export class ActionbarState {
     constructor(private tabManagement: TabManagementService, private tourService: GuidedTourService) {}
+
+    @Action(FromConfig)
+    onFromConfig(ctx: StateContext<ActionbarModel>, action: FromConfig) {
+        ctx.setState({
+            'filetree': { active: action.splitSettings['filetree'].visible },
+            'terminal': { active: action.splitSettings['terminal'].visible },
+            'hints': { active: this.checkIfHintsAreOpen(action.openTabs) },
+            'tour': { active: false },
+            'about': { active: false }
+        });
+    }
 
     @Action(Filetree.Open)
     onFiletreeOpen(ctx: StateContext<ActionbarModel>, action: Filetree.Open) {
@@ -104,5 +116,9 @@ export class ActionbarState {
             ...state,
             [item]: { active: active, data: data }
         });
+    }
+
+    private checkIfHintsAreOpen(tabs: { path: string, on: string, active: boolean }[]): boolean {
+        return tabs.findIndex(tab => tab.path === 'HINT' && tab.active) > -1;
     }
 }

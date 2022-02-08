@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {concat, defer, EMPTY, merge, Observable, of, Subject} from 'rxjs';
-import {catchError, filter, map, switchMap} from 'rxjs/operators';
+import {catchError, filter, finalize, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
 import {OpenTabEvent} from 'src/app/tab/model/open-tab-event';
@@ -10,6 +10,7 @@ import { Actions, ofActionSuccessful, Store } from '@ngxs/store';
 import { ExperienceAction } from '../experience/actions';
 import { ConfigService } from '../shared/config/config.service';
 import { ExperienceState, ExperienceStateModel } from '../experience/experience.state';
+import { FromConfig } from '../viewer/actions/from-config.action';
 
 @Injectable({
   providedIn: 'root'
@@ -49,6 +50,8 @@ export class TabManagementService {
           }
           return this.createOpenTabEvent(file.path).pipe(map(ote => ({...ote, groupId: file.on})))
         })
+        ).pipe(
+          finalize(() => this.store.dispatch(new FromConfig(conf.splitSettings, conf.open)))
         )
       })
     )

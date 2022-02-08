@@ -1,14 +1,12 @@
 import { ExperienceType } from "src/app/experience/model/experience-type";
-import { SplitAreaSettings } from "src/app/viewer/model/split-settings";
+import { SplitSettings } from "src/app/viewer/model/split-sizes";
 
 export interface Config {
     open: { path: string, on: string, active: boolean }[],
     uuid: string;
     name: string;
     type: ExperienceType;
-    splitSettings: {
-        [area: string]: SplitAreaSettings; // info about sizes and visibility
-    } 
+    splitSettings: SplitSettings; // info about sizes and visibility
     unityEntryPoint?: string;
     encrypted: string[]; // paths which will be encrypted upon export (config.json is always encrypted)
     hidden: string[]; // paths which will be hidden from the UI and (recursive)

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
-import { UiEventsService } from '../ui-events.service';
 import { Terminal } from '../viewer/actions/terminal.actions';
 import { ActionbarModel } from './actionbar.state';
 import { About } from './actions/about.action';
@@ -21,11 +20,11 @@ export class ActionbarComponent implements OnInit {
     'hints': { active: false },
     'tour': { active: false },
     'about': { active: false }
-}
+  }
 
   actionBarState$: Observable<any>;
 
-  constructor(private uiEv: UiEventsService, private store: Store) {   
+  constructor(private store: Store) {   
     this.actionBarState$ = this.store.select(state => state.actionbar);
   }
 

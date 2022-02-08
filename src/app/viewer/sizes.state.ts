@@ -8,6 +8,7 @@ import { SplitSettings } from './model/split-sizes';
 import { Filetree } from 'src/app/actionbar/actions/filetree.action';
 import { ResizeTerminal } from './actions/resize-terminal.action';
 import { Terminal } from './actions/terminal.actions';
+import { FromConfig } from './actions/from-config.action';
 import { ConfigService } from '../shared/config/config.service';
 
 // group 0 = main view (split vertically)
@@ -40,6 +41,19 @@ export class ViewSizeState {
             .forEach(([_, settings], index) => settings.size = action.updatedSizes[index])
 
         ctx.setState(clone);
+    }
+
+    @Action(FromConfig)
+    onFromConfig(ctx: StateContext<SplitSettings>, action: FromConfig) {
+        ctx.setState(action.splitSettings)
+
+        /* this.conf.getConfigByExperience(action.exp).pipe(
+            switchMap(conf => defer(() => {
+                console.log("IN FROM CONFIG, set to ", conf.splitSettings)
+
+                ctx.setState(conf.splitSettings);
+            }))
+        )  */ 
     }
  
     @Action(OpenCloseTab)

@@ -55,13 +55,11 @@ export class ConfigService {
  }
 
  public saveStateOfCurrentExperience(): Observable<never> {
-  console.log("SAVE CURRENT STATE!")
-
   return this.getCurrentExperience().pipe(
     take(1),
     switchMap(exp => zip(
-      this.store.select<SplitSettings>(ViewSizeState),
-      this.store.select<TabStateModel>(TabState),
+      this.store.selectOnce<SplitSettings>(ViewSizeState),
+      this.store.selectOnce<TabStateModel>(TabState),
       this.getConfigByExperience(exp)
     )),
     switchMap(([settings, tabs, conf]) => {

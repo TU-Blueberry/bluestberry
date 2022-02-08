@@ -1,26 +1,24 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { SplitComponent } from 'angular-split';
 import { SplitAreaSettings } from '../model/split-settings';
 import { Store } from '@ngxs/store';
-import { Observable } from 'rxjs';
 import { ViewSizeState } from '../sizes.state';
 import { ResizeMain } from '../actions/resize-main.action';
 import { ViewSizeDefaults } from '../model/view-defaults';
 import { ResizeTerminal } from '../actions/resize-terminal.action';
+import { SplitSettings } from '../model/split-sizes';
 
 @Component({
   selector: 'app-main-viewer',
   templateUrl: './main-viewer.component.html',
   styleUrls: ['./main-viewer.component.scss']
 })
-export class MainViewerComponent implements OnInit {
+export class MainViewerComponent {
   // pixel
   readonly collapseSize = 34;
   readonly navbarHeight = 48;
   readonly minHeightExpanded = 200;
-
-  mainSizes$: Observable<any>;
 
   public viewSettings: {[id: string]: SplitAreaSettings} =  {
     'filetree': { group: 0, order: 0, size: 20, visible: true, minSize: ViewSizeDefaults.minSizeFiletree, maxSize: ViewSizeDefaults.maxSizeFiletree },
@@ -33,11 +31,9 @@ export class MainViewerComponent implements OnInit {
 
   @ViewChild("sidebar") sidebar?: SplitComponent; 
   constructor(private uiEv: UiEventsService, private store: Store) { 
-      this.mainSizes$ = this.store.select(ViewSizeState);
-    }
-
-  ngOnInit(): void {
-    this.mainSizes$.subscribe(s => this.viewSettings = s);
+    this.store.select<SplitSettings>(ViewSizeState).subscribe(s => {
+      this.viewSettings = s;
+    });
   }
 
   // minSize doesnt work, see https://github.com/angular-split/angular-split/issues/255
