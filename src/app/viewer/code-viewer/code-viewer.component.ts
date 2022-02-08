@@ -25,7 +25,9 @@ export class CodeViewerComponent implements OnInit {
       enabled: false,
     },
   }
+  
   code = ""
+  isExecutableCode = false;
 
   saveSubject = new Subject<void>()
   constructor(
@@ -39,6 +41,7 @@ export class CodeViewerComponent implements OnInit {
     this.fileTabDirective.dataChanges.subscribe((data) => {
       if (data) {
         this.code = new TextDecoder().decode(data.content)
+        this.isExecutableCode = data.path.endsWith(".py");
       }
     })
 
