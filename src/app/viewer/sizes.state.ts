@@ -1,44 +1,35 @@
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext } from '@ngxs/store';
-import { ViewSizeDefaults } from './model/view-defaults';
+import { ViewDefaultSettings, ViewSizeDefaults } from './model/view-defaults';
 import { ResizeMain } from './actions/resize-main.action';
 import { OpenCloseTab } from './actions/open-close-tab.action';
 import { SplitAreaSettings } from './model/split-settings';
-import { SplitSettings } from './model/split-sizes';
+import { ViewSettings } from './model/view-settings';
 import { Filetree } from 'src/app/actionbar/actions/filetree.action';
 import { ResizeTerminal } from './actions/resize-terminal.action';
 import { Terminal } from './actions/terminal.actions';
 import { FromConfig } from './actions/from-config.action';
 import { Reset } from '../shared/actions/reset.action';
 
-const defaultSettings = {
-    'filetree': { group: 0, order: 0, size: 20, visible: true, minSize: ViewSizeDefaults.minSizeFiletree, maxSize: ViewSizeDefaults.maxSizeFiletree },
-    'left': { group: 0, order: 1, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
-    'right': { group: 0, order: 2, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
-    'emptyMessage': { group: 0, order: 3, size: 100, visible: true, minSize: 0, maxSize: 100 },
-    'code': { group: 1, order: 0, size: 100, visible: true, minSize: ViewSizeDefaults.minSizeTop, maxSize: ViewSizeDefaults.maxSizeTop },
-    'terminal': { group: 1, order: 1, size: 20, visible: false, minSize: ViewSizeDefaults.minSizeTerminal, maxSize: ViewSizeDefaults.maxSizeTerminal }
-}
-
 // group 0 = main view (split vertically)
 // group 1 = left tab group (split horizontally)
 // this is currently hardcoded in every action call (includes indirect calls, see TabState)
 // if one were to support different layouts (e.g. right side could be split horizontally as well) this would have to be changed
 // (left tab = code + terminal is currently also hardcoded into main-viewer.component.html)
-@State<SplitSettings>({
+@State<ViewSettings>({
     name: 'viewSettings',
-    defaults: defaultSettings
+    defaults: ViewDefaultSettings
 })
 
 @Injectable()
 export class ViewSizeState {
     @Action(Reset)
-    onReset(ctx: StateContext<SplitSettings>, action: Reset) {
-        ctx.setState(defaultSettings);
+    onReset(ctx: StateContext<ViewSettings>, action: Reset) {
+        ctx.setState(ViewDefaultSettings);
     }
 
     @Action(ResizeMain)
-    onResizeMain(ctx: StateContext<SplitSettings>, action: ResizeMain) {
+    onResizeMain(ctx: StateContext<ViewSettings>, action: ResizeMain) {
         const state = ctx.getState();
         const clone = this.deepClone(state);
         
@@ -49,12 +40,12 @@ export class ViewSizeState {
     }
 
     @Action(FromConfig)
-    onFromConfig(ctx: StateContext<SplitSettings>, action: FromConfig) {
+    onFromConfig(ctx: StateContext<ViewSettings>, action: FromConfig) {
         ctx.setState(action.splitSettings)
     }
  
     @Action(OpenCloseTab)
-    onOpenClose(ctx: StateContext<SplitSettings>, action: OpenCloseTab) {      
+    onOpenClose(ctx: StateContext<ViewSettings>, action: OpenCloseTab) {      
         const state = ctx.getState();
         const clone = this.deepClone(state);
         const changes = action.changes;
@@ -73,7 +64,7 @@ export class ViewSizeState {
     }
 
     @Action(ResizeTerminal)
-    onResizeTerminal(ctx: StateContext<SplitSettings>, action: ResizeTerminal) {
+    onResizeTerminal(ctx: StateContext<ViewSettings>, action: ResizeTerminal) {
         const state = ctx.getState();
         const clone = this.deepClone(state);
 
@@ -83,7 +74,7 @@ export class ViewSizeState {
     }
 
     @Action(Filetree.Open)
-    onFiletreeOpen(ctx: StateContext<SplitSettings>, action: Filetree.Open) {
+    onFiletreeOpen(ctx: StateContext<ViewSettings>, action: Filetree.Open) {
         const state = ctx.getState();
 
         // prevent second call if tour is started as this would cause another redistribution
@@ -93,21 +84,21 @@ export class ViewSizeState {
     }
 
     @Action(Filetree.Close)
-    onFiletreeClose(ctx: StateContext<SplitSettings>, action: Filetree.Close) {
+    onFiletreeClose(ctx: StateContext<ViewSettings>, action: Filetree.Close) {
         this.setFiletreeState(ctx, false, action.group);
     }
 
     @Action(Terminal.Open)
-    onTerminalOpen(ctx: StateContext<SplitSettings>, action: Terminal.Open) {
+    onTerminalOpen(ctx: StateContext<ViewSettings>, action: Terminal.Open) {
         this.setTerminalState(ctx, true);
     }
 
     @Action(Terminal.Close)
-    onTerminalClose(ctx: StateContext<SplitSettings>, action: Terminal.Close) {
+    onTerminalClose(ctx: StateContext<ViewSettings>, action: Terminal.Close) {
         this.setTerminalState(ctx, false);
     }
 
-    private setTerminalState(ctx: StateContext<SplitSettings>, visible: boolean) {
+    private setTerminalState(ctx: StateContext<ViewSettings>, visible: boolean) {
         const state = ctx.getState();
         const clone = this.deepClone(state);
 
@@ -116,7 +107,7 @@ export class ViewSizeState {
         ctx.setState(clone);
     }
 
-    private setFiletreeState(ctx: StateContext<SplitSettings>, visible: boolean, group: number) {
+    private setFiletreeState(ctx: StateContext<ViewSettings>, visible: boolean, group: number) {
         const state = ctx.getState();
         const clone = this.deepClone(state);
 
@@ -129,7 +120,7 @@ export class ViewSizeState {
         ctx.setState(redistributed);
     }
 
-    private redistribute(state: SplitSettings, isTabChange: boolean, groupId: number): SplitSettings {
+    private redistribute(state: ViewSettings, isTabChange: boolean, groupId: number): ViewSettings {
         const filetree = state.filetree;
         const visibleAreas = Object.entries(state)
             .filter(([area, settings]) => area !== 'filetree' && settings.group === groupId)
@@ -163,7 +154,7 @@ export class ViewSizeState {
             .reduce((a, b) => !a && !b)
     }
 
-    private deepClone(sizes: SplitSettings): SplitSettings {
+    private deepClone(sizes: ViewSettings): ViewSettings {
         const clone = { ...sizes };
         Object.entries(clone).forEach(([id, sizes]) => clone[id] = { ...sizes });
 

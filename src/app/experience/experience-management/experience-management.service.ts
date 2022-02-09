@@ -15,6 +15,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { Store } from '@ngxs/store';
 import { ExperienceAction } from '../actions';
 import { AppAction } from 'src/app/app.actions';
+import { ViewDefaultSettings } from 'src/app/viewer/model/view-defaults';
 
 @Injectable({
   providedIn: 'root'
@@ -61,7 +62,7 @@ export class ExperienceManagementService {
       uuid: uuid,
       name: name, 
       type: 'SANDBOX',
-      splitSettings: {},
+      splitSettings: ViewDefaultSettings,
       unityEntryPoint: '',
       encrypted: [],
       hidden: [],

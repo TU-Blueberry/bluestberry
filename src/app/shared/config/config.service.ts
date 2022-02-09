@@ -9,7 +9,7 @@ import { Experience } from 'src/app/experience/model/experience';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { Tab } from 'src/app/tab/model/tab.model';
 import { TabState, TabStateModel } from 'src/app/tab/tab.state';
-import { SplitSettings } from 'src/app/viewer/model/split-sizes';
+import { ViewSettings } from 'src/app/viewer/model/view-settings';
 import { ViewSizeState } from 'src/app/viewer/sizes.state';
 import { environment } from 'src/environments/environment';
 
@@ -22,7 +22,7 @@ export class ConfigService {
     const appState$ = this.store.select<AppStateModel>(AppState);
     appState$.subscribe();
 
-    merge(this.store.select<SplitSettings>(ViewSizeState), this.store.select<TabStateModel>(TabState)).pipe(
+    merge(this.store.select<ViewSettings>(ViewSizeState), this.store.select<TabStateModel>(TabState)).pipe(
       withLatestFrom(appState$),
       filter(([_, appState]) => appState !== undefined && appState.status === 'READY'),
       debounceTime(1000),
@@ -57,7 +57,7 @@ export class ConfigService {
     return this.getCurrentExperience().pipe(
       take(1),
       switchMap(exp => zip(
-        this.store.selectOnce<SplitSettings>(ViewSizeState),
+        this.store.selectOnce<ViewSettings>(ViewSizeState),
         this.store.selectOnce<TabStateModel>(TabState),
         this.getConfigByExperience(exp)
       )),

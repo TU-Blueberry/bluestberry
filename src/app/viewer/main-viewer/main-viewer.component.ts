@@ -5,9 +5,9 @@ import { SplitAreaSettings } from '../model/split-settings';
 import { Store } from '@ngxs/store';
 import { ViewSizeState } from '../sizes.state';
 import { ResizeMain } from '../actions/resize-main.action';
-import { ViewSizeDefaults } from '../model/view-defaults';
+import { ViewDefaultSettings } from '../model/view-defaults';
 import { ResizeTerminal } from '../actions/resize-terminal.action';
-import { SplitSettings } from '../model/split-sizes';
+import { ViewSettings } from '../model/view-settings';
 
 @Component({
   selector: 'app-main-viewer',
@@ -20,18 +20,10 @@ export class MainViewerComponent {
   readonly navbarHeight = 48;
   readonly minHeightExpanded = 200;
 
-  public viewSettings: {[id: string]: SplitAreaSettings} =  {
-    'filetree': { group: 0, order: 0, size: 20, visible: true, minSize: ViewSizeDefaults.minSizeFiletree, maxSize: ViewSizeDefaults.maxSizeFiletree },
-    'left': { group: 0, order: 1, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
-    'right': { group: 0, order: 2, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
-    'emptyMessage': { group: 0, order: 3, size: 100, visible: true, minSize: 0, maxSize: 100 },
-    'code': { group: 1, order: 0, size: 100, visible: true, minSize: ViewSizeDefaults.minSizeTop, maxSize: ViewSizeDefaults.maxSizeTop },
-    'terminal': { group: 1, order: 1, size: 20, visible: false, minSize: ViewSizeDefaults.minSizeTerminal, maxSize: ViewSizeDefaults.maxSizeTerminal }
-}
-
+  public viewSettings: ViewSettings = ViewDefaultSettings;
   @ViewChild("sidebar") sidebar?: SplitComponent; 
   constructor(private uiEv: UiEventsService, private store: Store) { 
-    this.store.select<SplitSettings>(ViewSizeState).subscribe(s => {
+    this.store.select<ViewSettings>(ViewSizeState).subscribe(s => {
       this.viewSettings = s;
     });
   }
