@@ -1,8 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { concat, from, Observable, Subject, Subscription } from 'rxjs';
+import { Observable, Subject, Subscription } from 'rxjs';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
-import { filter, switchMap, tap } from 'rxjs/operators';
+import { filter } from 'rxjs/operators';
 import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
 import { TreeNode } from '../model/tree-node';
@@ -11,6 +11,7 @@ import { FilesystemEventService } from '../events/filesystem-event.service';
 import { Experience } from 'src/app/experience/model/experience';
 import { Actions, ofActionSuccessful } from '@ngxs/store';
 import { ExperienceAction } from 'src/app/experience/actions';
+import { ConfigService } from 'src/app/shared/config/config.service';
 
 @Component({
   selector: 'app-filetree',
@@ -41,7 +42,7 @@ export class FiletreeComponent implements OnDestroy{
   @ViewChild('content', { read: ViewContainerRef }) ref!: ViewContainerRef;
   constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
     private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
-    private cd: ChangeDetectorRef, private action$: Actions) { }
+    private cd: ChangeDetectorRef, private action$: Actions, private conf: ConfigService) { }
 
   private init(): void {
     this.action$.pipe(
@@ -67,7 +68,7 @@ export class FiletreeComponent implements OnDestroy{
     const name = this._isGlossary ? 'Glossar' : this.SELECTED_LESSON?.name;
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     const folderComp = this.ref.createComponent(folderFactory).instance;
-    const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev);
+    const baseNode = new TreeNode(this.uiEv, this.fsService, this.ev, this.conf);
     baseNode.path = "/";
 
     this.outsideClickSubscription = this.uiEv.onClickOutsideOfFiltree.pipe(

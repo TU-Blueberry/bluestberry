@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { ConfigService } from 'src/app/shared/config/config.service';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FileComponent } from '../file/file.component';
@@ -46,10 +47,10 @@ export class FolderComponent implements OnInit, OnDestroy {
   @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef;
   @ViewChild('files', { read: ViewContainerRef, static: true }) filesRef!: ViewContainerRef;
   constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private ev: FilesystemEventService, 
-    private componentFactoryResolver: ComponentFactoryResolver, private cd: ChangeDetectorRef) {
+    private componentFactoryResolver: ComponentFactoryResolver, private cd: ChangeDetectorRef, private conf: ConfigService) {
     this.folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     this.fileFactory = this.componentFactoryResolver.resolveComponentFactory(FileComponent);
-    this._node = new TreeNode(this.uiEv, this.fsService, this.ev);
+    this._node = new TreeNode(this.uiEv, this.fsService, this.ev, this.conf);
   }
 
   ngOnInit(): void {
@@ -190,10 +191,6 @@ export class FolderComponent implements OnInit, OnDestroy {
   createSubcomponent(isFile: boolean, path?: string, node?: FSNode): void {   
     const ref = isFile ? this.filesRef : this.foldersRef;
     const insertIndex = path !== undefined ? this.findNewPosition(path, isFile, ref) : 0;
-
-    if (isFile && path && path.startsWith("/abc/config.json")) {
-      console.log("Create file subcomponent for CONF")
-    }
 
     if (path && ((isFile && this.files.has(this.getName(path))) || (!isFile && this.folders.has(this.getName(path))))) {
       return;

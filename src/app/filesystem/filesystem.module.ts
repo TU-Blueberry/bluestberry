@@ -9,6 +9,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { CommonActionsComponent } from './common-actions/common-actions.component';
 import { SharedModule } from '../shared/shared.module';
 import { ExperienceModule } from '../experience/experience.module';
+import { GlossaryPipe } from './glossary.pipe';
 
 /**
  * Module for Filesystem-Management related Classes.
@@ -21,7 +22,8 @@ import { ExperienceModule } from '../experience/experience.module';
     FileComponent,
     UserInputComponent,
     CommonActionsComponent,
-    FiletreeComponent
+    FiletreeComponent,
+    GlossaryPipe
   ],
   imports: [
     CommonModule,

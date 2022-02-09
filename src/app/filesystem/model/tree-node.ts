@@ -1,7 +1,8 @@
 
 import { ComponentRef } from "@angular/core";
-import { forkJoin, Subscription } from "rxjs";
+import { forkJoin } from "rxjs";
 import { filter, map, switchMap, tap } from "rxjs/operators";
+import { ConfigService } from "src/app/shared/config/config.service";
 import { UiEventsService } from "../../ui-events.service";
 import { FilesystemEventService } from "../events/filesystem-event.service";
 import { FileComponent } from "../file/file.component";
@@ -17,8 +18,9 @@ export class TreeNode {
     private _isRoot = false;
     private _rootName = '';
     private _tempName = '';
+    private _isGlossaryFile = false;
 
-    constructor(private uiEv: UiEventsService, private fs: FilesystemService, private ev: FilesystemEventService) { }
+    constructor(private uiEv: UiEventsService, private fs: FilesystemService, private ev: FilesystemEventService, private conf: ConfigService) { }
 
     // ----- Methods provided by this class -----
     public getSubfolders() {
@@ -56,7 +58,7 @@ export class TreeNode {
     }
 
     public generateTreeNode(depth: number, fullPath?: string, node?: FSNode, rootName?: string, ): TreeNode  {
-        const treeNode = new TreeNode(this.uiEv, this.fs, this.ev);
+        const treeNode = new TreeNode(this.uiEv, this.fs, this.ev, this.conf);
         treeNode.depth = depth ;
         treeNode.parentPath = this._path;
    
@@ -70,6 +72,7 @@ export class TreeNode {
             treeNode.isRoot = true;
         }
         
+        treeNode.checkIfIsGlossaryFile();
         treeNode.updateEmptyStatus();
         return treeNode;
     }
@@ -78,6 +81,19 @@ export class TreeNode {
        return this.getNodes().pipe(map(([folders, files]) => 
             [...folders.map(node => this.generateTreeNode(this._depth + 1,`${this._path}/${node.name}`, node)), 
             ...files.map(node => this.generateTreeNode(this._depth + 1,`${this._path}/${node.name}`, node))]));
+    }
+
+    public checkIfIsGlossaryFile(): void {
+        if (this._path.startsWith("/glossary")) {
+            this._isGlossaryFile = true;
+            return;
+        }
+
+        this.conf.getConfigOfCurrentExperience().subscribe(conf => {
+            if (this.path.startsWith(`/${conf.uuid}/${conf.glossaryEntryPoint}`)) {
+                this._isGlossaryFile = true;
+            }
+        })
     }
 
     // ----- Observables for events -----
@@ -237,5 +253,9 @@ export class TreeNode {
 
     public get rootName() {
         return this._rootName;
+    }
+
+    public get isGlossaryFile() {
+        return this._isGlossaryFile;
     }
 }

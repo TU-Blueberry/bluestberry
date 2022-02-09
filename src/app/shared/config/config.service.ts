@@ -47,6 +47,12 @@ export class ConfigService {
     )
   }
 
+  public getConfigOfCurrentExperience(): Observable<Config> {
+    return this.getCurrentExperience().pipe(
+      switchMap(exp => this.getConfigByExperience(exp))
+    )
+  }
+
   public getHintRoot(exp: Experience): Observable<string> {
     return this.getConfigByExperience(exp).pipe(
       switchMap(conf => of(`${conf.hintRoot}/root.yml`))

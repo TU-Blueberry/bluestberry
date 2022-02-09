@@ -4,7 +4,8 @@
     <div class="file-heading">
         <app-file-icons class="file-icons" [path]="isRenaming ? tentativeName : node.path" [isTentative]="node.isTentativeNode"></app-file-icons>
         <div class="file-name" *ngIf="!isRenaming">
-            {{ node.name }}
+            <span *ngIf="!node.isGlossaryFile">{{ node.name }}</span>
+            <span *ngIf="node.isGlossaryFile">{{ node.name | toGlossaryName }}</span>
         </div> 
         <div *ngIf="isRenaming">
             <app-user-input [parentPath]="node.parentPath" [depth]="node.depth" [isFile]="true" [editMode]="true" 
