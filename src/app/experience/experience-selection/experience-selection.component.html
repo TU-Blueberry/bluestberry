@@ -62,14 +62,18 @@
                             [class.available-local]="lesson.availableOffline" 
                             [class.available-remote]="!lesson.availableOffline"
                             title="{{ lesson.availableOffline == true ? 'Offline verfügbar' : 'Noch nicht heruntergeladen' }}"></div> 
-                        <div class="link" *ngIf="lesson.availableOffline" (click)="export(lesson, $event)" title="Exportiere deinen Fortschritt">Export</div>
-                        <div class="link disabled" title="Fortschritt zurücksetzen">Zurücksetzen (bald)</div>
+                        <app-progress-spinner class="scaled-animation" *ngIf="exporting !== undefined && exporting.uuid === lesson.uuid"></app-progress-spinner>
+                        <div class="link" *ngIf="lesson.availableOffline && (exporting === undefined || exporting.uuid !== lesson.uuid)" title="Exportiere deinen Fortschritt"
+                            (click)="export(lesson, $event)">Export</div>
+                        <div class="link disabled" *ngIf="lesson.availableOffline" title="Fortschritt zurücksetzen">Zurücksetzen (bald)</div>
+                        <div class="ml" *ngIf="!lesson.availableOffline" title="Nicht verfügbar zurücksetzen">Aktionen nach Herunterladen verfügbar</div>
                     </div>
                 </div>
                 <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
                     aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
                     stroke-linejoin="miter" fill="none">
-                    <title id="chevronRightIconTitle">Öffnen</title>
+                    <title *ngIf="lesson.availableOffline" id="chevronRightIconTitle">Öffnen</title>
+                    <title *ngIf="!lesson.availableOffline" id="chevronRightIconTitle">Herunterladen und öffnen</title>
                     <polyline points="10 6 16 12 10 18 10 18" />
                 </svg>
             </div>
@@ -87,8 +91,10 @@
                     </div>
                     <div class="content-description">
                         <div class="status-indiciator available-local" title="Offline verfügbar"></div>
+                        <app-progress-spinner class="scaled-animation" *ngIf="exporting !== undefined && exporting.uuid === sandbox.uuid"></app-progress-spinner>
                         <div class="link" (click)="export(sandbox, $event)" title="Sandbox exportieren">Export</div>
-                        <div class="link" title="Sandbox löschen" (click)="openSandboxDeletionDialog($event, sandbox)">Löschen</div>
+                        <div class="link" *ngIf="sandbox.availableOffline && (exporting === undefined || exporting.uuid !== sandbox.uuid)" title="Sandbox löschen" 
+                            (click)="openSandboxDeletionDialog($event, sandbox)">Löschen</div>
                     </div>
                 </div>
                 <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"

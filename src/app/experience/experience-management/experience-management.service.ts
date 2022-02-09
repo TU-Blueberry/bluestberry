@@ -81,7 +81,6 @@ export class ExperienceManagementService {
     )
   }
 
-  // TODO: probably need to clear tabGroups and active tabs on expclose
   public deleteSandbox(isMounted: boolean, sandbox?: Experience): Observable<never> {
     if (!sandbox) {
       return throwError("Fehler: Es wurde keine Sandbox zum Löschen übergeben");

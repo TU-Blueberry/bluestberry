@@ -144,8 +144,8 @@ export class FilesystemService {
     );
   }
 
-  public mount(name: string): Observable<never> {
-    const fullPath = name.startsWith("/") ? name : `/${name}`;
+  public mount(uuid: string): Observable<never> {
+    const fullPath = uuid.startsWith("/") ? uuid : `/${uuid}`;
 
     return this.exists(fullPath).pipe(
       switchMap(exists => { 

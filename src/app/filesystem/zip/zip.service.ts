@@ -1,18 +1,20 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
 import { JSZipObject } from 'jszip';
-import { concat, defer, forkJoin, from, Observable, of, throwError } from 'rxjs';
+import { concat, forkJoin, from, Observable, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';
 import { FilesystemService } from '../filesystem.service';
 import { Config } from 'src/app/experience/model/config';
 import { ConfigService } from 'src/app/shared/config/config.service';
 import { Experience } from 'src/app/experience/model/experience';
+import { Store } from '@ngxs/store';
+import { ExperienceState, ExperienceStateModel } from 'src/app/experience/experience.state';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ZipService {
-  constructor(private fsService: FilesystemService, private conf: ConfigService) { }
+  constructor(private fsService: FilesystemService, private conf: ConfigService, private store: Store) { }
 
   // TODO: nicht löschen!
   // Kann für Reset umfunktioniert werden!
@@ -51,14 +53,39 @@ export class ZipService {
 
   // TODO: Wenn jemals "external" umgesetzt: mounten und Dateien in Zip packen
   export(exp: Experience): Observable<JSZip> {
+    return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
+      switchMap(state => {
+        if ((state.current && state.current.uuid === exp.uuid)) {
+          return this.exportCurrent(exp)
+        } else {
+          return this.exportOther(exp);
+        }
+      })
+    )
+  }
+
+  private exportCurrent(exp: Experience): Observable<JSZip> {
     const zip = new JSZip();
 
     return concat(
       this.conf.saveStateOfCurrentExperience(),
       this.createZip(`/${exp.uuid}`, zip, exp.uuid),
       of(zip)
+    ) 
+  }
+
+  private exportOther(exp: Experience): Observable<JSZip> {
+    const zip = new JSZip();
+
+    return concat(
+      this.fsService.mountManySyncOnce([exp.uuid]),
+      this.conf.saveStateOfCurrentExperience(),
+      this.createZip(`/${exp.uuid}`, zip, exp.uuid),
+      this.fsService.unmount(exp.uuid),
+      of(zip)
     )
   }
+
 
   // TODO: zip erstellen braucht etwas --> selection offen lassen, ladeanimation, dann bei erfolg schließen
   private createZip(path: string, zip: JSZip, uuid: string) {

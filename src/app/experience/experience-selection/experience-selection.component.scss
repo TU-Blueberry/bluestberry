@@ -148,6 +148,10 @@ hr {
     }
 }
 
+.ml {
+    margin-left: 10px;
+}
+
 .disabled:hover {
     text-decoration: none !important;
     color: #8f8f8f !important;
@@ -176,4 +180,10 @@ hr {
         cursor: pointer;
         background-color: #197741;
     }
+}
+
+.scaled-animation {
+    height: 20px;
+    width: 55px;
+    transform: scale(0.5) translateY(-27px);
 }

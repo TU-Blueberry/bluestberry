@@ -11,7 +11,6 @@ import { ExperienceState, ExperienceStateModel } from '../experience.state';
 import { Experience } from '../model/experience';
 import { saveAs } from 'file-saver';
 
-
 @Component({
   selector: 'app-lesson-selection',
   templateUrl: './experience-selection.component.html',
@@ -24,6 +23,7 @@ export class ExperienceSelectionComponent implements OnInit {
   selectedExperience: Experience = { name: '', type: "LESSON", uuid: ''};
   lessons: Experience[] = [];
   sandboxes: Experience[] = [];
+  exporting?: Experience;
 
   isSwitching = false;
   showOptions = false;
@@ -70,12 +70,25 @@ export class ExperienceSelectionComponent implements OnInit {
   }
 
   export(exp: Experience, ev: Event): void {
+    console.log("export", exp)
+
     ev.stopPropagation();
+    this.exporting = exp;
     this.zip.export(exp).pipe(
       take(1),
       switchMap(zip => from(zip.generateAsync({ type: "blob" })))
-    ).subscribe(blob => saveAs(blob, exp.name));
+    ).subscribe(blob => {
+      console.log("got blobl", blob)
+      saveAs(blob, exp.name);
+      this.exporting = undefined;
+      this.showOptions = false;
+    }, err => { // TODO: display errors
+      this.exporting = undefined;
+      this.showOptions = false;
+    }); 
   }
+
+  // TODO: Mount fehlt falls !== currentExp
 
   public onSelectChange(to: Experience) {
     this.showOptions = false;
