@@ -24,12 +24,12 @@ export class GlossaryService {
     const expGlossary: Observable<FSNode[][]> = this.fs.exists(`/${exp.uuid}/glossary`).pipe(
       switchMap(exists => {
         const empty: FSNode[][] = [[], []];
-        return exists ? this.fs.scan(`/${exp.uuid}/glossary`, 1, true, true) : of(empty);
+        return exists ? this.fs.scanAll(`/${exp.uuid}/glossary`, 1, true) : of(empty);
       })
     )
 
     forkJoin([
-      this.fs.scan('/glossary', 0, true, true),
+      this.fs.scanAll('/glossary', 0, true),
       expGlossary
     ]).pipe(
         map(([[_, globalFiles], [__, expFiles]]) => {
@@ -54,7 +54,7 @@ export class GlossaryService {
     
     return zip(
       this.http.get<string[]>(url),
-      this.fs.scan('/glossary', 0, true, false)
+      this.fs.scanAll('/glossary', 0, true)
     ).pipe(
       switchMap(([list, [_, files]]) => {
         const newEntries = list.filter(entry => files.findIndex(element => `${element.name}` === entry) === -1);

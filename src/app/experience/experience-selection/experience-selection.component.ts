@@ -1,13 +1,15 @@
 import { Component, ElementRef, NgZone, OnInit } from '@angular/core';
 import { Actions, ofActionSuccessful, Store } from '@ngxs/store';
-import { fromEvent, Observable } from 'rxjs';
-import { filter, tap } from 'rxjs/operators';
+import { from, fromEvent, Observable } from 'rxjs';
+import { filter, switchMap, take, tap } from 'rxjs/operators';
 import { AppState, AppStatus, AppStateModel } from 'src/app/app.state';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
+import { ZipService } from 'src/app/filesystem/zip/zip.service';
 import { ExperienceAction } from '../actions';
 import { ExperienceManagementService } from '../experience-management/experience-management.service';
 import { ExperienceState, ExperienceStateModel } from '../experience.state';
 import { Experience } from '../model/experience';
+import { saveAs } from 'file-saver';
 
 
 @Component({
@@ -29,7 +31,7 @@ export class ExperienceSelectionComponent implements OnInit {
   showSandboxDeletionDialog = false;
   sandboxToDelete?: Experience;
 
-  constructor(private action$: Actions, private store: Store, private expManagementService: ExperienceManagementService, private ref: ElementRef, private fs: FilesystemService, private zone: NgZone) {
+  constructor(private zip: ZipService, private action$: Actions, private store: Store, private expManagementService: ExperienceManagementService, private ref: ElementRef, private fs: FilesystemService, private zone: NgZone) {
     // TODO: errors
     action$.pipe(
       ofActionSuccessful(ExperienceAction.Remove)
@@ -65,6 +67,14 @@ export class ExperienceSelectionComponent implements OnInit {
         tap(ev => this.closeOptions(ev))
       ).subscribe()
     })
+  }
+
+  export(exp: Experience, ev: Event): void {
+    ev.stopPropagation();
+    this.zip.export(exp).pipe(
+      take(1),
+      switchMap(zip => from(zip.generateAsync({ type: "blob" })))
+    ).subscribe(blob => saveAs(blob, exp.name));
   }
 
   public onSelectChange(to: Experience) {

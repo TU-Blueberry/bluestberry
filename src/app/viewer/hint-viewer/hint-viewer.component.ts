@@ -236,7 +236,7 @@ export class HintViewerComponent implements OnInit {
   private generateSafeUrls(): Observable<never> {
     const imagesPath = `${this.base_path}/img`;
 
-    return this.fsService.scan(imagesPath, 2, true, true).pipe(
+    return this.fsService.scanAll(imagesPath, 2, true).pipe(
       map(([subfolders, files]) => files),
       map(files => files.filter(file => this.isImage(file.name))),
       switchMap(nodes => nodes.map(node => this.loadFileAndCreateSafeUrl(`${this.base_path}/img`, node.name))),

@@ -26,7 +26,7 @@ export class TreeNode {
     }
     
     public getNodes() {
-        return this.fs.scan(this._path, this._depth, true)
+        return this.fs.scanUser(this._path, this._depth, true)
             .pipe(tap(([files, folders]) => this._isEmptyNode = folders.length === 0 && files.length === 0));
     }
 
@@ -45,7 +45,7 @@ export class TreeNode {
         const entries = this._ref?.contents;
         
         if (this._path !== '' && this._ref && entries !== undefined && entries !== null && !this.fs.N_isFile(this._ref)) {
-             this.fs.scanWithoutFetch((entries as FSNode), this._path, this._depth, true).subscribe(([folders, files]) => {
+             this.fs.scanWithOutFetchUser((entries as FSNode), this._path, this._depth, true).subscribe(([folders, files]) => {
                 this._isEmptyNode = folders.length === 0 && files.length === 0;
             }); 
         }
@@ -91,8 +91,17 @@ export class TreeNode {
            tap(() => this.updateEmptyStatus()),
            switchMap(params => this.fs.getNodeByPath(params.path).pipe(
                 filter(node => node !== undefined),
+                filter(node => !this.isUpdateToInvisibleFile(params.path, node.name)),
                 map(node => ({node: node, path: params.path})))
             ))
+    }
+
+    // writing to file (= newly created *OR* just updated) causes listener (addNewFilesListener) to be called with info about the file 
+    // need to make sure that it wasn't an update to a file which shouldn't be visible in filetree (e.g. config, hidden files etc.)
+    // without this check we would realize that hidden file isn't included in filesMap yet (as should be) and mistakenly create a subcomponent
+    private isUpdateToInvisibleFile(path: string, name: string) {
+        return this.fs.isSystemDirectory(path) || this.fs.isHiddenPath(path) || this.fs.isModulePath(path)
+                || this.fs.isHintPath(path) || this.fs.isGlossaryPath(path) || (this._depth === 0 && name === 'config.json');
     }
 
     public addAfterCodeExecutionListener() {

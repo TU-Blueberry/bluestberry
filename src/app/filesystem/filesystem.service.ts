@@ -12,11 +12,12 @@ import { FileType, FileTypes } from '../shared/files/filetypes.enum';
 })
 export class FilesystemService {
   readonly SYSTEM_FOLDERS = new Set(['/dev', '/home', '/lib', '/proc', '/tmp', '/bin']);
-  readonly CUSTOM_FOLDERS = new Set(['/configs', '/sandboxes', '/external', '/glossary']) // TODO: aufräumen
+  readonly CUSTOM_FOLDERS = new Set(['/glossary']);
   EXP_HIDDEN_PATHS = new Set<string>();
   EXP_EXTERNAL_PATHS = new Set<string>();
   EXP_READONLY_PATHS = new Set<string>();
   EXP_MODULE_PATHS = new Set<string>();
+  EXP_HINT_ROOT_PATH = '';
   EXP_GLOSSARY_PATH = '';
 
   // Keep track of readonly folders as they need to be adjusted before and after syncing 
@@ -74,20 +75,11 @@ export class FilesystemService {
       this.EXP_MODULE_PATHS = new Set();
       this.READONLY_FOLDERS = new Set();
       this.EXP_GLOSSARY_PATH = '';
+      this.EXP_HINT_ROOT_PATH = '';
     });
   }
 
   // TODO: External: <uuid>_external als mountpoint, dann symlink!
-  // TODO: If sync fails: try to revert everyhting
-  // i.e. add back chmod, remove folder etc.
-
-  // TODO: falsch??
-
-  /** Returns true if a config with the given name exists, false otherwise */
-  // TODO: Kann vmtl auch raus und dann in den 2 services einfach mit dem direkten Pfad aufrufen
-  public isNewLesson(name: string): Observable<boolean> {
-    return this.exists(`/configs/lessons/${name}/config.json`)
-  }
 
   private _sync(fromPersistentToVirtual: boolean): Observable<never> {
     return new Observable(subscriber => {
@@ -194,23 +186,20 @@ export class FilesystemService {
   }
 
   public checkPermissionsForExperience(mountpoint: string): Observable<never> {
-    const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, this.EXP_GLOSSARY_PATH]); 
+    const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, this.EXP_GLOSSARY_PATH, this.EXP_HINT_ROOT_PATH]); 
     return this.checkPermissions(mountpoint, mergedPaths);
   }
 
-  public checkPermissionsForGlossary(): Observable<never> {
+  public checkPermissionsForGlobalGlossary(): Observable<never> {
     return this.checkPermissions('/glossary', new Set(['/glossary']));
   }
 
   // loops over whole mountpoint and verifies that all modules and readonly paths have readonly permissions
+  // would probably need to be revisited if "external" is implemented
   private checkPermissions(mountpoint: string, paths: Set<string>): Observable<never> {  
     return this.getNodeByPath(mountpoint).pipe(
       switchMap(node => this.testCurrentPath(node, mountpoint, paths))
     )
-
-    // for all folders, subfolders and files
-    //    if is external path: delete
-    //    (kann dafür auch abstractCheck nutzen; new Set('/external/' + lessonName))
   }
   
   mountExternal(): void {
@@ -275,6 +264,14 @@ export class FilesystemService {
     return this.abstractCheck(this.EXP_MODULE_PATHS, path);
   }
 
+  public isHintPath(path: string): boolean {
+    return path.startsWith(this.EXP_HINT_ROOT_PATH);
+  }
+
+  public isGlossaryPath(path: string): boolean {
+    return path.startsWith(this.EXP_GLOSSARY_PATH);
+  }
+
   public unmount(name: string): Observable<never> {
     const fullPath = name.startsWith("/") ? name : `/${name}`;
 
@@ -288,42 +285,58 @@ export class FilesystemService {
     }));
   }
 
-  /* Returns all non-hidden and non-module subfolders and - if requested - files of the given path as seperate arrays */
-  public scan(path: string, depth: number, includeFiles: boolean, includeHidden: boolean = false): Observable<FSNode[][]> {
-    return this.getNodeByPath(path).pipe(
-      switchMap(node => {
-        if (this.N_isFile(node)) {
-          return of([])
-        } else {
-          return this.scanWithoutFetch((node.contents as FSNode), path, depth, includeFiles, includeHidden)
-        }
-    }))
+  // no restrictions, displays everything (for zip export, hint viewer etc.)
+  public scanAll(path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
+    return this.scanB(path, depth, includeFiles, true, true)
   }
 
-  // TODO: config vmtl entfernen
-  public scanWithoutFetch(node: FSNode, path: string, depth: number, includeFiles: boolean, includeHidden: boolean = false): Observable<FSNode[][]> {
+  // for search (no hidden files, no modules, no hints, no config, BUT include glossary)
+  public scanForSearch(path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
+    return this.scanB(path, depth, includeFiles, false, true)
+  }
+
+  // for filetree/treenode (no hidden files, no modules, no hints, no config, no glossary)
+  public scanUser(path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
+    return this.scanB(path, depth, includeFiles, false, false)
+  }
+
+  private scanB(path: string, depth: number, includeFiles: boolean, scanAll: boolean, includeGlossary: boolean): Observable<FSNode[][]> {
+    return this.getNodeByPath(path).pipe(
+      switchMap(node => {
+        return this.N_isFile(node) ? of([]) : this.scanWithOutFetch((node.contents as FSNode), path, depth, includeFiles, scanAll, includeGlossary)
+      })
+    )
+  }
+
+  public scanWithOutFetchUser(node: FSNode, path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
+    return this.scanWithOutFetch(node, path, depth, includeFiles, false, false);
+  }
+
+  private scanWithOutFetch(node: FSNode, path: string, depth: number, includeFiles: boolean, scanAll: boolean, includeGlossary: boolean) {
     const subfolders: FSNode[] = [];
     const filesInFolder: FSNode[] = [];
 
-    // remove all hidden paths + all modules + all system directories
+    // keep everything if scanAll is set to true
+    // else remove all elements which are hidden, modules, system dirs, hints; potentially also remove glossary entries
     const remainingObjects = Object.entries(node)
-      .filter(([_, value], key) => (includeHidden || !this.isHiddenPath(`${path}/${value.name}`))
-                                    && !this.isModulePath(`${path}/${value.name}`)
-                                    && !this.isSystemDirectory(`${path}/${value.name}`));
+      .filter(([_, value], key) => (scanAll || !this.isHiddenPath(`${path}/${value.name}`))
+                                    && (scanAll || !this.isModulePath(`${path}/${value.name}`))
+                                    && (scanAll || !this.isSystemDirectory(`${path}/${value.name}`))
+                                    && (scanAll || !this.isHintPath(`${path}/${value.name}`))
+                                    && (scanAll || includeGlossary || !this.isGlossaryPath(`${path}/${value.name}`)));
 
-    // welp
-    // for each remaining object, we get the results from isFile and isDirectory in parallel
+    // for each remaining object, get the results from isFile and isDirectory in parallel
     // depending on the results we put the node into the corresponding array
     const test = remainingObjects.map(([_, value], key) =>
       forkJoin([this.isFile(`${path}/${value.name}`), this.isDirectory(`${path}/${value.name}`)]).pipe(
-        tap(([isFile, isDirectory]) => isDirectory ? 
-          subfolders.push(value) :
-          (isFile && !(depth == 0 && value.name === 'config.json') && includeFiles ? 
-            filesInFolder.push(value) :
-            {})
-          )
-        )
-      )
+        tap(([isFile, isDirectory]) => {
+          if (isDirectory) {
+            subfolders.push(value)
+          } else if (isFile && includeFiles && (scanAll || !(depth === 0 && value.name === 'config.json'))) { // allow files named "config.json" on depths > 0
+            filesInFolder.push(value)
+          }
+        })
+      ))
 
     return concat(
       forkJoin(test).pipe(ignoreElements()),
@@ -331,53 +344,13 @@ export class FilesystemService {
     );
   }
 
-  // TODO: Paths have changed! 
-  // Lesson: /name
-  // sandbox: /sandbox_name
-  // lesson config: /configs/lessons/name.json
-  // sandbox config: /configs/sandboxes/name.json
-  fillZip(path: string, zip: JSZip, lessonName: string) {
-    try {
-      if (!this.isEmpty(path)) {
-        const entries = (this.PyFS?.lookupPath(path, {}).node as FSNode).contents;
-
-        for (const entry in entries) {
-          if (this.isFile(`${path}${entry}`)) { // TODO: Is async now!
-            const file = this.PyFS?.readFile(`${path}${entry}`);
-
-            // prevent first level of zip from only containing a folder with the lessonName
-            if (file) {
-              const noPrefix = path.replace(`/${lessonName}`, '');
-              zip.file(`${noPrefix}${entry}`, file, { createFolders: true }); // create folders along the way
-            } else {
-              // TODO: Error
-            }
-          } else {
-            if (!this.isSystemDirectory(`${path}${entry}`)) {
-              this.fillZip(`${path}${entry}/`, zip, lessonName);
-            }
-          }
-        }
-      } else {
-        if (!this.isSystemDirectory(path)) {
-          const noPrefix = path.replace(`/${lessonName}`, '');
-          zip.folder(noPrefix); // also export empty folders (without prefix)
-        }
-      }
-    } catch (e) {
-      console.error(e);
-    }
-  }
-
-  // TODO: move to zip service?
   private getFileAsBuffer(unzippedLesson: JSZip, file: string): Observable<ArrayBuffer>{
-    return defer(() => of(unzippedLesson.file(file)?.internalStream("arraybuffer"))). pipe(
+    return defer(() => of(unzippedLesson.file(file)?.internalStream("arraybuffer"))).pipe(
       switchMap(stream => {
         return !stream ? throwError("Error reading zip") : from(stream.accumulate())
     }))
   }
 
-  // TODO: Set config to readonly by default
   public storeLesson(unzippedLesson: JSZip, name: string): Observable<never> {
     const folders: string[] = [];
     const files: string[] = [];

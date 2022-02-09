@@ -69,7 +69,7 @@ export class FolderComponent implements OnInit, OnDestroy {
 
   private init(): void {
     this.addListeners();
-    this.fsService.scan(this._node.path, this._node.depth, true).subscribe(([folders, files]) => {
+    this.fsService.scanUser(this._node.path, this._node.depth, true).subscribe(([folders, files]) => {
       folders.forEach(folder => this.createSubcomponent(false, `${this._node.path}/${folder.name}`, folder));
       files.forEach(file => this.createSubcomponent(true, `${this._node.path}/${file.name}`, file));
     }); 
@@ -190,6 +190,10 @@ export class FolderComponent implements OnInit, OnDestroy {
   createSubcomponent(isFile: boolean, path?: string, node?: FSNode): void {   
     const ref = isFile ? this.filesRef : this.foldersRef;
     const insertIndex = path !== undefined ? this.findNewPosition(path, isFile, ref) : 0;
+
+    if (isFile && path && path.startsWith("/abc/config.json")) {
+      console.log("Create file subcomponent for CONF")
+    }
 
     if (path && ((isFile && this.files.has(this.getName(path))) || (!isFile && this.folders.has(this.getName(path))))) {
       return;

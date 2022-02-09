@@ -62,7 +62,7 @@
                             [class.available-local]="lesson.availableOffline" 
                             [class.available-remote]="!lesson.availableOffline"
                             title="{{ lesson.availableOffline == true ? 'Offline verfügbar' : 'Noch nicht heruntergeladen' }}"></div> 
-                        <div class="link disabled" title="Exportiere deinen Fortschritt">Export (bald)</div>
+                        <div class="link" *ngIf="lesson.availableOffline" (click)="export(lesson, $event)" title="Exportiere deinen Fortschritt">Export</div>
                         <div class="link disabled" title="Fortschritt zurücksetzen">Zurücksetzen (bald)</div>
                     </div>
                 </div>
@@ -87,7 +87,7 @@
                     </div>
                     <div class="content-description">
                         <div class="status-indiciator available-local" title="Offline verfügbar"></div>
-                        <div class="link" title="Sandbox exportieren">Export (bald)</div>
+                        <div class="link" (click)="export(sandbox, $event)" title="Sandbox exportieren">Export</div>
                         <div class="link" title="Sandbox löschen" (click)="openSandboxDeletionDialog($event, sandbox)">Löschen</div>
                     </div>
                 </div>

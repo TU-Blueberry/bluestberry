@@ -184,10 +184,11 @@ export class ExperienceManagementService {
           this.fsService.EXP_READONLY_PATHS = new Set(this.filterPaths(fullPath, config.readonly));
           this.fsService.EXP_EXTERNAL_PATHS = new Set(this.filterPaths(fullPath, config.external));
           this.fsService.EXP_GLOSSARY_PATH = `${fullPath}/glossary`;
+          this.fsService.EXP_HINT_ROOT_PATH = `${fullPath}/${config.hintRoot}`;
 
           return concat(
             this.fsService.checkPermissionsForExperience(fullPath),
-            this.fsService.checkPermissionsForGlossary(),
+            this.fsService.checkPermissionsForGlobalGlossary(),
           );
         } else {
           return throwError("No config found!")

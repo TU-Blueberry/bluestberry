@@ -48,7 +48,7 @@ export class SearchService {
     }
 
     for (const path of this.filePaths) {
-      this.fsService.scan(path, 1, true).subscribe(
+      this.fsService.scanForSearch(path, 1, true).subscribe(
         data => {
           let files = data[1];
           for (const file of files) {

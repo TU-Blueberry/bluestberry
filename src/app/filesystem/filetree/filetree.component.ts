@@ -91,9 +91,9 @@ export class FiletreeComponent implements OnDestroy{
   }
 
   // TODO: Dateien laden bugg bei FF irgendwie
-  export(name: string): void {
-    this.zipService.export(name).subscribe()
-  }
+  /* export(name: string): void {
+    this.zipService.export(this).subscribe()
+  } */
 
   finishImport(): void {
     this.userResult$.next(true);
@@ -102,7 +102,7 @@ export class FiletreeComponent implements OnDestroy{
   // TODO: Regular flow should be similar to this!
   // TODO: Additionally check whether zip is completely empty or only consists of config.json
   unpackCheckAndPossiblyImport(file: File) {
-    this.checkInProgress = true;
+   /*  this.checkInProgress = true;
     return from(file.arrayBuffer()).pipe(
       switchMap(buffer => this.zipService.loadZip(buffer)),
       tap(unzipped => this.tempZip = unzipped),
@@ -117,7 +117,7 @@ export class FiletreeComponent implements OnDestroy{
                 return concat(this.fsService.importLesson(userResult, conf, this.tempZip), this.fsService.sync(false), this.completeUserResultHelper())
               })) 
             })
-        )))
+        ))) */
   }
 
   completeUserResultHelper() {
@@ -180,7 +180,7 @@ export class FiletreeComponent implements OnDestroy{
     this.selectedFile = candidate;
 
     // TODO: Kriegt man das subscribe weg?
-    this.lastCheck = this.unpackCheckAndPossiblyImport(this.selectedFile).subscribe(() => {}, 
+    /* this.lastCheck = this.unpackCheckAndPossiblyImport(this.selectedFile).subscribe(() => {}, 
       err => console.error(err), 
       () => {
         console.log("Import complete!");
@@ -190,7 +190,7 @@ export class FiletreeComponent implements OnDestroy{
         this.conflictDetected = false;
         this.showImportWindow = false;
         this.tempZip = undefined;
-    });
+    });  */
   }
 
   fileInputChange(ev: Event) {

@@ -36,7 +36,7 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
 
   ngOnInit(): void {
     if (this.parentPath && this.depth && this.parentPath !== '' && this.depth >= 0) {
-      this.fsService.scan(this.parentPath, this.depth, this.isFile).subscribe(([folders, files]) => {
+      this.fsService.scanAll(this.parentPath, this.depth, this.isFile).subscribe(([folders, files]) => {
         this.folderContent = this.isFile ? files : folders;
       });
     }

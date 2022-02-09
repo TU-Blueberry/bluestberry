@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
 import { JSZipObject } from 'jszip';
-import { concat, from, Observable } from 'rxjs';
-import { map, switchMap } from 'rxjs/operators';
+import { concat, defer, forkJoin, from, Observable, of, throwError } from 'rxjs';
+import { switchMap } from 'rxjs/operators';
 import { FilesystemService } from '../filesystem.service';
 import { Config } from 'src/app/experience/model/config';
-import { saveAs } from 'file-saver';
 import { ConfigService } from 'src/app/shared/config/config.service';
+import { Experience } from 'src/app/experience/model/experience';
 
 @Injectable({
   providedIn: 'root'
@@ -41,7 +41,7 @@ export class ZipService {
       const file = unzipped.file(path);
 
       if (!file) {
-        subscriber.error("Couldn't find config file");
+        subscriber.error(`Couldn't find file at ${path}`);
       } else {
         subscriber.next(file);
         subscriber.complete();
@@ -50,24 +50,36 @@ export class ZipService {
   }
 
   // TODO: Wenn jemals "external" umgesetzt: mounten und Dateien in Zip packen
-  export(name: string): Observable<void> {
+  export(exp: Experience): Observable<JSZip> {
+    const zip = new JSZip();
+
     return concat(
       this.conf.saveStateOfCurrentExperience(),
-      this.exportLesson(name).pipe(map(blob => saveAs(blob, name)))
+      this.createZip(`/${exp.uuid}`, zip, exp.uuid),
+      of(zip)
     )
   }
 
-  exportLesson(name: string): Observable<Blob> {
-    return new Observable(subscriber => {
-      const zip = new JSZip();
-      this.fsService.fillZip(`/${name}/`, zip, name);
-      zip.generateAsync({ type: "blob" }).then(function (blob) {
-        subscriber.next(blob);
-        subscriber.complete();
-      }, function (err) {
-        subscriber.error();
-      });
-    });
+  // TODO: zip erstellen braucht etwas --> selection offen lassen, ladeanimation, dann bei erfolg schließen
+  private createZip(path: string, zip: JSZip, uuid: string) {
+    return this.addLayerToZip(path, 0, zip, uuid);
+  }
+
+  private addLayerToZip(path: string, depth: number, zip: JSZip, uuid: string): Observable<any> {
+    return this.fsService.scanAll(path, depth, true).pipe(
+      switchMap(([folders, files]) => {
+        folders.forEach(folder => zip.folder(this.removePrefix(`${path}/${folder.name}`, uuid)))
+        files.forEach(file => {
+          zip.file(`${this.removePrefix(path, uuid)}/${file.name}`, (file.contents as Uint8Array), { createFolders: true });
+        })
+        return forkJoin(folders.map(folder => this.addLayerToZip(`${path}/${folder.name}`, depth + 1, zip, uuid)))
+      })
+    )
+  }
+
+  // prevent first level of zip from only containing a folder with the lessonName
+  private removePrefix(path: string, uuid: string): string {
+    return path.replace(`/${uuid}`, '');
   }
 
   loadZip(buff: ArrayBuffer): Observable<JSZip> {
