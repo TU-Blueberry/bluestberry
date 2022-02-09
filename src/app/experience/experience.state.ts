@@ -1,8 +1,9 @@
 import { Injectable } from "@angular/core";
 import { Action, State, StateContext } from "@ngxs/store";
 import { concat, EMPTY, Observable } from "rxjs";
-import { finalize, ignoreElements, last, switchMap, take } from "rxjs/operators";
+import { finalize, last, switchMap } from "rxjs/operators";
 import { AppAction } from "../app.actions";
+import { Reset } from "../shared/actions/reset.action";
 import { ConfigService } from "../shared/config/config.service";
 import { ExperienceAction } from "./actions";
 import { ExperienceManagementService } from "./experience-management/experience-management.service";
@@ -99,6 +100,8 @@ export class ExperienceState {
                     ...state,
                     current: undefined
                 })
+
+                ctx.dispatch(new Reset());
             })
         )
     }

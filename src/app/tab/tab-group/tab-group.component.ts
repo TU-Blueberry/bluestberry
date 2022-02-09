@@ -92,14 +92,18 @@ export class TabGroupComponent implements AfterViewInit {
       if (!existingTab) {
         this.dataSource.push(tab);
         this.dataSourceChange.emit(this.dataSource);
-        this.activeTab = tab;
+
+        if (tab.active) {
+          this.activeTab = tab;
+        }
       } else {
         this.activeTab = existingTab;
       }
 
       // Tab contains view and data (latter can be arbitrarly nested), which doesnt bode well with NGXS
-      // Need to clone here as everything passed to NGXS is frozen; freezing EmbeddedViewRef causes significant
-      // performance degradation (not worth as EmbeddedViewRef isn't even stored)
+      // Need to clone data *here* (instead of in action handler) as everything passed to NGXS is frozen; 
+      // freezing EmbeddedViewRef however causes significant performance degradation, which isn't worth the
+      // hassle (especially since EmbeddedViewRef isn't even stored in state)
       this.dispatchTabChange()
     });
     this.action$.pipe(

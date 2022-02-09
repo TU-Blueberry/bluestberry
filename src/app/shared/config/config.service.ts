@@ -22,7 +22,6 @@ export class ConfigService {
     const appState$ = this.store.select<AppStateModel>(AppState);
     appState$.subscribe();
 
-    // vlt zip und alle rausfiltern wo noch nicht READY?
     merge(this.store.select<SplitSettings>(ViewSizeState), this.store.select<TabStateModel>(TabState)).pipe(
       withLatestFrom(appState$),
       filter(([_, appState]) => appState !== undefined && appState.status === 'READY'),
@@ -39,84 +38,77 @@ export class ConfigService {
 
   public getConfigByExperience(exp: Experience): Observable<Config> {
     return this.fs.getFileAsBinary(`/${exp.uuid}/config.json`).pipe(
-     switchMap(buff => this.decryptConfig(buff)),
-     switchMap(decrypted => {
-       const conf = <Config>JSON.parse(new TextDecoder().decode(decrypted))
-       console.log("decrypted", conf)
-       return of(conf)
-     })
-   )
- }
+      switchMap(buff => this.decryptConfig(buff)),
+      switchMap(decrypted => {
+        const conf = <Config>JSON.parse(new TextDecoder().decode(decrypted))
+        console.log("decrypted", conf)
+        return of(conf)
+      })
+    )
+  }
 
- public getHintRoot(exp: Experience): Observable<string> {
-   return this.getConfigByExperience(exp).pipe(
-     switchMap(conf => of(conf.hintRoot))
-   )
- }
+  public getHintRoot(exp: Experience): Observable<string> {
+    return this.getConfigByExperience(exp).pipe(
+      switchMap(conf => of(conf.hintRoot))
+    )
+  }
 
- public saveStateOfCurrentExperience(): Observable<never> {
-  return this.getCurrentExperience().pipe(
-    take(1),
-    switchMap(exp => zip(
-      this.store.selectOnce<SplitSettings>(ViewSizeState),
-      this.store.selectOnce<TabStateModel>(TabState),
-      this.getConfigByExperience(exp)
-    )),
-    switchMap(([settings, tabs, conf]) => {
-      conf.splitSettings = settings
-      conf.open = this.convertTabStateModel(tabs);
-      return this.updateConfig(conf);
+  public saveStateOfCurrentExperience(): Observable<never> {
+    return this.getCurrentExperience().pipe(
+      take(1),
+      switchMap(exp => zip(
+        this.store.selectOnce<SplitSettings>(ViewSizeState),
+        this.store.selectOnce<TabStateModel>(TabState),
+        this.getConfigByExperience(exp)
+      )),
+      switchMap(([settings, tabs, conf]) => {
+        conf.splitSettings = settings
+        conf.open = this.convertTabStateModel(tabs);
+        return this.updateConfig(conf);
+      })
+    )
+  }
+
+  private updateConfig(config: Config): Observable<never> {
+    return concat(
+      this.encryptConfig(config).pipe(
+        switchMap(buffer => this.fs.overwriteFile(`/${config.uuid}/config.json`, new Uint8Array(buffer), 0o555))
+      ),
+      this.fs.sync(false)
+    )
+  }
+
+  private getCurrentExperience(): Observable<Experience> {
+    return this.store.select<ExperienceStateModel>(ExperienceState).pipe(
+      switchMap(state => {
+        return !state.current ? throwError("No current experience") : of(state.current);
+      }       
+    ))
+  }
+
+  private convertTabStateModel(tabs: TabStateModel): Array<{path: string, on: string, active: boolean}> {
+    const open: Array<{ path: string, on: string, active: boolean }> = [];
+
+    Object.entries(tabs).forEach(([groupId, content]) => {
+      content.tabs.forEach(tab => {
+        open.push(({
+          on: groupId, 
+          path: tab.path !== '' ? tab.path : tab.type,
+          active: this.checkIfActive(content, tab)
+        }))
+      })
     })
-  )
- }
 
-private updateConfig(config: Config): Observable<never> {
-  return concat(
-    this.encryptConfig(config).pipe(
-      switchMap(buffer => this.fs.overwriteFile(`/${config.uuid}/config.json`, new Uint8Array(buffer), 0o555))
-    ),
-    this.fs.sync(false)
-  )
-}
+    return open;
+  }
 
- private getCurrentExperience(): Observable<Experience> {
-  return this.store.select<ExperienceStateModel>(ExperienceState).pipe(
-    switchMap(state => {
-      return !state.current ? throwError("No current experience") : of(state.current);
-    }       
-  ))
- }
-
- private convertTabStateModel(tabs: TabStateModel): Array<{path: string, on: string, active: boolean}> {
-  const open: Array<{ path: string, on: string, active: boolean }> = [];
-
-  Object.entries(tabs).forEach(([groupId, content]) => {
-    content.tabs.forEach(tab => {
-      open.push(({
-        on: groupId, 
-        path: tab.path !== '' ? tab.path : tab.type,
-        active: this.checkIfActive(content, tab)
-      }))
-    })
-  })
-
-  return open;
- }
-
- private checkIfActive(group: { tabs: Tab[]; active?: Tab | undefined }, tab: Tab): boolean {
-   if (tab.path === '') {
-    return (group.active && group.active.type === tab.type && group.active.title === tab.title && group.active.path === tab.path) || false;
-   } else {
-    return (group.active && tab.path === group.active.path) || false
-   }
- }
-
- // TODO: On load of settings from config:
- // set minSizeTab, minSizeFiletree variables!
- // (But only if config.tabSizes isnt empty)
-
- // TODO: After opening/after import/after switching:
-    // check if hints/terminal is open and set buttons in sidebar accordingly!
+  private checkIfActive(group: { tabs: Tab[]; active?: Tab | undefined }, tab: Tab): boolean {
+    if (tab.path === '') {
+      return (group.active && group.active.type === tab.type && group.active.title === tab.title && group.active.path === tab.path) || false;
+    } else {
+      return (group.active && tab.path === group.active.path) || false
+    }
+  }
 
   private getKey(): Observable<CryptoKey> {
     const key = window.crypto.subtle.importKey("jwk", environment.aesKey, { name: "AES-GCM" }, false, ["encrypt", "decrypt"])

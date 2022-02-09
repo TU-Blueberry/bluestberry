@@ -5,5 +5,6 @@ export interface OpenTabEvent {
   type: TabType;
   path: string;
   title: string;
+  active: boolean;
   data?: any;
 }

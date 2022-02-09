@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { State, Action, StateContext } from '@ngxs/store';
-import { ConfigService } from '../shared/config/config.service';
+import { Reset } from '../shared/actions/reset.action';
 import { OpenCloseTab } from '../viewer/actions/open-close-tab.action';
 import { ActiveChange } from './actions/active.actions';
 import { TabChange } from './actions/tab.action';
@@ -20,8 +20,6 @@ export interface TabStateModel {
 
 @Injectable()
 export class TabState {
-    constructor(private conf: ConfigService) {}
-
     @Action(TabChange)
     updateTabState(ctx: StateContext<TabStateModel>, action: TabChange) {
         const state = ctx.getState();
@@ -47,6 +45,11 @@ export class TabState {
         ctx.setState({
             ...clonedState                
         })
+    }
+
+    @Action(Reset)
+    onReset(ctx: StateContext<TabStateModel>, action: Reset) {
+        ctx.setState({ });
     }
 
     // find first tab group where either last tab was closed or first tab was opened

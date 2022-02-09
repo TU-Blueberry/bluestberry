@@ -38,17 +38,19 @@ export class TabManagementService {
               groupId: file.on,
               title: 'Simulation',
               type: 'UNITY' as TabType,
-              path: ''
+              path: '',
+              active: file.active
             });
           } else if (file.path.toLowerCase().endsWith('hint')) {
             return of({
               groupId: file.on,
               title: 'Hinweise',
               type: 'HINT' as TabType,
-              path: ''
+              path: '',
+              active: file.active
             });
           }
-          return this.createOpenTabEvent(file.path).pipe(map(ote => ({...ote, groupId: file.on})))
+          return this.createOpenTabEvent(file.path, file.active).pipe(map(ote => ({...ote, groupId: file.on})))
         })
         ).pipe(
           finalize(() => this.store.dispatch(new FromConfig(conf.splitSettings, conf.open)))
@@ -56,28 +58,26 @@ export class TabManagementService {
       })
     )
 
-    // TODO: Set open tab wenn es mal zufällig nicht der letzte ist
-
     const userOpenEvent$ = filesystemEventService.onOpenFile.pipe(
       filter(e => e.byUser),
-      switchMap(e => this.createOpenTabEvent(e.path, e.type, e.fileContent)),
+      switchMap(e => this.createOpenTabEvent(e.path, true, e.type, e.fileContent)),
     );
 
     merge(lesson$, userOpenEvent$).subscribe(t => this._openTab.next(t));
   }
 
-  openHintsManually(): Observable<never> {
+  openHints(): Observable<never> {
     return this.getHintRoot().pipe(
       switchMap(path => this.filesystemService.getFileAsBinary(path).pipe(
         switchMap(data => defer(() => {
           const full = ({ content: data, base_path: path });
-          this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, path: '', data: full})
+          this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, path: '', data: full, active: true})
         }))
       ))
     );
   }
 
-  createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
+  createOpenTabEvent(path: string, active: boolean, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
     const fileType = type || this.filesystemService.getFileType(path);
     return (
       fileContent ? of(fileContent) : this.filesystemService.getFileAsBinary(path)
@@ -91,7 +91,8 @@ export class TabManagementService {
       groupId: this.mapFileTypeToTabGroup(fileType),
       type: this.mapFileTypeToTabType(fileType),
       data: { content: fileContent },
-      path: path
+      path: path,
+      active: active
     })));
   }
 

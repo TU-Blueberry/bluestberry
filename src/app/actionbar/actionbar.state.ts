@@ -9,6 +9,9 @@ import { Tour } from "./actions/tour.action";
 import { tour } from "../../assets/guided-tour/guided-tour.data";
 import { About } from "./actions/about.action";
 import { FromConfig } from "../viewer/actions/from-config.action";
+import { Reset } from "../shared/actions/reset.action";
+import { ConfigService } from "../shared/config/config.service";
+import { FilesystemService } from "../filesystem/filesystem.service";
 
 export interface ActionbarModel {
     [itemId: string]: {
@@ -30,7 +33,18 @@ export interface ActionbarModel {
 
 @Injectable()
 export class ActionbarState {
-    constructor(private tabManagement: TabManagementService, private tourService: GuidedTourService) {}
+    constructor(private tabManagement: TabManagementService, private tourService: GuidedTourService, private conf: ConfigService, private fs: FilesystemService) {}
+
+    @Action(Reset)
+    onReset(ctx: StateContext<ActionbarModel>, action: Reset) {
+        ctx.setState({  
+            'filetree': { active: false },
+            'terminal': { active: false },
+            'hints': { active: false },
+            'tour': { active: false },
+            'about': { active: false }}
+        );
+    }
 
     @Action(FromConfig)
     onFromConfig(ctx: StateContext<ActionbarModel>, action: FromConfig) {
@@ -66,7 +80,7 @@ export class ActionbarState {
     @Action(Hints.Open)
     onHintsOpen(ctx: StateContext<ActionbarModel>, action: Hints.Open) {
         this.updateActionbarStore(ctx, 'hints', true);
-        return this.tabManagement.openHintsManually();        
+        return this.tabManagement.openHints();         
     }
 
     @Action(Hints.Inactive)

@@ -1,4 +1,5 @@
 import {Component, OnInit} from '@angular/core';
+import { filter } from 'rxjs/operators';
 import {PyodideService} from "../../pyodide/pyodide.service";
 
 @Component({
@@ -18,7 +19,10 @@ export class TerminalViewerComponent implements OnInit {
         this.terminalOutput = this.terminalOutput +  ("\n" + result + "\n");
     });
 
-    this.pyodideService.getStdErr().subscribe(result => {
+    this.pyodideService.getStdErr().pipe(
+      filter(result => !result.toLowerCase().includes("syncfs operations in flight at once, probably just doing extra work".toLowerCase()))
+    )
+    .subscribe(result => {
         if (!this.error) { this.terminalOutput += "\nFehler: \n"; }
         this.error = true;
         this.terminalOutput += (result + "\n");

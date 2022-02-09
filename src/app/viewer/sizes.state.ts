@@ -9,7 +9,16 @@ import { Filetree } from 'src/app/actionbar/actions/filetree.action';
 import { ResizeTerminal } from './actions/resize-terminal.action';
 import { Terminal } from './actions/terminal.actions';
 import { FromConfig } from './actions/from-config.action';
-import { ConfigService } from '../shared/config/config.service';
+import { Reset } from '../shared/actions/reset.action';
+
+const defaultSettings = {
+    'filetree': { group: 0, order: 0, size: 20, visible: true, minSize: ViewSizeDefaults.minSizeFiletree, maxSize: ViewSizeDefaults.maxSizeFiletree },
+    'left': { group: 0, order: 1, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
+    'right': { group: 0, order: 2, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
+    'emptyMessage': { group: 0, order: 3, size: 100, visible: true, minSize: 0, maxSize: 100 },
+    'code': { group: 1, order: 0, size: 100, visible: true, minSize: ViewSizeDefaults.minSizeTop, maxSize: ViewSizeDefaults.maxSizeTop },
+    'terminal': { group: 1, order: 1, size: 20, visible: false, minSize: ViewSizeDefaults.minSizeTerminal, maxSize: ViewSizeDefaults.maxSizeTerminal }
+}
 
 // group 0 = main view (split vertically)
 // group 1 = left tab group (split horizontally)
@@ -18,19 +27,15 @@ import { ConfigService } from '../shared/config/config.service';
 // (left tab = code + terminal is currently also hardcoded into main-viewer.component.html)
 @State<SplitSettings>({
     name: 'viewSettings',
-    defaults: {
-        'filetree': { group: 0, order: 0, size: 20, visible: true, minSize: ViewSizeDefaults.minSizeFiletree, maxSize: ViewSizeDefaults.maxSizeFiletree },
-        'left': { group: 0, order: 1, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
-        'right': { group: 0, order: 2, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
-        'emptyMessage': { group: 0, order: 3, size: 100, visible: true, minSize: 0, maxSize: 100 },
-        'code': { group: 1, order: 0, size: 100, visible: true, minSize: ViewSizeDefaults.minSizeTop, maxSize: ViewSizeDefaults.maxSizeTop },
-        'terminal': { group: 1, order: 1, size: 20, visible: false, minSize: ViewSizeDefaults.minSizeTerminal, maxSize: ViewSizeDefaults.maxSizeTerminal }
-    }
+    defaults: defaultSettings
 })
 
 @Injectable()
 export class ViewSizeState {
-    constructor(private conf: ConfigService) {}
+    @Action(Reset)
+    onReset(ctx: StateContext<SplitSettings>, action: Reset) {
+        ctx.setState(defaultSettings);
+    }
 
     @Action(ResizeMain)
     onResizeMain(ctx: StateContext<SplitSettings>, action: ResizeMain) {
@@ -46,14 +51,6 @@ export class ViewSizeState {
     @Action(FromConfig)
     onFromConfig(ctx: StateContext<SplitSettings>, action: FromConfig) {
         ctx.setState(action.splitSettings)
-
-        /* this.conf.getConfigByExperience(action.exp).pipe(
-            switchMap(conf => defer(() => {
-                console.log("IN FROM CONFIG, set to ", conf.splitSettings)
-
-                ctx.setState(conf.splitSettings);
-            }))
-        )  */ 
     }
  
     @Action(OpenCloseTab)
@@ -109,7 +106,6 @@ export class ViewSizeState {
     onTerminalClose(ctx: StateContext<SplitSettings>, action: Terminal.Close) {
         this.setTerminalState(ctx, false);
     }
-
 
     private setTerminalState(ctx: StateContext<SplitSettings>, visible: boolean) {
         const state = ctx.getState();
