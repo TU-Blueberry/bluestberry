@@ -5,16 +5,17 @@
   ],
   "type": "LESSON",
   "tabSizes": [10, 45, 45],
-  "unityEntryPoint": "/assets/unity/berrysort/Build/berrysort.json",
+  "unityEntryPoint": "/assets/sortierroboter/unity/berrysort/Build/berrysort.json",
   "name": "sortierroboter",
   "hidden": [
     "test_files/username.csv",
     "test_files/subfolder1",
     "BlueberryData/TestData",
     "BlueberryData/NoisyTestData",
-    "hint_files"
+    "hint_files",
+    "unity"
   ],
   "external": [],
-  "readonly": ["BlueberryData/TrainingData", "hint_files"],
+  "readonly": ["BlueberryData/TrainingData", "hint_files", "unity"],
   "modules": ["libs"]
 }
