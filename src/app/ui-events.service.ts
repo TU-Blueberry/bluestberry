@@ -10,6 +10,7 @@ export class UiEventsService {
   onHintChange: EventEmitter<void> = new EventEmitter();
   onToggleTerminal: EventEmitter<void> = new EventEmitter();
   onStartTour: EventEmitter<void> = new EventEmitter();
+  onStartSimulation: EventEmitter<void> = new EventEmitter();
   onCloseAllContextMenues: EventEmitter<void> = new EventEmitter();
   onClickOutsideOfFiltree: EventEmitter<{ev: MouseEvent, isGlossary: boolean}> = new EventEmitter();
   onAboutToggle: EventEmitter<boolean> = new EventEmitter();
@@ -38,6 +39,10 @@ export class UiEventsService {
 
   startTour(): void {
     this.onStartTour.emit();
+  }
+
+  startSimulation() {
+    this.onStartSimulation.emit();
   }
 
   closeAllContextMenues(): void {

@@ -38,4 +38,8 @@ export class ActionbarComponent implements OnInit {
     ev.stopPropagation();
     this.uiEv.toggleAbout(true);
   }
+
+  startSimulation() {
+    this.uiEv.startSimulation();
+  }
 }

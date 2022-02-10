@@ -159,7 +159,9 @@ export class MainViewerComponent implements OnInit, AfterViewInit {
         this.lastSizeRightTab = this.currentSizeRightTab;
       }
     });
-    this.uiEv.onToggleTerminal.subscribe(() => this.terminalVisible = !this.terminalVisible);
+    this.uiEv.onToggleTerminal.subscribe(
+      () => this.terminalVisible = !this.terminalVisible
+    );
     this.uiEv.onStartTour.subscribe(
       () => {
         this.filetreeVisible = true;
@@ -168,12 +170,17 @@ export class MainViewerComponent implements OnInit, AfterViewInit {
       }
     );
     this.uiEv.onHintChange.subscribe(() => {
-
-      // TODO
-      const path = "/sortierroboter/hint_files/root.yml"
+      const path = "/sortierroboter/hint_files/root.yml" // TODO
 
       this.fsService.getFileAsBinary(path).subscribe(data => {
         this.tabManagementService.openHintsManually({path: path, content: data});
+      });
+    });
+    this.uiEv.onStartSimulation.subscribe(() => {
+      const path = '/sortierroboter/unity/berrysort/Build/berrysort.json' // TODO
+
+      this.fsService.getFileAsBinary(path).subscribe(data => {
+        this.tabManagementService.startSimulationManually({path: path, content: data});
       });
     });
   }
