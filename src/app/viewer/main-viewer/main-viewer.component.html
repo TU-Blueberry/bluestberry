@@ -1,5 +1,5 @@
 <as-split (dragEnd)="onDragEnd($event)" direction="horizontal"
-  class="main-split" #parent [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
+  class="main-split" #parent [gutterSize]="3" [restrictMove]="true" [useTransition]="true">
   <as-split-area
     [visible]="viewSettings.filetree.visible"
     [size]="viewSettings.filetree.size"
@@ -53,6 +53,6 @@
     [maxSize]="viewSettings.emptyMessage.maxSize"  
     [visible]="viewSettings.emptyMessage.visible"
     [order]="viewSettings.emptyMessage.order">
-      empty :(
+      <app-empty-viewer></app-empty-viewer>
   </as-split-area>
 </as-split>
