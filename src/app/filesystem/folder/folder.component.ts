@@ -213,6 +213,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     
     if (this._node) {
       const treeNode = path ? this._node.generateTreeNode(this._node.depth + 1, path, node) : this._node.generateTreeNode(this._node.depth + 1);
+      treeNode.isGlossary = this._node.isGlossary;
       // treeNode.parentPath = this._node.path;
       nodeComponentRef.instance.node = treeNode;
     }

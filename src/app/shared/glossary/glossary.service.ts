@@ -7,6 +7,7 @@ import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { Actions, ofActionSuccessful } from '@ngxs/store';
 import { ExperienceAction } from 'src/app/experience/actions';
 import { Experience } from 'src/app/experience/model/experience';
+import { ConfigService } from '../config/config.service';
 
 @Injectable({
   providedIn: 'root'
@@ -14,28 +15,37 @@ import { Experience } from 'src/app/experience/model/experience';
 export class GlossaryService {
   public glossaryEntries$ = new ReplaySubject<{path: string, node: FSNode}[]>();
 
-  constructor(private action$: Actions, private fs: FilesystemService, private http: HttpClient, private location: Location) {
+  constructor(private action$: Actions, private fs: FilesystemService, private http: HttpClient, private location: Location, private conf: ConfigService) {
     this.action$.pipe(
       ofActionSuccessful(ExperienceAction.Open)
     ).subscribe((action: ExperienceAction.Open) => this.changeGlossary(action.exp));
   }
 
   private changeGlossary(exp: Experience) {
-    const expGlossary: Observable<FSNode[][]> = this.fs.exists(`/${exp.uuid}/glossary`).pipe(
-      switchMap(exists => {
-        const empty: FSNode[][] = [[], []];
-        return exists ? this.fs.scanAll(`/${exp.uuid}/glossary`, 1, true) : of(empty);
-      })
+    const expGlossary: Observable<{glossaryEntryPoint: string, nodes: FSNode[][]}> = this.conf.getConfigByExperience(exp).pipe(
+      filter(conf => conf.glossaryEntryPoint !== ''),
+      switchMap(conf => this.fs.exists(`/${exp.uuid}/${conf.glossaryEntryPoint}`).pipe(
+        switchMap(exists => {
+          const empty: FSNode[][] = [[], []];
+          return exists ? this.fs.scanAll(`/${exp.uuid}/${conf.glossaryEntryPoint}`, 1, true) : of(empty);
+        }),
+        switchMap(nodes => of({ glossaryEntryPoint: conf.glossaryEntryPoint, nodes: nodes }))
+      )) 
     )
 
     forkJoin([
       this.fs.scanAll('/glossary', 0, true),
       expGlossary
     ]).pipe(
-        map(([[_, globalFiles], [__, expFiles]]) => {
-          const globalEntries = globalFiles.map(file => ({ path: `/glossary/${file.name}`, node: file }));
-          const newEntries = expFiles.map(file => ({ path: `/${exp.uuid}/glossary/${file.name}`, node: file}))
-                                     .filter(file => globalEntries.findIndex(e => e.path === file.path) === -1);
+        map((res, _) => {
+   
+          let globalFiles: FSNode[][];
+          let expFiles: { glossaryEntryPoint: string, nodes: FSNode[][]};
+          [globalFiles, expFiles] = res;
+
+          const globalEntries = globalFiles[1].map(file => ({ path: `/glossary/${file.name}`, node: file }));
+          const newEntries = expFiles.nodes[1].map(file => ({ path: `/${exp.uuid}/${expFiles.glossaryEntryPoint}/${file.name}`, node: file}))
+                                     .filter(file => globalEntries.findIndex(e => e.node.name === file.node.name) === -1);
           this.glossaryEntries$.next(newEntries);
         })
     ).subscribe();
@@ -46,7 +56,6 @@ export class GlossaryService {
 
   // TODO: Wechsel zwischen lektion/lektion, lektion/sandbox und sandbox/lektion testen
   // TODO: Prüfen, ob glossary ordner (2x) trotzdem readonly sind!
-  // TODO: Search service
 
   // global entries are stored in /glossary, lesson-specific ones stay inside the lesson
   public loadGlobalGlossaryEntries() {

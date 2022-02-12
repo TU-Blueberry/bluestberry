@@ -12,6 +12,7 @@ import { Experience } from 'src/app/experience/model/experience';
 import { Actions, ofActionSuccessful } from '@ngxs/store';
 import { ExperienceAction } from 'src/app/experience/actions';
 import { ConfigService } from 'src/app/shared/config/config.service';
+import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
 
 @Component({
   selector: 'app-filetree',
@@ -42,22 +43,25 @@ export class FiletreeComponent implements OnDestroy{
   @ViewChild('content', { read: ViewContainerRef }) ref!: ViewContainerRef;
   constructor(private fsService: FilesystemService, private componentFactoryResolver: ComponentFactoryResolver, 
     private zipService: ZipService, private uiEv: UiEventsService, private ev: FilesystemEventService,
-    private cd: ChangeDetectorRef, private action$: Actions, private conf: ConfigService) { }
+    private cd: ChangeDetectorRef, private action$: Actions, private conf: ConfigService, private gs: GlossaryService) { }
 
   private init(): void {
-    this.action$.pipe(
-      ofActionSuccessful(ExperienceAction.Open)
-    ).subscribe((action: ExperienceAction.Open) => {
-      if (!this.isGlossary) {
-        this.SELECTED_LESSON = action.exp;
-      }
+    if (this._isGlossary) {
+      this.gs.glossaryEntries$.subscribe(entries => {
+        this.kickstartTreeGeneration(entries);
+      }); 
+    }
 
-      this.kickstartTreeGeneration();
-    })
+    this.action$.pipe(ofActionSuccessful(ExperienceAction.Open))
+      .subscribe((action: ExperienceAction.Open) => {
+        if (!this.isGlossary) {
+          this.SELECTED_LESSON = action.exp;
+          this.kickstartTreeGeneration();
+        } 
+      })
 
-    this.action$.pipe(
-      ofActionSuccessful(ExperienceAction.Close)
-    ).subscribe(() =>  this.ref.clear());
+    this.action$.pipe(ofActionSuccessful(ExperienceAction.Close))
+      .subscribe(() =>  this.ref.clear());
   }
 
   // possible further optimization: only delete and create new components for glossary entries which changed
@@ -81,20 +85,16 @@ export class FiletreeComponent implements OnDestroy{
     this.fsService.getNodeByPath(path).subscribe((node) => {
       folderComp.node = baseNode.generateTreeNode(0, path, node, name);
       folderComp.node.isRoot = true; 
+      folderComp.node.isGlossary = this._isGlossary;
       this.toggleSubscription = folderComp.onExpandToggle.subscribe(next => this.expandChange.emit(next));
 
       additionalGlossaryEntries?.forEach(entry => 
         folderComp.createSubcomponent(true, entry.path, entry.node)
       )
 
-      this.cd.markForCheck()
+      this.cd.markForCheck();
     }); 
   }
-
-  // TODO: Dateien laden bugg bei FF irgendwie
-  /* export(name: string): void {
-    this.zipService.export(this).subscribe()
-  } */
 
   finishImport(): void {
     this.userResult$.next(true);
