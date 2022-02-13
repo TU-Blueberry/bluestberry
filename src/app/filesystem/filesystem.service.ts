@@ -241,10 +241,6 @@ export class FilesystemService {
     }
   }
 
-  // TODO:
-  // Die external sachen liegen dann im mountpoint /external/<lessonName>
-  // Müssen beim Import da reingeschoben werden und beim export wieder rausgeholt werden
-  // Muss beim mounten vorsorligh alle permission einfach setzen
   private abstractCheck(paths: Set<string>, path: string): boolean {
     for (const forbiddenPath of paths) {
       if (path.startsWith(forbiddenPath)) {

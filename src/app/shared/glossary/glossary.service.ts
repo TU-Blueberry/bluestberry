@@ -23,14 +23,19 @@ export class GlossaryService {
 
   private changeGlossary(exp: Experience) {
     const expGlossary: Observable<{glossaryEntryPoint: string, nodes: FSNode[][]}> = this.conf.getConfigByExperience(exp).pipe(
-      filter(conf => conf.glossaryEntryPoint !== ''),
-      switchMap(conf => this.fs.exists(`/${exp.uuid}/${conf.glossaryEntryPoint}`).pipe(
-        switchMap(exists => {
-          const empty: FSNode[][] = [[], []];
-          return exists ? this.fs.scanAll(`/${exp.uuid}/${conf.glossaryEntryPoint}`, 1, true) : of(empty);
-        }),
-        switchMap(nodes => of({ glossaryEntryPoint: conf.glossaryEntryPoint, nodes: nodes }))
-      )) 
+      switchMap(conf => {
+          if (conf.glossaryEntryPoint === '') {
+            return of({ glossaryEntryPoint: '', nodes: [[],[]] });
+          } else {
+            return this.fs.exists(`/${exp.uuid}/${conf.glossaryEntryPoint}`).pipe(
+              switchMap(exists => {
+                const empty: FSNode[][] = [[], []];
+                return exists ? this.fs.scanAll(`/${exp.uuid}/${conf.glossaryEntryPoint}`, 1, true) : of(empty);
+              }),
+              switchMap(nodes => of({ glossaryEntryPoint: conf.glossaryEntryPoint, nodes: nodes }))
+            )
+          }
+        })
     )
 
     forkJoin([
@@ -38,7 +43,6 @@ export class GlossaryService {
       expGlossary
     ]).pipe(
         map((res, _) => {
-   
           let globalFiles: FSNode[][];
           let expFiles: { glossaryEntryPoint: string, nodes: FSNode[][]};
           [globalFiles, expFiles] = res;
