@@ -16,6 +16,19 @@ label:hover {
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
+}
+
+.inline-menu {
+    color: #8f8f8f;
+    text-decoration: underline;
+ 
+    & > div:hover {
+        cursor: pointer;
+        color: white;
+    }
+}
+
+.ctx-menu {
     background-color: #1f1f1f;
     border-radius: 5px;
     max-height: 400px;
@@ -24,8 +37,7 @@ label:hover {
     color: white;
 }
 
-.message, .entry {
-    padding: 15px;
+.message {
     text-overflow: ellipsis;
 }
 
@@ -33,8 +45,12 @@ label:hover {
     cursor: initial;
 }
 
-.entry:hover {  
-    background-color: #333333;
-    cursor: pointer;
-    border-radius: 5px;
+.ctx-entry {
+    padding: 15px;
+
+    &:hover {
+        background-color: #333333;
+        cursor: pointer;
+        border-radius: 5px;
+    }
 }

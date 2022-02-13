@@ -36,11 +36,12 @@
     </div>
 </div>
 
-<div [hidden]="!showSubfolders" class="options">
-  <div *ngIf="node.isEmptyNode && !node.isTentativeNode && tentativeNode === undefined" [style.padding-left.px]="10 * node.depth + 20">
+<div [hidden]="!showSubfolders" class="options" [class.mt]="isEmptyNode()">
+  <div *ngIf="isEmptyNode()" [style.padding-left.px]="10 * node.depth + 20">
     <div *ngIf="node.isRoot && !isRenaming">
-      <div class="link" (click)="this.createNewFromUI({ ev: $event, isFile: false })">Ordner erstellen</div>
-      <div class="link" (click)="this.createNewFromUI({ ev: $event, isFile: true })">Datei erstellen</div>
+      <app-common-actions [isInlineMenu]="true" [isVisible]="true"
+        (createNewFromUI)="this.createNewFromUI($event)"
+        (selectedFiles)="this.onNewFile($event)"></app-common-actions>
     </div>
     <div *ngIf="!node.isRoot">
       Leerer Ordner

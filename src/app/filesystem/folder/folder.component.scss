@@ -13,16 +13,6 @@
     }
 }
 
-.link {
-   color: #8f8f8f;
-   text-decoration: underline;
-
-   &:hover {
-       color: #afafaf;
-       cursor: pointer;
-   }
-}
-
 .folder-heading {
     display: flex;
     align-items: center;
@@ -77,4 +67,8 @@
 
 .options {
     margin: 0px;
+}
+
+.mt {
+    margin-top: 10px;
 }

@@ -368,4 +368,8 @@ export class FolderComponent implements OnInit, OnDestroy {
 
     this.cd.detectChanges();
   }
+
+  public isEmptyNode(): boolean {
+    return this.node.isEmptyNode && !this.node.isTentativeNode && this.tentativeNode === undefined;
+  }
 }

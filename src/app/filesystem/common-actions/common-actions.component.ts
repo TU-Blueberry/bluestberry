@@ -17,6 +17,7 @@ export class CommonActionsComponent implements OnInit {
 
   isReadonly = false;
 
+  @Input() isInlineMenu: boolean = false;
   @Input() isVisible: boolean = false;
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
