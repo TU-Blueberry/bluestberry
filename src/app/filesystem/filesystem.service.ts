@@ -13,12 +13,14 @@ import { FileType, FileTypes } from '../shared/files/filetypes.enum';
 export class FilesystemService {
   readonly SYSTEM_FOLDERS = new Set(['/dev', '/home', '/lib', '/proc', '/tmp', '/bin']);
   readonly CUSTOM_FOLDERS = new Set(['/glossary']);
+  
+  // use sets (even for single values like hint root, glossary path) to avoid pitfalls with empty values
   EXP_HIDDEN_PATHS = new Set<string>();
   EXP_EXTERNAL_PATHS = new Set<string>();
   EXP_READONLY_PATHS = new Set<string>();
   EXP_MODULE_PATHS = new Set<string>();
-  EXP_HINT_ROOT_PATH = '';
-  EXP_GLOSSARY_PATH = '';
+  EXP_HINT_ROOT_PATH = new Set<string>();
+  EXP_GLOSSARY_PATH = new Set<string>();
 
   // Keep track of readonly folders as they need to be adjusted before and after syncing 
   private READONLY_FOLDERS = new Set<string>(); 
@@ -74,8 +76,8 @@ export class FilesystemService {
       this.EXP_READONLY_PATHS = new Set();
       this.EXP_MODULE_PATHS = new Set();
       this.READONLY_FOLDERS = new Set();
-      this.EXP_GLOSSARY_PATH = '';
-      this.EXP_HINT_ROOT_PATH = '';
+      this.EXP_GLOSSARY_PATH = new Set();
+      this.EXP_HINT_ROOT_PATH = new Set();
     });
   }
 
@@ -186,7 +188,7 @@ export class FilesystemService {
   }
 
   public checkPermissionsForExperience(mountpoint: string): Observable<never> {
-    const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, this.EXP_GLOSSARY_PATH, this.EXP_HINT_ROOT_PATH]); 
+    const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, ...this.EXP_GLOSSARY_PATH, ...this.EXP_HINT_ROOT_PATH]); 
     return this.checkPermissions(mountpoint, mergedPaths);
   }
 
@@ -265,11 +267,11 @@ export class FilesystemService {
   }
 
   public isHintPath(path: string): boolean {
-    return path.startsWith(this.EXP_HINT_ROOT_PATH);
+    return this.abstractCheck(this.EXP_HINT_ROOT_PATH, path);
   }
 
   public isGlossaryPath(path: string): boolean {
-    return path.startsWith(this.EXP_GLOSSARY_PATH);
+    return this.abstractCheck(this.EXP_GLOSSARY_PATH, path);
   }
 
   public unmount(name: string): Observable<never> {
@@ -405,7 +407,7 @@ export class FilesystemService {
 
   public writeFileTest(path: string, content: Uint8Array | string, mode?: number): Observable<never> {
     return this.basicFactory<never>(path, 
-      "Error writing to file", 
+      `Error writing to file ${path}`, 
       (_) => this.N_writeFile(path, content, mode), 
       true,
       false

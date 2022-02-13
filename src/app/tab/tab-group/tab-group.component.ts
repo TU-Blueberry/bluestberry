@@ -157,10 +157,14 @@ export class TabGroupComponent implements AfterViewInit {
   }
 
   private cloneActiveTab(): Tab | undefined {
-    return this.activeTab ? [{ ...this.activeTab }].map(t => ({ type: t.type, title: t.title, path: t.path })).shift() : undefined;
+    return this.activeTab ? [{ ...this.activeTab }].map(t => ({ type: t.type, title: t.title, path: this.toRelativePath(t.path) })).shift() : undefined;
   }
 
   private cloneDataSource() {
-    return [...this.dataSource].map(t => ({ type: t.type, title: t.title, path: t.path }));
+    return [...this.dataSource].map(t => ({ type: t.type, title: t.title, path: this.toRelativePath(t.path) }));
+  }
+
+  private toRelativePath(absolutePath: string): string {
+    return absolutePath.split("/").slice(2).join("/");
   }
 }

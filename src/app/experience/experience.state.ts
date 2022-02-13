@@ -154,7 +154,7 @@ export class ExperienceState {
             ctx.setState({
                 ...state,
                 [key]: elements,
-                current: action.exp
+                current: { ...action.exp, availableOffline: true }
             })
         }
     }

@@ -46,7 +46,7 @@ export class FiletreeComponent implements OnDestroy{
     private cd: ChangeDetectorRef, private action$: Actions, private conf: ConfigService, private gs: GlossaryService) { }
 
   private init(): void {
-    if (this._isGlossary) {
+    if (this._isGlossary === true) {
       this.gs.glossaryEntries$.subscribe(entries => {
         this.kickstartTreeGeneration(entries);
       }); 
@@ -54,7 +54,7 @@ export class FiletreeComponent implements OnDestroy{
 
     this.action$.pipe(ofActionSuccessful(ExperienceAction.Open))
       .subscribe((action: ExperienceAction.Open) => {
-        if (!this.isGlossary) {
+        if (this._isGlossary === false) {
           this.SELECTED_LESSON = action.exp;
           this.kickstartTreeGeneration();
         } 
@@ -86,6 +86,7 @@ export class FiletreeComponent implements OnDestroy{
       folderComp.node = baseNode.generateTreeNode(0, path, node, name);
       folderComp.node.isRoot = true; 
       folderComp.node.isGlossary = this._isGlossary;
+      folderComp.node.path = path;
       this.toggleSubscription = folderComp.onExpandToggle.subscribe(next => this.expandChange.emit(next));
 
       additionalGlossaryEntries?.forEach(entry => 

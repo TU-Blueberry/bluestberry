@@ -67,6 +67,7 @@ export class ExperienceManagementService {
       encrypted: [],
       hidden: [],
       external: [],
+      modules: [],
       readonly: [],
       glossaryEntryPoint: '',
       hintRoot: ''
@@ -179,12 +180,12 @@ export class ExperienceManagementService {
       switchMap(config => {
         if (config) {
           console.log("%c Config found!", "color: green", config)
-          this.fsService.EXP_HIDDEN_PATHS = new Set(this.filterPaths(fullPath, config.hidden));
-          this.fsService.EXP_MODULE_PATHS = new Set(this.filterPaths(fullPath, config.modules || []));
-          this.fsService.EXP_READONLY_PATHS = new Set(this.filterPaths(fullPath, config.readonly));
-          this.fsService.EXP_EXTERNAL_PATHS = new Set(this.filterPaths(fullPath, config.external));
-          this.fsService.EXP_GLOSSARY_PATH = `${fullPath}/glossary`;
-          this.fsService.EXP_HINT_ROOT_PATH = `${fullPath}/${config.hintRoot}`;
+          this.fsService.EXP_HIDDEN_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.hidden));
+          this.fsService.EXP_MODULE_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.modules));
+          this.fsService.EXP_READONLY_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.readonly));
+          this.fsService.EXP_EXTERNAL_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.external));
+          this.fsService.EXP_GLOSSARY_PATH = new Set(this.filterEmptyConfigPaths(fullPath, [config.glossaryEntryPoint]));
+          this.fsService.EXP_HINT_ROOT_PATH = new Set(this.filterEmptyConfigPaths(fullPath, [config.hintRoot]));
 
           return concat(
             this.fsService.checkPermissionsForExperience(fullPath),
@@ -196,8 +197,8 @@ export class ExperienceManagementService {
     }));
   }
 
-  private filterPaths(name: string, paths: string[]): string[] {
+  private filterEmptyConfigPaths(parentPath: string, paths: string[]): string[] {
     return paths.filter(path => path.trim() !== "" && path.trim() !== "/")
-                .map(path => `${name}/${path}`);
+                .map(path => `${parentPath}/${path}`);
   }
 }
