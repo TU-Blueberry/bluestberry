@@ -123,7 +123,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   // called once new node from user is synced to fs
   private triggerUpdate(path: string, isFile: boolean) {
     const element = isFile ? this.files.get(this.getName(path)) : this.folders.get(this.getName(path));
-    
+
     if (element) {
       const instance = element.instance;
       instance.node.path = path;
@@ -132,6 +132,7 @@ export class FolderComponent implements OnInit, OnDestroy {
       if (!isFile) {
         (instance as FolderComponent).init();
         (instance as FolderComponent).setActive();
+        (instance as FolderComponent).cd.detectChanges();
       } 
 
       this.cd.detectChanges();
