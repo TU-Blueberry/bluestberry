@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {Location} from '@angular/common';
-import {defer, Observable, Subject} from 'rxjs';
-import {filter, map, shareReplay} from 'rxjs/operators';
+import {defer, Observable, of, race, Subject, timer} from 'rxjs';
+import {filter, map, mapTo, shareReplay, switchMap, tap} from 'rxjs/operators';
 import {MessageType, PyodideWorkerMessage, PythonCallableData} from 'src/app/pyodide/pyodide.types';
 import {LessonEventsService} from 'src/app/lesson/lesson-events.service';
 
@@ -15,8 +15,10 @@ export class PyodideService {
 
   onMessageListener$ = new Subject<PyodideWorkerMessage>();
 
-  private loadedLibs: string[] = [];
+  private interruptBuffer = new Uint8Array(new SharedArrayBuffer(1));
+  private loadedLibs: Set<string> = new Set<string>();
   private pythonCallbacks: string[] = [];
+  private mountPoint = '';
   private _modulePaths: string[] = [];
   set modulePaths(paths: string[]) {
     this._modulePaths = paths;
@@ -28,9 +30,15 @@ export class PyodideService {
     this.lessonEventService.onExperienceOpened.pipe(
       map(lessonEvent => lessonEvent.preloadPythonLibs),
     ).subscribe(preloadedPythonLibs => {
-      this.loadedLibs = this.loadedLibs.concat(preloadedPythonLibs);
+      preloadedPythonLibs.forEach(lib => this.loadedLibs.add(lib));
       this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: preloadedPythonLibs });
-    })
+    });
+    this.lessonEventService.onExperienceOpened.pipe(
+      map(lessonEvent => lessonEvent.name),
+    ).subscribe(lessonName => {
+      this.mountPoint = lessonName;
+      this.worker.postMessage({ type: MessageType.MOUNT, data: this.mountPoint });
+    });
     this.initWorker();
   }
 
@@ -60,12 +68,19 @@ export class PyodideService {
         this.onMessageListener$.next(data);
       };
       this.worker.postMessage({ type: MessageType.SET_PYODIDE_LOCATION, data: this.location.prepareExternalUrl('/assets/pyodide')});
+      this.worker.postMessage({ type: MessageType.SET_INTERRUPT_BUFFER, data: { buffer: this.interruptBuffer }});
       if (this._modulePaths.length > 0) {
         // just execute the setter again
         this.modulePaths = this._modulePaths;
       }
       if (this.pythonCallbacks.length > 0) {
         this.setupPythonCallables(this.pythonCallbacks);
+      }
+      if (this.mountPoint.length > 0) {
+        this.worker.postMessage({ type: MessageType.MOUNT, data: this.mountPoint });
+      }
+      if (this.loadedLibs.size > 0) {
+        this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: [...this.loadedLibs] });
       }
     } else {
       console.error('WebWorkers not supported by this Environment...');
@@ -77,6 +92,38 @@ export class PyodideService {
     return this.onMessageListener$.pipe(
       filter(message => message.type === MessageType.AFTER_EXECUTION),
       map(message => message.data),
+    );
+  }
+
+  terminateCode(gracePeriod: number): Observable<'soft' | 'hard'> {
+    // This cryptic statement will in theory interrupt a running python script
+    // It works as follows: the interruptBuffer is shared between the worker thread and main thread
+    // Pyodide uses this shared buffer to listen for posix style interrupts
+    // The number for SIGINT is 2 so we set a 2 into this buffer
+    const softTerminate$: Observable<'soft'> = this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.TERMINATED),
+      mapTo('soft')
+    );
+
+    const hardTerminate$: Observable<'hard'> = timer(gracePeriod).pipe(mapTo('hard'));
+
+    this.interruptBuffer[0] = 2;
+    this.worker.postMessage({ type: MessageType.TERMINATED });
+
+    return race(
+      softTerminate$,
+      hardTerminate$
+    ).pipe(
+      tap(result => {
+        if (result === 'hard') {
+          // The worker didn't terminate itself in the grace period
+          // We need a hard terminate
+          // The worker is completely terminated and reinitialized
+          this.worker.terminate();
+          this.initWorker();
+          this.onMessageListener$.next({ type: MessageType.STD_OUT, data: `Worker did not terminate after ${gracePeriod}ms! Reinitializing Context...`})
+        }
+      }),
     );
   }
 

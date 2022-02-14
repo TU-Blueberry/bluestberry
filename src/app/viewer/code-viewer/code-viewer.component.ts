@@ -60,6 +60,10 @@ export class CodeViewerComponent implements OnInit {
       })
   }
 
+  terminateCode() {
+    this.pyodideService.terminateCode(5000).subscribe();
+  }
+
   executeCode(): void {
     forkJoin([
       this.filesystemService.sync(false),

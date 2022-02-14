@@ -23,7 +23,7 @@ export class UnityService {
           // this.initialPresentation()
         }
       },
-    })
+    });
 
     return this.gameInstance
   }

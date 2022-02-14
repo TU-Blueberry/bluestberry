@@ -1,13 +1,22 @@
 <div id="monaco-editor">
   <ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="code" (ngModelChange)="save()" (onInit)="editorInit($event)" (keyup.alt.enter)="executeCode()"></ngx-monaco-editor>
   <div class="code-action-bar">
-    <div *ngIf="isExecutableCode" class="action-bar-icon" (click)="executeCode()" >
-      <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="playIconTitle"
-           stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none">
-        <title id="playIconTitle">Code ausführen (Alt+Enter)</title>
-        <path d="M20 12L5 21V3z" />
-      </svg>
-    </div>
+    <ng-container *ngIf="isExecutableCode">
+      <div class="action-bar-icon" (click)="terminateCode()" >
+        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="stopIconTitle"
+             stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+          <title id="stopIconTitle">Ausführung stoppen</title>
+          <path d="M5 3H20V19H5z" />
+        </svg>
+      </div>
+      <div class="action-bar-icon" (click)="executeCode()" >
+        <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="playIconTitle"
+             stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+          <title id="playIconTitle">Code ausführen (Alt+Enter)</title>
+          <path d="M20 12L5 21V3z" />
+        </svg>
+      </div>
+    </ng-container>
     <div class="action-bar-icon" (click)="undo()">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
            aria-labelledby="backLeftIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"

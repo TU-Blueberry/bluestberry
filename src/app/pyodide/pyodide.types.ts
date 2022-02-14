@@ -18,9 +18,12 @@ export enum MessageType {
   SET_PYODIDE_LOCATION = 'SET_PYODIDE_LOCATION',
   PRELOAD_LIBS = 'PRELOAD_LIBS',
   LOADED_LIB = 'LOADED_LIB',
+  MOUNT = 'MOUNT',
+  TERMINATED = 'TERMINATED',
+  SET_INTERRUPT_BUFFER = 'SET_INTERRUPT_BUFFER',
 }
 
-export type MessageData = ExecutionRequestData | GlobalRequestData | PythonCallableData | string | string[];
+export type MessageData = ExecutionRequestData | GlobalRequestData | PythonCallableData | InterruptBufferData | string | string[];
 
 export interface ExecutionRequestData {
   code: string;
@@ -35,4 +38,8 @@ export interface GlobalRequestData {
 export interface PythonCallableData {
   name: string;
   params: any[];
+}
+
+export interface InterruptBufferData {
+  buffer: SharedArrayBuffer;
 }

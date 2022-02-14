@@ -54,6 +54,7 @@ declare class Pyodide {
   loadPackage(pythonPackage: string): Promise<any>;
   toPy(obj: any, options?: {depth: number}): PyProxy;
   loadPackagesFromImports(code: string, messageCallback?: (message: string) => void, errorCallback?: (error: any) => void): Promise<any>;
+  setInterruptBuffer(interruptBuffer: SharedArrayBuffer): void;
 }
 
 declare class PyProxy {
