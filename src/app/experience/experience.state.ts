@@ -81,7 +81,8 @@ export class ExperienceState {
             finalize(() => {
                 ctx.dispatch([
                     new AppAction.Change("READY"), 
-                    new ExperienceAction.UpdateExperience(action.exp)
+                    new ExperienceAction.UpdateExperience({...action.exp, availableOffline: true}),
+                    new ExperienceAction.ChangeCurrent({...action.exp, availableOffline: true})
                 ]);
             })
         );
@@ -141,6 +142,16 @@ export class ExperienceState {
         )
     }
 
+    @Action(ExperienceAction.ChangeCurrent)
+    onCurrentChanged(ctx: StateContext<ExperienceStateModel>, action: ExperienceAction.ChangeCurrent) {
+        const state = ctx.getState();
+
+        ctx.setState({
+            ...state,
+            current: action.exp
+        })
+    }
+
     @Action(ExperienceAction.UpdateExperience)
     onExperienceUpdated(ctx: StateContext<ExperienceStateModel>, action: ExperienceAction.UpdateExperience) {
         const state = ctx.getState();
@@ -149,12 +160,11 @@ export class ExperienceState {
         const index = elements.findIndex(e => e.uuid === action.exp.uuid);
 
         if (index > -1) {
-            elements[index] = { ...action.exp, availableOffline: true };
+            elements[index] = { ...action.exp };
 
             ctx.setState({
                 ...state,
-                [key]: elements,
-                current: { ...action.exp, availableOffline: true }
+                [key]: elements
             })
         }
     }

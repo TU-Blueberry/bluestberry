@@ -82,7 +82,6 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
     }
   }
 
-  // TODO: Add more fine grained checks
   validateInput(control: AbstractControl): ValidationErrors | null {
     const regex = this.isFile ? this.fileRegex : this.folderRegex;
     const value: string = control.value;

@@ -4,15 +4,16 @@ import { ExperienceSelectionComponent } from './experience-selection/experience-
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { SharedModule } from '../shared/shared.module';
 import { SandboxCreationComponent } from './sandbox-creation/sandbox-creation.component';
+import { ImportComponent } from './import/import.component';
 
 @NgModule({
-  declarations: [ExperienceSelectionComponent, SandboxCreationComponent],
+  declarations: [ExperienceSelectionComponent, SandboxCreationComponent, ImportComponent],
   imports: [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
     SharedModule
   ],
-  exports: [ExperienceSelectionComponent]
+  exports: [ExperienceSelectionComponent, ImportComponent]
 })
 export class ExperienceModule { }

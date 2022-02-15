@@ -42,15 +42,7 @@
     display: inline-block !important;
 }
 
-.file-type-image {
-    color: green;
-    width: 16px;
-    height: 16px;
-}
-
 .file-name {
-    padding-left: 5px;
     text-overflow: ellipsis;
     overflow: hidden;
 }
-

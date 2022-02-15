@@ -11,6 +11,7 @@ import { ExperienceAction } from '../experience/actions';
 import { ConfigService } from '../shared/config/config.service';
 import { ExperienceState, ExperienceStateModel } from '../experience/experience.state';
 import { FromConfig } from '../viewer/actions/from-config.action';
+import { ImportAction } from '../actionbar/actions/import.action';
 
 @Injectable({
   providedIn: 'root'
@@ -29,7 +30,10 @@ export class TabManagementService {
     private action$: Actions, 
     private conf: ConfigService
   ) {
-    const lesson$ = action$.pipe(ofActionSuccessful(ExperienceAction.Open)).pipe(
+    const lesson$ = merge(
+      action$.pipe(ofActionSuccessful(ExperienceAction.Open)),
+      action$.pipe(ofActionSuccessful(ImportAction.OverwriteCurrent))
+    ).pipe(
       switchMap((e: ExperienceAction.Open) => conf.getConfigByExperience(e.exp)),
       switchMap(conf => {
         return concat(...conf.open.map(file => {

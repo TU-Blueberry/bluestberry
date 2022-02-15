@@ -1,0 +1,70 @@
+<app-modal *ngIf="showImportWindow" (close)="closeImportWindow()">
+  <div class="import-window" *ngIf="!isImporting">
+    <h2>Importieren von Projekten</h2>
+    <div *ngIf="!selectedFile" class="dropzone-wrapper" [class.dropzone-active]="dragOver" 
+        (drop)="dropFile($event)" 
+        (dragover)="preventDragOver($event)" 
+        (dragleave)="dragOver = false">
+      <div class="dropzone">
+        <label [class.dropzone-active]="dragOver" for="file">
+          <svg xmlns="http://www.w3.org/2000/svg" class="add-symbol" [class.dropzone-active]="dragOver"  viewBox="0 0 24 24" aria-labelledby="addIconTitle"
+          stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none">
+            <title id="addIconTitle">Archiv hochladen</title>
+            <path d="M17 12L7 12M12 17L12 7"/>
+            <circle cx="12" cy="12" r="10"/>
+          </svg>
+          <div>Archiv auswählen (oder in die Zone ziehen)</div>
+        </label>
+        <input type="file" id="file" #fileInput accept=".zip" multiple="false" (change)="fileInputChange($event)">
+      </div>
+    </div> 
+    <div *ngIf="selectedFile" class="result-wrapper">
+      <div class="check" *ngIf="checkInProgress">
+        <app-progress-spinner></app-progress-spinner>
+        Prüfe Archiv auf Korrektheit....
+      </div>
+      <div *ngIf="!checkInProgress && tempZip !== undefined" class="stats-wrapper">
+        <div class="stats">
+          <div *ngIf="!hasError">
+            <span class="bold">Name: </span>
+            <span>{{ expName }}</span>
+          </div>
+          <div *ngIf="!hasError">
+            <span class="bold">Typ: </span> 
+            <span>{{ expType }}</span>
+          </div>
+          <div>
+            <span class="bold">Status: </span>
+            <div class="status-indiciator" 
+                [class.result-ok]="!conflictDetected" 
+                [class.result-action-required]="conflictDetected"
+                [class.result-error]="hasError"
+                title="{{ conflictDetected ? 'Aktion erforderlich' : 'Keine Probleme gefunden' }}">
+            </div> 
+            <span *ngIf="conflictDetected && !hasError">Aktion erforderlich</span>
+            <span *ngIf="!conflictDetected && !hasError">Keine Probleme gefunden</span>
+            <span *ngIf="hasError">Ungültiges Archiv. Bitte anderes Archiv wählen.</span>
+          </div>
+        </div>
+      </div>      
+      <div class="buttons" *ngIf="!checkInProgress">
+        <div *ngIf="!conflictDetected" class="choices">  
+          <div class="pg-btn" (click)="clearSelection($event)">Auswahl ändern</div>
+          <div *ngIf="!hasError" class="pg-btn" (click)="importRegular()">Importieren</div>
+        </div>
+        <div *ngIf="conflictDetected">
+          Ein Projekt mit der gleichen Kennung existiert bereits. Wie möchtest du fortfahren?
+
+          <div class="choices">
+            <div class="pg-btn" (click)="clearSelection($event)">Anderes Archiv wählen</div>
+            <div class="pg-btn" (click)="importOverwrite()">Bestehendes Projekt überschreiben</div>
+            <div class="pg-btn" (click)="importGenerateNewUuid()">Archiv als neues Projekt importieren</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div *ngIf="isImporting">
+    Wird importiert....
+  </div>
+</app-modal>

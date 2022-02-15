@@ -8,7 +8,7 @@ export interface AppStateModel {
 
 // init = pyodide etc. wird gerade geladen
 // Ready = pyodide etc geladen
-export type AppStatus = "INITIALIZING" | "SWITCHING" | "READY" | "ERROR" | "LOADING";
+export type AppStatus = "INITIALIZING" | "SWITCHING" | "READY" | "ERROR" | "LOADING" | "IMPORTING";
 
 @State<AppStateModel>({
     name: 'app', 

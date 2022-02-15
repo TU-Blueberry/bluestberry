@@ -39,12 +39,13 @@ export class ConfigService {
   public getConfigByExperience(exp: Experience): Observable<Config> {
     return this.fs.getFileAsBinary(`/${exp.uuid}/config.json`).pipe(
       switchMap(buff => this.decryptConfig(buff)),
-      switchMap(decrypted => {
-        const conf = <Config>JSON.parse(new TextDecoder().decode(decrypted))
-        console.log("decrypted", conf)
-        return of(conf)
-      })
+      switchMap(decrypted => this.parseDecryptedConfig(decrypted))
     )
+  }
+
+  public parseDecryptedConfig(buff: ArrayBuffer): Observable<Config> {
+    console.log("decrypted", <Config>JSON.parse(new TextDecoder().decode(buff)));
+    return of(<Config>JSON.parse(new TextDecoder().decode(buff)))
   }
 
   public getConfigOfCurrentExperience(): Observable<Config> {
@@ -75,7 +76,21 @@ export class ConfigService {
     )
   }
 
-  private updateConfig(config: Config): Observable<never> {
+  public decryptConfig(data: ArrayBuffer): Observable<ArrayBuffer> {
+    return this.getKey().pipe(
+      switchMap(key => {
+        return from(window.crypto.subtle.decrypt({ 
+          name: "AES-GCM",
+          iv: environment.iv
+        },
+        key,
+        data
+        ))
+      })
+    )
+  }
+
+  public updateConfig(config: Config): Observable<never> {
     return concat(
       this.encryptConfig(config).pipe(
         switchMap(buffer => this.fs.overwriteFile(`/${config.uuid}/config.json`, new Uint8Array(buffer), 0o555))
@@ -132,19 +147,5 @@ export class ConfigService {
         }, key, enc))
       })
     );
-  }
-
-  private decryptConfig(data: ArrayBuffer): Observable<ArrayBuffer> {
-    return this.getKey().pipe(
-      switchMap(key => {
-        return from(window.crypto.subtle.decrypt({ 
-          name: "AES-GCM",
-          iv: environment.iv
-        },
-        key,
-        data
-        ))
-      })
-    )
   }
 }

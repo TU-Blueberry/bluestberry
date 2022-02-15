@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
-import { Observable, concat, forkJoin, of, throwError, EMPTY, defer, from, zip } from 'rxjs';
-import { ignoreElements, switchMap, filter, mergeAll, tap, shareReplay } from 'rxjs/operators';
+import { Observable, concat, forkJoin, of, throwError, EMPTY, defer, from, zip, merge } from 'rxjs';
+import { ignoreElements, switchMap, filter, mergeAll, tap, shareReplay, finalize, take } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
-import { Config } from 'src/app/experience/model/config';
 import { FileType, FileTypes } from '../shared/files/filetypes.enum';
+
 
 @Injectable({
   providedIn: 'root'
@@ -119,31 +119,6 @@ export class FilesystemService {
         this.chmod(path, mode);
       });
     })
-  }
-
-  // TODO: siehe rumpf
-  public importLesson(existsAlready: boolean, config: Config, zip?: JSZip): Observable<never> {
-    const path = `/${config.name}`; // TODO: Hier muss nach Sandbox y/n unterschieden wieder
-    // TODO: uuid
-
-    const preReq: Observable<never> = new Observable(subscriber => {
-      if (!zip || !config.uuid) {
-        subscriber.error("No zip provided or invalid configuration file");
-        return;
-      }
-      subscriber.complete()
-    });
-
-    return concat(
-      preReq.pipe(
-        filter(() => existsAlready === true),
-        switchMap(() => this.deleteFolder(path, false))
-      ),
-      this.unmount(path), // TODO
-      this.mount(config.uuid),  
-      this.storeLesson(zip!, config.uuid),
-      this.sync(false) // TODO
-    );
   }
 
   public mount(uuid: string): Observable<never> {
@@ -270,8 +245,8 @@ export class FilesystemService {
     return this.abstractCheck(this.EXP_GLOSSARY_PATH, path);
   }
 
-  public unmount(name: string): Observable<never> {
-    const fullPath = name.startsWith("/") ? name : `/${name}`;
+  public unmount(uuid: string): Observable<never> {
+    const fullPath = uuid.startsWith("/") ? uuid : `/${uuid}`;
 
     return this.exists(fullPath).pipe(switchMap(exists => { 
       return !exists ? 
@@ -343,33 +318,39 @@ export class FilesystemService {
   }
 
   private getFileAsBuffer(unzippedLesson: JSZip, file: string): Observable<ArrayBuffer>{
-    return defer(() => of(unzippedLesson.file(file)?.internalStream("arraybuffer"))).pipe(
+    return of(unzippedLesson.file(file)?.internalStream("arraybuffer")).pipe(
       switchMap(stream => {
-        return !stream ? throwError("Error reading zip") : from(stream.accumulate())
+        return !stream ? throwError(`Error reading file ${file} from archive`) : from(stream.accumulate())
     }))
   }
 
-  public storeLesson(unzippedLesson: JSZip, name: string): Observable<never> {
+  public storeExperience(unzippedExp: JSZip, uuid: string, overwriteConfig: boolean = false): Observable<never> {
     const folders: string[] = [];
     const files: string[] = [];
 
-    unzippedLesson.forEach(entry => {
-      if (entry !== `${name}/`) {
-        unzippedLesson.file(entry) ? files.push(entry) : folders.push(entry);
+    unzippedExp.forEach(entry => {
+      if (entry !== `${uuid}/`) {
+        unzippedExp.file(entry) ? files.push(entry) : folders.push(entry);
       }
     });
 
-    const folderObservables = folders.map(folder => this.createFolder(`${name}/${folder}`, false));
-    const fileObservables = files
-      .map(file => this.getFileAsBuffer(unzippedLesson, file).pipe(
-            switchMap(buffer => this.createFile(`${name}/${file}`, new Uint8Array(buffer), false))
-          )
-      );
+    const folderObservables = folders.map(folder => this.createFolder(`/${uuid}/${folder}`, false));
+    const fileObservables = files.map(file => this.getFileAsBuffer(unzippedExp, file).pipe(
+        switchMap(buffer => {      
+         // import may want to overwrite config.json; make sure we only overwrite config.json in the root dir and keep all other config.json's (which may have been created by the user)
+          if (overwriteConfig && `/${uuid}/${file}` === `/${uuid}/config.json`) {
+            return this.overwriteFile(`/${uuid}/${file}`, new Uint8Array(buffer));
+          } else {
+            return this.createFile(`/${uuid}/${file}`, new Uint8Array(buffer), false)
+          } 
+        })
+      )
+    );
 
     // create all folders sequentially (because they might be nested), then create all files in parallel
     return concat(
       ...folderObservables, 
-      forkJoin(fileObservables).pipe(ignoreElements())
+      merge(...fileObservables)
     );
   }
 
@@ -487,7 +468,7 @@ export class FilesystemService {
   }
 
   public createFile(path: string, content: Uint8Array | string, withSync: boolean, mode?: number): Observable<never> {
-    const createFileObservable =  this.exists(path).pipe(
+    const createFileObservable = this.exists(path).pipe(
       switchMap(exists => exists ? 
         throwError(`File ${path} already exists. Use writeFile instead`) :
         (!this.isSystemDirectory(path) ? 
@@ -503,7 +484,7 @@ export class FilesystemService {
   public deleteFile(path: string, withSync: boolean): Observable<never> {
     const deleteFileObservable =  this.basicFactory<never>(path, 
       "Error removing file",
-      (node) => this.unlink(path),
+      (node) => { this.unlink(path); console.log("DELETE", path)},
       true
     );
 
@@ -531,21 +512,19 @@ export class FilesystemService {
     return withSync ? concat(createFolderObservable, this.sync(false)) : createFolderObservable;
   }
 
-  public deleteFolder(path: string, withSync: boolean): Observable<never> {
+  public deleteFolder(path: string, withSync: boolean, excludedPaths?: string[]): Observable<never> {
     const deleteFolderObservable = this.isDirectory(path).pipe(
-      switchMap(isDir => isDir ? 
-        this.isEmpty(path) : 
-        throwError("Path is not a directory")
-      )).pipe(
+      filter(_ => !excludedPaths?.includes(path)),
+      switchMap(isDir => isDir ? this.isEmpty(path) : throwError("Path is not a directory"))).pipe(
         switchMap(isEmpty => {
           if (isEmpty && path.split('/').length > 2) {
             return defer(() => this.rmdir(path)) // isEmpty and not root directory --> delete
           } else {
             return concat(
               this.getNodeByPath(path).pipe(
-                switchMap(node => this.deleteEntriesInFolder(node, path))
+                switchMap(node => this.deleteEntriesInFolder(node, path, excludedPaths))  // else: recursive delete
               ), 
-              defer(() => this.rmdir(path))) // else: recursive delete
+              defer(() => this.rmdir(path))) // finally, delete root
           }
     }))
 
@@ -553,14 +532,15 @@ export class FilesystemService {
   }
 
   // for each subnode of current node, check if it is a file and map to corresponding delete observable
-  public deleteEntriesInFolder(node: FSNode, path: string): Observable<never> {
+  public deleteEntriesInFolder(node: FSNode, path: string, excludedPaths?: string[]): Observable<never> {
     return this.getEntriesOfFolder(node, path).pipe(
       switchMap(entries =>
-        entries.map(entry => this.isFile(entry).pipe(
-          switchMap(isFile => isFile ? 
-            this.deleteFile(entry, false) : 
-            this.deleteFolder(entry, false))
-        ))
+        entries.filter(entry => !excludedPaths?.includes(entry))
+          .map(entry => this.isFile(entry).pipe(
+            switchMap(isFile => isFile ? 
+              this.deleteFile(entry, false) : 
+              this.deleteFolder(entry, false))
+          ))
       ), mergeAll()
     )
   }
@@ -579,7 +559,7 @@ export class FilesystemService {
           return throwError("Given path is no file")
         }
       }
-      ));
+    ));
   }
 
   public getFileAsBinary(path: string): Observable<Uint8Array> {

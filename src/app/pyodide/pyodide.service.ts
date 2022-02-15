@@ -54,9 +54,6 @@ export class PyodideService {
     );
   }
 
-  // TODO: There is another function named loadPackagesFromImport which loads all packages found in a given code snippet
-  // This might be helpful for us?
-  // see https://pyodide.org/en/stable/usage/api/js-api.html
   runCode(code: string): Observable<any> {
     return this.pyodide.pipe(switchMap(pyodide => {
       pyodide.globals.set('editor_input', code);

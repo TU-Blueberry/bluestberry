@@ -21,8 +21,8 @@
     </app-confirmation-dialog>
 </app-modal>
 
-<div class="main">
-    <div class="main-text">
+<div class="pg-btn">
+    <div class="main-text" (click)="showOptions = !showOptions">
         Workspace:
     </div>
     <div id="select-lesson">
@@ -37,12 +37,6 @@
                     {{ selectedExperience.name }}
                 </div>
             </ng-template>
-            <svg class="select-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-                aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
-                stroke-linejoin="miter" fill="none"> 
-                <title id="chevronDownIconTitle">Auswahl anzeigen</title>
-                <polyline points="6 10 12 16 18 10"/> 
-            </svg>
         </div>
         <div class="entry-wrapper" [hidden]="!showOptions">
             <div *ngIf="(experiences$ | async)?.lessons?.length === 0" class="empty">
@@ -66,7 +60,7 @@
                         <div class="link" *ngIf="lesson.availableOffline && (exporting === undefined || exporting.uuid !== lesson.uuid)" title="Exportiere deinen Fortschritt"
                             (click)="export(lesson, $event)">Export</div>
                         <div class="link disabled" *ngIf="lesson.availableOffline" title="Fortschritt zurücksetzen">Zurücksetzen (bald)</div>
-                        <div class="ml" *ngIf="!lesson.availableOffline" title="Nicht verfügbar zurücksetzen">Aktionen nach Herunterladen verfügbar</div>
+                        <div class="ml" *ngIf="!lesson.availableOffline" title="Nicht verfügbar zurücksetzen">Noch nicht heruntergeladen</div>
                     </div>
                 </div>
                 <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"

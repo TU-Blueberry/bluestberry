@@ -12,6 +12,7 @@ import { FromConfig } from "../viewer/actions/from-config.action";
 import { Reset } from "../shared/actions/reset.action";
 import { ConfigService } from "../shared/config/config.service";
 import { FilesystemService } from "../filesystem/filesystem.service";
+import { ImportAction } from "./actions/import.action";
 
 export interface ActionbarModel {
     [itemId: string]: {
@@ -27,7 +28,9 @@ export interface ActionbarModel {
         'terminal': { active: false },
         'hints': { active: false },
         'tour': { active: false },
-        'about': { active: false }
+        'about': { active: false },
+        'simulation': { active: false },
+        'import': { active: false }
     }
 })
 
@@ -42,8 +45,10 @@ export class ActionbarState {
             'terminal': { active: false },
             'hints': { active: false },
             'tour': { active: false },
-            'about': { active: false }}
-        );
+            'about': { active: false },
+            'simulation': { active: false },
+            'import': { active: false }
+        });
     }
 
     @Action(FromConfig)
@@ -53,7 +58,9 @@ export class ActionbarState {
             'terminal': { active: action.splitSettings['terminal'].visible },
             'hints': { active: this.checkIfHintsAreOpen(action.openTabs) },
             'tour': { active: false },
-            'about': { active: false }
+            'about': { active: false },
+            'simulation': { active: false },
+            'import': { active: false }
         });
     }
 
@@ -122,6 +129,16 @@ export class ActionbarState {
     @Action(About.Close)
     onAboutClose(ctx: StateContext<ActionbarModel>, action: About.Close) {
         this.updateActionbarStore(ctx, 'about', false);
+    }
+
+    @Action(ImportAction.OpenImportWindow)
+    onImportWindowOpen(ctx: StateContext<ActionbarModel>, action: ImportAction.OpenImportWindow) {
+        this.updateActionbarStore(ctx, 'import', true);
+    }
+
+    @Action(ImportAction.CloseImportWindow)
+    onImportWindowClose(ctx: StateContext<ActionbarModel>, action: ImportAction.CloseImportWindow) {
+        this.updateActionbarStore(ctx, 'import', false);
     }
     
     private updateActionbarStore(ctx: StateContext<ActionbarModel>, item: string, active: boolean, data?: any) {

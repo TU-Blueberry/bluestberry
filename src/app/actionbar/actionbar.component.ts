@@ -6,6 +6,7 @@ import { ActionbarModel } from './actionbar.state';
 import { About } from './actions/about.action';
 import { Filetree } from './actions/filetree.action';
 import { Hints } from './actions/hints.action';
+import { ImportAction } from './actions/import.action';
 import { Tour } from './actions/tour.action';
 
 @Component({
@@ -56,5 +57,10 @@ export class ActionbarComponent implements OnInit {
   openAbout(ev: Event): void {
     ev.stopPropagation();
     this.store.dispatch(new About.Open());
+  }
+
+  openImport(ev: Event): void {
+    ev.stopPropagation();
+    this.store.dispatch(new ImportAction.OpenImportWindow());
   }
 }

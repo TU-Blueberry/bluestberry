@@ -16,30 +16,22 @@ import { ExperienceState, ExperienceStateModel } from 'src/app/experience/experi
 export class ZipService {
   constructor(private fsService: FilesystemService, private conf: ConfigService, private store: Store) { }
 
-  // TODO: nicht löschen!
-  // Kann für Reset umfunktioniert werden!
   getConfigFromStream(unzipped: JSZip): Observable<Config> {
-    return this.getFileFromZip("config.json", unzipped).pipe(switchMap(config => {
-      const stream = config.internalStream("string");
+    return this.getFileFromZip("config.json", unzipped).pipe(
+      switchMap(config => {
+        const stream = config.internalStream("arraybuffer");
 
-      return new Observable<Config>(subscriber => {
-        stream.on("error", () => subscriber.error("Error trying to stream config"));
-        stream.accumulate().then((data => {
-          const parsedConfig: Config = JSON.parse(data);
-        
-          if (parsedConfig.uuid) {
-            subscriber.next(parsedConfig);
-            subscriber.complete();
-          } else {
-            subscriber.error("Config is missing name property");
-          }      
-        }));
-      });
+        return from(stream.accumulate()).pipe(
+          switchMap(data => this.conf.decryptConfig(data)),
+          switchMap(decrypted => this.conf.parseDecryptedConfig(decrypted))
+        )
     }));   
   }
 
   getFileFromZip(path: string, unzipped: JSZip): Observable<JSZipObject> {
     return new Observable(subscriber => {
+      console.log(unzipped)
+
       const file = unzipped.file(path);
 
       if (!file) {
@@ -86,8 +78,6 @@ export class ZipService {
     )
   }
 
-
-  // TODO: zip erstellen braucht etwas --> selection offen lassen, ladeanimation, dann bei erfolg schließen
   private createZip(path: string, zip: JSZip, uuid: string) {
     return this.addLayerToZip(path, 0, zip, uuid);
   }
@@ -97,7 +87,7 @@ export class ZipService {
       switchMap(([folders, files]) => {
         folders.forEach(folder => zip.folder(this.removePrefix(`${path}/${folder.name}`, uuid)))
         files.forEach(file => {
-          zip.file(`${this.removePrefix(path, uuid)}/${file.name}`, (file.contents as Uint8Array), { createFolders: true });
+          zip.file(this.removePrefix(`${path}/${file.name}`, uuid), (file.contents as Uint8Array), { createFolders: true });
         })
         return forkJoin(folders.map(folder => this.addLayerToZip(`${path}/${folder.name}`, depth + 1, zip, uuid)))
       })
@@ -106,7 +96,7 @@ export class ZipService {
 
   // prevent first level of zip from only containing a folder with the lessonName
   private removePrefix(path: string, uuid: string): string {
-    return path.replace(`/${uuid}`, '');
+    return path.replace(`/${uuid}/`, '');
   }
 
   loadZip(buff: ArrayBuffer): Observable<JSZip> {

@@ -1,9 +1,8 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactoryResolver, EventEmitter, Input, OnDestroy, Output, ViewChild, ViewContainerRef } from '@angular/core';
-import { Observable, Subject, Subscription } from 'rxjs';
+import { Subscription } from 'rxjs';
 import { FilesystemService } from '../filesystem.service';
 import { FolderComponent } from '../folder/folder.component';
 import { filter } from 'rxjs/operators';
-import * as JSZip from 'jszip';
 import { ZipService } from '../zip/zip.service';
 import { TreeNode } from '../model/tree-node';
 import { UiEventsService } from 'src/app/ui-events.service';
@@ -13,6 +12,7 @@ import { Actions, ofActionSuccessful } from '@ngxs/store';
 import { ExperienceAction } from 'src/app/experience/actions';
 import { ConfigService } from 'src/app/shared/config/config.service';
 import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
+import { ImportAction } from 'src/app/actionbar/actions/import.action';
 
 @Component({
   selector: 'app-filetree',
@@ -21,14 +21,6 @@ import { GlossaryService } from 'src/app/shared/glossary/glossary.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class FiletreeComponent implements OnDestroy{
-  showImportWindow = false;
-  dragOver = false;
-  tempZip?: JSZip;
-  checkInProgress = false;
-  conflictDetected = false;
-  selectedFile?: File;
-  userResult$: Subject<boolean> = new Subject();
-  lastCheck?: Subscription;
   SELECTED_LESSON?: Experience;
   _isGlossary = false;
   toggleSubscription?: Subscription;
@@ -53,15 +45,20 @@ export class FiletreeComponent implements OnDestroy{
     }
 
     this.action$.pipe(ofActionSuccessful(ExperienceAction.Open))
-      .subscribe((action: ExperienceAction.Open) => {
-        if (this._isGlossary === false) {
-          this.SELECTED_LESSON = action.exp;
-          this.kickstartTreeGeneration();
-        } 
-      })
+      .subscribe((action: ExperienceAction.Open) => this.onOpenOrUpdate(action))
+
+    this.action$.pipe(ofActionSuccessful(ImportAction.OverwriteCurrent))
+      .subscribe((action: ImportAction.OverwriteCurrent) => this.onOpenOrUpdate(action));
 
     this.action$.pipe(ofActionSuccessful(ExperienceAction.Close))
       .subscribe(() =>  this.ref.clear());
+  }
+
+  onOpenOrUpdate(action: ExperienceAction.Open | ImportAction.OverwriteCurrent) {
+    if (this._isGlossary === false) {
+      this.SELECTED_LESSON = action.exp;
+      this.kickstartTreeGeneration();
+    } 
   }
 
   // possible further optimization: only delete and create new components for glossary entries which changed
@@ -97,121 +94,7 @@ export class FiletreeComponent implements OnDestroy{
     }); 
   }
 
-  finishImport(): void {
-    this.userResult$.next(true);
-  }
-
-  // TODO: Regular flow should be similar to this!
-  // TODO: Additionally check whether zip is completely empty or only consists of config.json
-  unpackCheckAndPossiblyImport(file: File) {
-   /*  this.checkInProgress = true;
-    return from(file.arrayBuffer()).pipe(
-      switchMap(buffer => this.zipService.loadZip(buffer)),
-      tap(unzipped => this.tempZip = unzipped),
-      switchMap(res => this.zipService.getConfigFromStream(res)),
-      switchMap(conf => this.fsService.isNewLesson(conf.uuid)
-        .pipe(
-            switchMap(isEmpty => { 
-              this.conflictDetected = !isEmpty;
-              this.checkInProgress = false;
-              
-              return this.userResult$.pipe(switchMap(userResult => {              
-                return concat(this.fsService.importLesson(userResult, conf, this.tempZip), this.fsService.sync(false), this.completeUserResultHelper())
-              })) 
-            })
-        ))) */
-  }
-
-  completeUserResultHelper() {
-    return new Observable(subscriber => {
-      this.userResult$.complete();
-      subscriber.complete();
-    });
-  }
-
-  openImportWindow(): void {
-    this.showImportWindow = true;
-  }
-
-  dropFile(ev: DragEvent): void {
-    ev.preventDefault();
-    this.selectedFile = undefined;
-
-    if (ev.dataTransfer && ev.dataTransfer.items) {
-      if (ev.dataTransfer.items.length === 1 && ev.dataTransfer.items[0].kind === "file") {
-        const file = ev.dataTransfer.items[0].getAsFile();
-
-        if (file) {
-          this.check(file);
-        } else {
-          // TODO: Error
-        }
-      } else {
-        // TODO: Error
-      }
-    }
-  }
-
-  preventDragOver(ev: Event): void {
-    ev.preventDefault();
-    this.dragOver = true;
-  }
-
-  clearSelection(): void {
-    this.dragOver = false;
-    this.selectedFile = undefined;
-    this.tempZip = undefined;
-  }
-
-  closeImportWindow(): void {
-    this.showImportWindow = false;
-  }
-
-  check(candidate: File): void {
-    this.userResult$ = new Subject();
-    this.tempZip = undefined;
-    this.checkInProgress = false;
-    this.lastCheck?.unsubscribe();
-    this.conflictDetected = false;
-
-    if (candidate.type !== 'application/zip') {
-      // TODO: Display error message
-      return;
-    }
-
-    this.selectedFile = candidate;
-
-    // TODO: Kriegt man das subscribe weg?
-    /* this.lastCheck = this.unpackCheckAndPossiblyImport(this.selectedFile).subscribe(() => {}, 
-      err => console.error(err), 
-      () => {
-        console.log("Import complete!");
-        this.ref.clear();
-        this.kickstartTreeGeneration();
-        this.checkInProgress = false;
-        this.conflictDetected = false;
-        this.showImportWindow = false;
-        this.tempZip = undefined;
-    });  */
-  }
-
-  fileInputChange(ev: Event) {
-    this.selectedFile = undefined;
-    const fileList = (ev.target as HTMLInputElement)?.files;
-
-    if (fileList?.[0]) {
-      this.check(fileList[0]);
-    } else {
-      // TODO: Error
-    }
-  }
-
-  preventBubbling(ev: Event): void {
-    ev.stopPropagation();
-  }
-
   ngOnDestroy(): void {
-    this.lastCheck?.unsubscribe();
     this.toggleSubscription?.unsubscribe();
     this.outsideClickSubscription?.unsubscribe();
   }

@@ -40,4 +40,9 @@ export namespace ExperienceAction {
         static readonly type = '[Experience] Reset availability for lesson';
         constructor(public exp: Experience) {}
     }
+
+    export class ChangeCurrent {
+        static readonly type = '[Experience] Change current experience';
+        constructor(public exp: Experience) {}
+    }
 }

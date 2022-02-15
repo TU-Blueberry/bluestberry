@@ -3,10 +3,8 @@ import { Actions, ofActionSuccessful, Store } from '@ngxs/store';
 import { from, fromEvent, Observable } from 'rxjs';
 import { filter, switchMap, take, tap } from 'rxjs/operators';
 import { AppState, AppStatus, AppStateModel } from 'src/app/app.state';
-import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { ZipService } from 'src/app/filesystem/zip/zip.service';
 import { ExperienceAction } from '../actions';
-import { ExperienceManagementService } from '../experience-management/experience-management.service';
 import { ExperienceState, ExperienceStateModel } from '../experience.state';
 import { Experience } from '../model/experience';
 import { saveAs } from 'file-saver';
@@ -31,7 +29,7 @@ export class ExperienceSelectionComponent implements OnInit {
   showSandboxDeletionDialog = false;
   sandboxToDelete?: Experience;
 
-  constructor(private zip: ZipService, private action$: Actions, private store: Store, private expManagementService: ExperienceManagementService, private ref: ElementRef, private fs: FilesystemService, private zone: NgZone) {
+  constructor(private zip: ZipService, private action$: Actions, private store: Store, private ref: ElementRef, private zone: NgZone) {
     // TODO: errors
     action$.pipe(
       ofActionSuccessful(ExperienceAction.Remove)
@@ -54,7 +52,6 @@ export class ExperienceSelectionComponent implements OnInit {
     }); 
   }
 
-
   ngOnInit(): void {
     this.zone.runOutsideAngular(() => {
       fromEvent(document, 'click').pipe(
@@ -70,15 +67,12 @@ export class ExperienceSelectionComponent implements OnInit {
   }
 
   export(exp: Experience, ev: Event): void {
-    console.log("export", exp)
-
     ev.stopPropagation();
     this.exporting = exp;
     this.zip.export(exp).pipe(
       take(1),
       switchMap(zip => from(zip.generateAsync({ type: "blob" })))
     ).subscribe(blob => {
-      console.log("got blobl", blob)
       saveAs(blob, exp.name);
       this.exporting = undefined;
       this.showOptions = false;
@@ -88,12 +82,10 @@ export class ExperienceSelectionComponent implements OnInit {
     }); 
   }
 
-  // TODO: Mount fehlt falls !== currentExp
-
   public onSelectChange(to: Experience) {
     this.showOptions = false;
-
-    if (to === this.selectedExperience) {
+    
+    if (to.uuid === this.selectedExperience.uuid) {
       return;
     }
 

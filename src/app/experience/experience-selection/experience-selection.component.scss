@@ -5,6 +5,9 @@ $padding: 15px;
 .select-arrow {
     width: 24px;
     height: 24px;
+    color: #0068b3;
+    margin-left: 5px;
+    margin-top: -2px;
 }
 
 .arrow {
@@ -14,8 +17,8 @@ $padding: 15px;
 }
 
 .main-text {
-    color: white;
-    margin-right: 10px;
+    margin-right: 5px;
+    font-weight: 600;
 }
 
 .plus {
@@ -26,19 +29,6 @@ $padding: 15px;
 
 #select-lesson {
     position: relative;
-}
-
-.main {
-    display: flex;
-    align-items: center;
-    background-color: #0068b3;
-    font-size: 0.9em;
-    padding: 5px 10px 5px 10px;
-    border-radius: 5px;
-
-    &:hover {
-        cursor: pointer;
-    }
 }
 
 .entry {
@@ -70,6 +60,7 @@ img {
 
 .entry-wrapper {
     background-color: #1f1f1f;
+    border: 1px solid #3e3e3e;
     border-radius: 5px;
     position: absolute;
     max-height: 700px;
@@ -84,9 +75,7 @@ img {
 }
 
 .current-selection {
-    display: flex;
-    align-items: center;
-    color: white;
+    color: lightgray;
 }
 
 .seperator {
@@ -97,7 +86,7 @@ img {
 hr {
     margin: 0px $margin 0px $margin;
     border: none;
-    height: 2px;
+    height: 1px;
     background: #8f8f8f;
     margin-top: $margin-small;
     margin-bottom: $margin-small;
@@ -121,6 +110,10 @@ hr {
 .empty, .content-description {
     color: #8f8f8f;
     font-size: 0.9em;
+}
+
+.content-heading, .arrow {
+    color: lightgray;
 }
 
 .content-description {

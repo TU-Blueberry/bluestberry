@@ -160,7 +160,7 @@ export class ExperienceManagementService {
       switchMap(zip => 
         concat(
           this.fsService.mount(lesson.uuid),
-          this.fsService.storeLesson(zip, lesson.uuid),
+          this.fsService.storeExperience(zip, lesson.uuid),
           this.fsService.sync(false),
           this.fsService.changeWorkingDirectory(`/${lesson.uuid}/${PyodideService.startFolderName}`),
           this.py.addToSysPath(lesson.uuid),

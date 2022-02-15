@@ -70,10 +70,10 @@ export class ExperienceService {
         const exp = exps.find(exp => exp.uuid === uuid);
         let available = false;
 
-        if (exp && exp.availableOffline) {
+        if (exp && exp.availableOffline && exp.availableOffline === true) {
           available = true;
         }
-
+        
         return of(available)
       })
     )
@@ -87,7 +87,7 @@ export class ExperienceService {
   //    ... oder in der UI separat anzeigen (z.B. "Experiences mit Problem")
   private fixMissingExperiences(exps: Experience[]): Observable<Experience[]> {
     const _exps = [...exps];
-    const paths = exps.map(exp => exp.uuid)
+    const paths = exps.map(exp => `/${exp.uuid}`)
 
     if (exps.length === 0) {
       return of([]);
@@ -98,12 +98,11 @@ export class ExperienceService {
       zip(..._exps.map(exp => this.conf.getConfigByExperience(exp)))
     ).pipe(
       switchMap(confs => {
-        const exps: Experience[] = confs.map(conf => ({ name: conf.name, uuid: conf.uuid, type: conf.type })) 
+        const exps: Experience[] = confs.map(conf => ({ name: conf.name, uuid: conf.uuid, type: conf.type, availableOffline: true })) 
 
-        return this.fs.unmountMany(paths).pipe(
-          switchMap(() => {
-            return of(exps);
-          })
+        return concat(
+          this.fs.unmountMany(paths),
+          of(exps)
         )
       })
     )
