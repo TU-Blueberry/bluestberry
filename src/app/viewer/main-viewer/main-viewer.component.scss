@@ -1,5 +1,11 @@
 $icon-size: 24px;
 
+#main-wrapper {
+  display: grid;
+  height: 100%;
+  width: 100%;
+}
+
 .svg-icon {
   width: $icon-size;
   height: $icon-size;
@@ -8,6 +14,10 @@ $icon-size: 24px;
 .monaco-editor {
   overflow: hidden;
   height: 100%;
+}
+
+#split-left, #split-terminal {
+  overflow-y: hidden;
 }
 
 /* über variablen berechnen? speichere in var wie breit die trenner + seitenleiste links ist */
@@ -49,6 +59,11 @@ $icon-size: 24px;
   width: 100%;
 }
 
+app-terminal-viewer {
+  height: 99%;
+  display: inherit;
+}
+
 :host {
   as-split {
     max-height: calc(100vh - 48px); // subtract height of navbar
@@ -64,7 +79,7 @@ $icon-size: 24px;
     }
 
     &.as-horizontal ::ng-deep .as-split-gutter .as-split-gutter-icon {
-      background-image: none !important; 
+      background-image: none !important;
 
       &:hover {
         cursor: col-resize;

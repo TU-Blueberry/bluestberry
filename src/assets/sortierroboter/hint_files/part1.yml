@@ -1,0 +1,70 @@
+
+
+- demo1:
+    question_id: 6001
+    following_answer_id: 6601
+    content: Demo Build
+
+- demoanswer1:
+    answer_id: 6601
+    question_options: []
+    content: "Hier ist eine Blaubeere:  img<bad_berry.jpg/> "
+    
+- demo2:
+    question_id: 6002
+    following_answer_id: 6602
+    content: Demo Links
+    
+- demoanswer2:
+    answer_id: 6602
+    question_options: []
+    content: "Frag google: link<www.google.de | Google ist Toll /> oder link<www.google.com/> "
+    
+- demo3:
+    question_id: 6003
+    following_answer_id: 6603
+    content: Demo code block (funktioniert noch nicht)
+
+- demoanswer3:
+    answer_id: 6603
+    question_options: []
+    content: |
+        Code: 
+        code<
+        for i in range(10):
+          print("hi")
+        />
+
+- demo4:
+    question_id: 6004
+    following_answer_id: 6604
+    content: Demo markdown 
+
+- demoanswer4:
+    answer_id: 6604
+    question_options: []
+    content: "markdown< $f(x) = \\int_{-\\infty}^\\infty \\hat f(\\xi) e^{2 \\pi i \\xi x} d\\xi$ />"
+
+    
+
+- demo5:
+    question_id: 6005
+    following_answer_id: 6605
+    content: Demo code inline 
+
+- demoanswer5:
+    answer_id: 6605
+    question_options: []
+    content: "Printe etwas mit codeinline< print('hi') /> " 
+
+    
+
+- demo6:
+    question_id: 6006
+    following_answer_id: 6606
+    content: Demo glossar links 
+
+- demoanswer6:
+    answer_id: 6606
+    question_options: []
+    content: "Ein Link zum Glossar: glossary<example.md/> und glossary<example.md | Beispiel/>"

@@ -63,4 +63,8 @@ export class ActionbarComponent implements OnInit {
     ev.stopPropagation();
     this.store.dispatch(new ImportAction.OpenImportWindow());
   }
+
+  startSimulation() {
+    this.uiEv.startSimulation();
+  }
 }

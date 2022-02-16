@@ -90,15 +90,14 @@
     </ng-container>
   </div>
 
-  <div class="hint-footer-bar">
-    <div class="hint-footer-bar-button" (click)="simpleUndo()">
+  <div class="footer-bar">
+    <div class="footer-bar-button" (click)="simpleUndo()">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="#000000"
         stroke-width="2"
         stroke-linecap="round"
         stroke="currentColor"
@@ -106,17 +105,17 @@
       >
         <polygon points="19 20 9 12 19 4 19 20"></polygon>
         <line x1="5" y1="19" x2="5" y2="5"></line>
+        <title>Einen Schritt zurück</title>
       </svg>
     </div>
 
-    <div class="hint-footer-bar-button" (click)="multiUndo()">
+    <div class="footer-bar-button" (click)="multiUndo()">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="#000000"
         stroke-width="2"
         stroke-linecap="round"
         stroke="currentColor"
@@ -124,6 +123,7 @@
       >
         <polygon points="11 19 2 12 11 5 11 19"></polygon>
         <polygon points="22 19 13 12 22 5 22 19"></polygon>
+        <title>3 Schritte zurück</title>
       </svg>
       <span
         style="
@@ -137,14 +137,13 @@
       >
     </div>
 
-    <div class="hint-footer-bar-button" (click)="reset()">
+    <div class="footer-bar-button" (click)="reset()">
       <svg
         xmlns="http://www.w3.org/2000/svg"
         width="24"
         height="24"
         viewBox="0 0 24 24"
         fill="none"
-        stroke="#000000"
         stroke-width="2"
         stroke-linecap="round"
         stroke="currentColor"
@@ -152,6 +151,7 @@
       >
         <path d="M2.5 2v6h6M21.5 22v-6h-6" />
         <path d="M22 11.5A10 10 0 0 0 3.2 7.2M2 12.5a10 10 0 0 0 18.8 4.2" />
+        <title>Vollständig zurücksetzen</title>
       </svg>
     </div>
   </div>

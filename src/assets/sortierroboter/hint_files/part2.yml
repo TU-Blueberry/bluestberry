@@ -1,0 +1,2535 @@
+- item200:
+    question_id: 200
+    following_answer_id: 200000
+    content: Ich brauche Hilfe bei der Visualisierung.
+
+- item200001:
+    answer_id: 200000
+    question_options: [200000,200041,200047]
+    content: |
+        Welche Fragen zur Visualisierung hast du?
+
+- item200002:
+    question_id: 200000
+    following_answer_id: 200001
+    content: Wie soll ich nach der Klassifizierung weiter machen?
+        
+- item200003:
+    answer_id: 200001 
+    question_options: [200001]
+    content: |
+        Du könntest die Ergebnisse der Klassifizierung interpretieren.
+       
+- item200004:
+    question_id: 200001
+    following_answer_id: 200002
+    content: Wie können Ergebnisse interpretiert werden?
+
+- item200005:
+    answer_id: 200002 
+    question_options: [200002]
+    content: |
+        Klassifizierungsergebnisse können mit Hilfe von Graphen visualisiert werden, welche man dann interpretieren kann.
+
+- item200006:
+    question_id: 200002
+    following_answer_id: 200003
+    content: Wie können Graphen mit Python visualisiert werden?
+    
+- item200007:
+    answer_id: 200003
+    question_options: [200004]
+    content: |
+        Nutze dafür Plotly. Eine Idee welche Graphen mit Plotly visualisiert werden können findest du hier:
+        <https://plotly.com/python/>
+        Falls du schon mit Dokumentationen umgehen kannst, kannst du auch den folgenden Link nutzen:
+        link<https://plotly.com/python-api-reference/plotly.express.html/>
+- item200008:
+    question_id: 200004
+    following_answer_id: 200005
+    content: Ich habe keine Idee, welche Graphen ich benutzen könnte
+    
+- item200009:
+    answer_id: 200005
+    question_options: [200006,200023]
+    content: |
+        Stelle die Ergebnisse zu Anfang in einem Linien- und Balkendiagramm dar.
+
+- item200010:
+    question_id: 200006
+    following_answer_id: 200007
+    content: Wie können Liniendiagramme mit Plotly dargestellt werden?
+    
+- item200011:
+    answer_id: 200007
+    question_options: [200008]
+    content: |
+        Ein Beispiellose für ein Liniendiagramm könnte wie folgt aussehen:
+        code<
+            import plotly.express as px
+            df = px.data.gapminder().query(„country=='Canada'")
+            fig = px.line(df, x="year", y="lifeExp", title='Life expectancy in Canada')
+            fig.show()
+        />
+        img<--Bild vom Liniendiagramm--/>
+
+- item200012:
+    question_id: 200008
+    following_answer_id: 200009
+    content: | 
+        Ich brauche mehr Erklärungen zu den Variablen:
+    
+- item200013:
+    answer_id: 200009
+    question_options: [200010]
+    content: |
+        x: definiert den Namen der x-Achse
+        y: definiert den Namen der y-Achse
+        title: Titel des Graphen
+        df: welche Daten sollen benutzt werde (hier: das Array aus der Klassifizierung)
+
+
+- item200014:
+    question_id: 200010
+    following_answer_id: 200011
+    content: Wie nutze ich die Ausgabe meiner Klassifizierung für df?
+    
+- item200015:
+    answer_id: 200011
+    question_options: [200012]
+    content: |
+        code<
+        import pandas as pd
+        df = pd.DataFrame(dict(
+                x = [1, 3, 2, 4],
+                y = [1, 2, 3, 4]
+        ))
+        />
+
+
+- item200016:
+    question_id: 200012
+    following_answer_id: 200013
+    content: Welche Variablen könnten mir noch nützlich sein?
+    
+- item200017:
+    answer_id: 200013
+    question_options: [200014]
+    content: |
+        color: Farbe in der die Linie dargestellt werden soll
+        markers=True: Auf den Linien werden noch zusätzlich Punkte zur besseren Lesbarkeit eingefügt
+
+
+- item200018:
+    question_id: 200014
+    following_answer_id: 200015
+    content: |
+        Ich möchte mehr als nur eine Linie im Diagramm sehen, um Ergebnisse zu vergleichen:
+    
+- item200019:
+    answer_id: 200015
+    question_options: [200016]
+    content: |
+        Um mehrere Linien in einem Diagramm darzustellen, könnte man die Funktion fig.add_trace() mit fig = go.Figure() nutzen.
+
+
+
+- item200020:
+    question_id: 200016
+    following_answer_id: 200017
+    content: |
+        Ich möchte mehr als nur eine Linie im Diagramm sehen, um Ergebnisse zu vergleichen:
+    
+- item200021:
+    answer_id: 200017
+    question_options: [200018]
+    content: |
+        Um mehrere Linien in einem Diagramm darzustellen, könnte man die Funktion fig.add_trace() mit fig = go.Figure() nutzen.
+
+
+
+- item200022:
+    question_id: 200018
+    following_answer_id: 200019
+    content: |
+        Ich benötige ein Beispiel dazu:
+    
+- item200023:
+    answer_id: 200019
+    question_options: [200020]
+    content: |
+        code<
+        fig = go.Figure()
+        fig.add_trace(go.Scatter(x=random_x, y=random_y0,
+                        mode='lines',
+                        name='lines'))
+        fig.add_trace(go.Scatter(x=random_x, y=random_y1,
+                        mode='lines+markers',
+                        name='lines+markers'))
+        fig.add_trace(go.Scatter(x=random_x, y=random_y2,
+                        mode='markers', name='markers'))
+
+        fig.show()
+        /> 
+        img<--Bild vom Liniendiagramm--/>
+
+
+- item200024:
+    question_id: 200021
+    following_answer_id: 200022
+    content: Ich möchte noch mehr zu Liniendiagrammen erfahren?
+    
+- item200025:
+    answer_id: 200022
+    question_options: []
+    content: |
+        Schau doch mal im Glossar unter link<--url--/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.line/> nach
+
+- item200026:
+    question_id: 200023
+    following_answer_id: 200024
+    content: Wie können Balkendiagramme mit Plotly dargestellt werden?
+    
+- item200027:
+    answer_id: 200024
+    question_options: [200025]
+    content: |
+        Ein Beispiellose für ein Balkendiagramm könnte wie folgt aussehen: 
+        code<
+        import plotly.express as px
+        data_canada = px.data.gapminder().query("country == 'Canada'")
+        fig = px.bar(data_canada, x='year', y='pop')
+        fig.show()
+        /> 
+        img<--Bild vom Balkendiagramm--/>
+
+
+- item200029:
+    question_id: 200025
+    following_answer_id: 200026
+    content: |
+        Ich brauche mehr Erklärungen zu den Variablen:
+
+    
+- item200030:
+    answer_id: 200026
+    question_options: [200027]
+    content: |
+        x: definiert den Namen der x-Achse 
+        y: definiert den Namen der y-Achse 
+        title: Titel des Graphen
+        df: welche Daten sollen benutzt werde
+
+
+- item200031:
+    question_id: 200027
+    following_answer_id: 200028
+    content: Wie nutze ich die Ausgabe meiner Klassifizierung für df?
+    
+- item200032:
+    answer_id: 200028
+    question_options: [200029]
+    content: |
+        code<
+        import pandas as pd
+        df = pd.DataFrame(dict(
+                x = [1, 3, 2, 4],
+                y = [1, 2, 3, 4]
+        ))
+        />
+
+
+- item200033:
+    question_id: 200029
+    following_answer_id: 200030
+    content: |
+        Ich möchte mehr als nur einen Balken im Diagramm sehen, um Ergebnisse zu vergleichen:
+
+    
+- item200034:
+    answer_id: 200030
+    question_options: [200031]
+    content: |
+        code<
+        import plotly.graph_objects as go
+        animals=['giraffes', 'orangutans', 'monkeys']
+
+        fig = go.Figure(data=[
+                go.Bar(name='SF Zoo', x=animals, y=[20, 14, 23]),
+                go.Bar(name='LA Zoo', x=animals, y=[12, 18, 29])
+        ])
+        # Change the bar mode
+        fig.update_layout(barmode='group')
+        fig.show()
+        />
+        img<--Bild vom Balkendiagramm--/>
+
+
+
+- item200035:
+    question_id: 200031
+    following_answer_id: 200040
+    content: Ich möchte noch mehr zu Balkendiagrammen erfahren?
+    
+- item200036:
+    answer_id: 200040
+    question_options: []
+    content: |
+        Schau doch mal im Glossar unter link<url/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.bar/> nach
+
+
+
+
+- item200037:
+    question_id: 41
+    following_answer_id: 42
+    content: Mein code zur Visualisierung gibt mir einen Error, ich weiß aber nicht warum?
+
+- item200038:
+    answer_id: 200042
+    question_options: [200043,200045]
+    content: |
+        Ist dein Problem vielleicht eins der folgenden?
+
+- item200039:
+    question_id: 200043
+    following_answer_id: 200044
+    content: |
+        NameError: name „“ is not defined
+
+- item200040:
+    answer_id: 200044
+    question_options: []
+    content: |
+        import plotly.express as px
+
+- item200041:
+    question_id: 200045
+    following_answer_id: 200046
+    content: |
+        Ich kann den Graphen nicht sehen:
+
+    
+- item200042:
+    answer_id: 200046
+    question_options: []
+    content: |
+        Um die Visualisierung zu sehen braucht es am Ende immer ein fig.show()
+
+- item200043:
+    question_id: 200047
+    following_answer_id: 200048
+    content: Ich möchte etwas zu Plotly erfahren.
+        
+- item200044:
+    answer_id: 200001 
+    question_options: [200006, 200023, 200050, 200057]
+    content: |
+        Was genau möchtest du wissen?
+
+
+- item200045:
+    question_id: 200050
+    following_answer_id: 200051
+    content: Wie können 3D Scatter Plots mit Plotly dargestellt werden?
+    
+- item200046:
+    answer_id: 200051
+    question_options: [200052]
+    content: |
+        code<
+        import plotly.express as px
+        df = Array mit Klassifizierungen
+        fig = px.scatter_3d(df, x='sepal_length', y='sepal_width', z=‚petal_width', color='species')
+        fig.show()
+
+        Color: name einer spalte in data_frame, oder pandas Serie oder array_like Objekt
+
+        fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z,
+                                    mode='markers')])
+        />
+        img<--Bild vom Scanner Plot--/>
+
+
+- item200046:
+    question_id: 200052
+    following_answer_id: 200053
+    content: |
+        Ich brauche mehr Erklärungen zu den Variablen:
+    
+- item200047:
+    answer_id: 200053
+    question_options: [200054]
+    content: |
+        x: definiert den Namen der x-Achse
+        y: definiert den Namen der y-Achse
+        z: definiert den Namen der z-Achse
+        color: Farbe in der die Punkte dargestellt werden soll
+        df: welche Daten sollen benutzt werden
+
+
+- item200048:
+    question_id: 200054
+    following_answer_id: 200055
+    content: Ich möchte noch mehr zu 3D Scatter Plots erfahren?
+    
+- item200049:
+    answer_id: 200056
+    question_options: []
+    content: |
+        Schau doch mal im Glossar unter link<url/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.scatter_3d/> nach.
+
+- item200050:
+    question_id: 200057
+    following_answer_id: 200058
+    content: Wo kann ich die Dokumentation zu Plotly finden?
+    
+- item200051:
+    answer_id: 200058
+    question_options: []
+    content: |
+        Eine Idee welche Graphen mit Plotly visualisiert werden können findest du hier: 
+        link <https://plotly.com/python/>
+        Falls du schon mit Dokumentationen umgehen kannst, kannst du auch den folgenden Link nutzen:
+        link<https://plotly.com/python-api-reference/plotly.express.html/>
+
+- item100001:
+    answer_id: 100000
+    question_options: [100000]
+    content: |
+        Willkommen. Welche Fragen hast du?
+
+- item100002:
+    question_id: 100000
+    following_answer_id: 100001
+    content: |
+        Ich brauche Hilfe beim Laden der Bilder.
+
+- item100003:
+    answer_id: 100001
+    question_options: [100001, 100002, 100003, 100004, 100005, 100011]
+    content: |
+        Wobei genau brauchst du Hilfe?
+
+- item100004:
+    question_id: 100001
+    following_answer_id: 100002
+    content: |
+        Was soll die Funktion load_images() machen?
+
+- item100005:
+    answer_id: 100002
+    question_options: [100002, 100003, 100004, 100005]
+    content: |
+        Die Funktion load_images soll zunächst jedes Bild in ein Numpy Array umwandeln und diese Arrays in der Liste samples speichern. In der gleichen Reihenfolge sollen die entsprechenden Label in der Liste labels gespeichert werden.
+
+- item100006:
+    question_id: 100002
+    following_answer_id: 100003
+    content: |
+        Wieso ist die Funktion load_images() notwendig?
+
+- item100007:
+    answer_id: 100003
+    question_options: [100001, 100003, 100004, 100005]
+    content: |
+        Die Daten für dieses Projekt wurden in Form von Bildern erhoben. Um diese Daten in den nächsten Schritten sinnvoll verarbeiten zu können, müssen diese Bilder mittels Python eingelesen und in Numpy Arrays umgewandelt werden.
+
+- item100008:
+    question_id: 100003
+    following_answer_id: 100004
+    content: |
+        Welche Bedeutung haben die Label?
+
+- item100009:
+    answer_id: 104
+    question_options: [100001, 100002, 100004, 100005]
+    content: |
+        Das Label gibt an, ob die Blaubeere auf dem Bild gut oder schlecht ist.
+
+- item100010:
+    question_id: 100004
+    following_answer_id: 100005
+    content: |
+        Wie komme ich an die Dateinamen?
+
+- item100011:
+    answer_id: 100005
+    question_options: [100001, 100002, 100003, 100005]
+    content: |
+        Die For-Schleife läuft bereits über jedes Bild und lässt die Variable file den entsprechenden Dateinamen annehmen.
+
+- item100012:
+    question_id: 100005
+    following_answer_id: 100006
+    content: |
+        Wie kann ich ein Bild in ein Numpy-Array umwandeln?
+
+- item100013:
+    answer_id: 100006
+    question_options: [100008, 100007]
+    content: |
+        Mithilfe einer Funktion aus dem Paket skimage können nun die Bilder in Numpy Arrays umgewandelt werden. Versuche die Funktion in der offiziellen Dokumentation des Pakets zu finden: link<https://scikit-image.org/docs/dev/api/skimage.io.html/>
+
+- item100014:
+    question_id: 100006
+    following_answer_id: 100007
+    content: |
+        Wie heißt die Funktion?
+
+- item100015:
+    answer_id: 107
+    question_options: [100007, 100008]
+    content: |
+        Die benötigte Funktion aus dem Paket skimage heißt imread(fname).
+
+- item100000016:
+    question_id: 100007
+    following_answer_id: 100001
+    content: |
+        Ich brauche bei etwas anderem in der Funktion Hilfe.
+
+- item100017:
+    question_id: 100008
+    following_answer_id: 100008
+    content: |
+        Ich habe Probleme beim Aufrufen der Funktion.
+
+- item100018:
+    answer_id: 100008
+    question_options: [100007, 100009, 110000]
+    content: |
+        Achte auf das zu übergebende Argument. Da die Bilder in einem anderen Ordner liegen als dein Skript, reicht der Dateiname der Variable file nicht aus.
+
+- item100019:
+    question_id: 100009
+    following_answer_id: 100009
+    content: |
+        Zeig mir bitte wie die Funktion richtig aufgerufen wird.
+
+- item100020:
+    answer_id: 100009
+    question_options: [100007, 100010]
+    content: |
+        Die folgende Zeile nutzt die imread Funktion um Bilder in Numpy Arrays umzuwandeln:
+        code<res = io.imread(path + file)/>
+        Als Argument wird der Pfad des Ordners der Bilder mit den Dateinamen konkateniert.
+        Das zurückgegebene Array wird in der Variable res gespeichert.
+
+- item100021:
+    question_id: 100010
+    following_answer_id: 100010
+    content: |
+        Was muss ich mit dem zurückgegebenen Wert machen?
+
+- item100022:
+    answer_id: 100009
+    question_options: [100007, 100008]
+    content: |
+        Da res in der nächsten Iteration der Schleife von dem nächsten Bild überschrieben wird, sollte der Inhalt nun an die samples Liste angehängt werden.
+
+- item100023:
+    question_id: 100011
+    following_answer_id: 100011
+    content: |
+        Wie kann ich die Label entscheiden?
+
+- item100024:
+    answer_id: 100011
+    question_options: [100007, 100012]
+    content: |
+        Die Dateinamen der Bilder sind sehr aussagekräftig.
+
+- item100025:
+    question_id: 100012
+    following_answer_id: 100012
+    content: |
+        Das hilft mir nicht weiter.
+
+- item100026:
+    answer_id: 100012
+    question_options: [100007, 100013]
+    content: |
+        Gute Blaubeeren haben ein 'good' im Dateinamen und schlechte Blaubeeren ein 'bad'.
+
+- item100027:
+    question_id: 100013
+    following_answer_id: 100013
+    content: |
+        Wie kann ich prüfen ob der Dateiname 'good' oder 'bad' enthält?
+
+- item100028:
+    answer_id: 100013
+    question_options: [100007, 100014]
+    content: |
+        Mit der Struktur codeinline<if substring in string:/> kannst du überprüfen, ob sich der Substring in dem String befindet und gegebenenfalls Operationen ausführen.
+
+- item100029:
+    question_id: 100014
+    following_answer_id: 100014
+    content: |
+        Wie genau wird das in diesem Fall angewendet?
+
+- item100030:
+    answer_id: 100014
+    question_options: [100007]
+    content: |
+        code<if 'good' in file:
+                labels.append(1)/>
+        Wenn der Substring 'good' im Dateinamen gefunden wird, dann wird der Liste mit den Labeln repräsentativ für die Klasse der guten Beeren eine 1 hinzugefügt.
+        Ein ähnlicher Check muss nun für die schlechten Beeren durchgeführt werden.
+
+
+- item100031:
+    answer_id: 100015
+    question_options: [100015, 100016]
+    content: |
+        Willkommen. Welche Fragen hast du?
+
+- item100032:
+    question_id: 100015
+    following_answer_id: 100016
+    content: |
+        Wofür brauche ich Metriken?
+
+- item100033:
+    answer_id: 100016
+    question_options: [100016]
+    content: |
+        Metriken helfen bei der Beurteilung von Klassifikatoren. Je nach Anforderung an einen Klassifikator sollte man bei der Bewertung mehrere verschiedene Metriken berücksichtigen.
+
+- item100034:
+    question_id: 100016
+    following_answer_id: 100017
+    content: |
+        Womit sollte ich starten?
+
+- item100035:
+    answer_id: 100017
+    question_options: [100017, 100018, 100024]
+    content: |
+        Die Basis vieler Metriken ist die Einteilung der Klassifikationen in die Klassen True Positive, False Positive, True Negative und False Negative. Bei binären Klassifikationen bilden diese vier Werte bilden die sogenannte Konfusionsmatrix.
+
+- item100036:
+    question_id: 100017
+    following_answer_id: 100018
+    content: |
+        Erzähl mir mehr darüber.
+
+- item100037:
+    answer_id: 100018
+    question_options: [100018, 100024]
+    content: |
+        True Positive beschreibt die Klassifikationen, die als Positiv (oder in diesem Projekt als gute Blaubeeren) klassifiziert werden, welche tatsächlich als Positiv gelabelt sind.
+        False Positive beschreibt die Klassifikationen, die als Positiv (oder in diesem Projekt als gute Blaubeeren) klassifiziert werden, welche aber als Negativ gelabelt sind.
+        True Negative beschreibt die Klassifikationen, die als Negativ (oder in diesem Projekt als schlechte Blaubeeren) klassifiziert werden, welche tatsächlich als Negativ gelabelt sind.
+        False Negative beschreibt die Klassifikationen, die als Negativ (oder in diesem Projekt als schlechte Blaubeeren) klassifiziert werden, welche aber als Positiv gelabelt sind.
+
+- item100038:
+    question_id: 100018
+    following_answer_id: 100019
+    content: |
+        Wie kann ich die Konfusionsmatrix berechnen?
+
+- item100039:
+    answer_id: 100019
+    question_options: [100019, 100019]
+    content: |
+        Diese Einteilung muss nicht manuell gemacht werden, sondern kann mithilfe einer Funktion aus dem Paket metrics erstellt werden. Die Dokumentation des Paketes ist unter diesem Link zu finden: link<https://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics/>
+
+- item100040:
+    question_id: 100019
+    following_answer_id: 100020
+    content: |
+        Welche Funktion soll ich zur Berechnung der Konfusionsmatrix nutzen?
+
+- item100041:
+    answer_id: 100020
+    question_options: [100020, 100024]
+    content: |
+        Benutze zur Berechnung der Konfusionsmatrix die Funktion confusion_matrix() aus dem Paket metrics. Die Dokumentation des Paketes ist unter diesem Link zu finden: link<https://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics/>
+
+- item100042:
+    question_id: 100020
+    following_answer_id: 100021
+    content: |
+        Die Funktion nimmt eine Vielzahl an Argumenten. Muss ich alle übergeben?
+
+- item100043:
+    answer_id: 100021
+    question_options: [100021, 100024]
+    content: |
+        Für unser Projekt reicht es zunächst, wenn nur die Argumente für die Parameter y_true und y_pred übergeben werden.
+
+- item100044:
+    question_id: 100021
+    following_answer_id: 100022
+    content: |
+        Ich weiß nicht was ich für y_pred und y_true übergeben soll.
+
+- item100045:
+    answer_id: 100022
+    question_options: [100022, 100024]
+    content: |
+        Übergebe in y_true die korrekten Label und in y_pred, die vom Klassifikator bestimmten Label.
+
+- item100046:
+    question_id: 100022
+    following_answer_id: 100023
+    content: |
+        Zeig mir bitte, wie man die Konfusionsmatrix berechnet.
+
+- item100047:
+    answer_id: 100023
+    question_options: [100023, 100024]
+    content: |
+        Folgende Zeile berechnet die Konfusionsmatrix: codeinline<metrics.confusion_matrix(y, predictions)/>
+
+- item100048:
+    question_id: 100023
+    following_answer_id: 100024
+    content: |
+        Wie kann ich auf die einzelnen Werte der Matrix zugreifen?
+
+- item100049:
+    answer_id: 100024
+    question_options: [100024]
+    content: |
+        Um leicht verständlich auf die enthaltenen Werte zuzugreifen können diese direkt mit der Funktion ravel() extrahiert werden: codeinline<tn, fp, fn, tp = metrics.confusion_matrix(y, predictions).ravel()/>
+
+- item100050:
+    question_id: 100024
+    following_answer_id: 100025
+    content: |
+        Welche weiteren Metriken sind für uns nützlich?
+
+- item100051:
+    answer_id: 100025
+    question_options: [100025, 100028, 100030]
+    content: |
+        Mit den Werten der Konfusionsmatrix lassen sich weitere nützliche Metriken berechnen. Die grundlegenden Metriken mit denen du dich vertraut machen solltest sind die Accuracy, die Precision, der Recall und der F1-Score.
+
+- item100052:
+    question_id: 100025
+    following_answer_id: 100026
+    content: |
+        Was ist die Accuracy?
+
+- item100053:
+    answer_id: 100026
+    question_options: [100026, 100028, 100030]
+    content: |
+        Die Accuracy beschreibt den Anteil der Samples, die korrekt klassifiziert wurden.
+
+- item100054:
+    question_id: 100026
+    following_answer_id: 100027
+    content: |
+        Wie wird die Accuracy berechnet?
+
+- item100055:
+    answer_id: 100027
+    question_options: [100027, 100028, 100030]
+    content: |
+        Sie kann entweder mit dieser Formel berechnet werden: markdown<$accuracy = \frac{TruePositive+TrueNegative}{TruePositive+FalsePositive+TrueNegative+FalseNegative}$/> oder durch die entsprechende Funktion des metrics Pakets. Die Dokumentation des Paketes ist unter diesem Link zu finden: link<https://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics/>
+
+- item100056:
+    question_id: 100027
+    following_answer_id: 100028
+    content: |
+        Zeig mir wie die Accuracy berechnet wird.
+
+- item100057:
+    answer_id: 100028
+    question_options: [100028, 100030]
+    content: |
+        Benutze folgende Zeile um die Accuracy zu berechnen: codeinline<accuracy = metrics.accuracy_score(y, predictions)/>
+
+- item100058:
+    question_id: 100028
+    following_answer_id: 100029
+    content: |
+        Was sind Precision und Recall?
+
+- item100059:
+    answer_id: 100029
+    question_options: [100029, 100025, 100030]
+    content: |
+        Die Precision berechnet den Anteil der positiv klassifizierten Samples, welche tatsächlich Positiv sind. Der Recall berechnet welcher Anteil der tatsächlich Positiven Samples korrekt als Positiv klassifiziert werden.
+
+- item100060:
+    question_id: 100029
+    following_answer_id: 100030
+    content: |
+        Wie werden Precision und Recall berechnet?
+
+- item100061:
+    answer_id: 100030
+    question_options: [100030, 100025, 100033, 100034]
+    content: |
+        Beide Metriken lassen sich mit wenig Aufwand aus den Werten der Konfusionsmatrix berechnen, oder mit den entsprechenden Funktionen des metrics Pakets. Die Dokumentation des Paketes ist unter diesem Link zu finden: link<https://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics/>
+
+- item100062:
+    question_id: 100030
+    following_answer_id: 100031
+    content: |
+        Was ist der F1-Score?
+
+- item100063:
+    answer_id: 100031
+    question_options: [100031, 100028, 100025]
+    content: |
+        Der F1-Score ist eine sehr beliebte Metrik zur Evaluierung eines Klassifikators.
+
+- item100064:
+    question_id: 100031
+    following_answer_id: 100032
+    content: |
+        Wie wird der F1-Score berechnet?
+
+- item100065:
+    answer_id: 100032
+    question_options: [100025, 100028]
+    content: |
+        Er berechnet sich als harmonisches Mittel aus der Precision und dem Recall. markdown< $F1 = 2*\frac{precision*recall}{precision+recall}$/> Du kannst ihn außerdem mit der entsprechenden Funktion aus dem metrics Paket berechnen. Die Dokumentation des Paketes ist unter diesem Link zu finden: link<https://scikit-learn.org/stable/modules/classes.html#module-sklearn.metrics/>
+
+- item100066:
+    question_id: 100032
+    following_answer_id: 100015
+    content: |
+        Ich brauche bei etwas anderem Hilfe
+
+- item100067:
+    question_id: 100033
+    following_answer_id: 100033
+    content: |
+        Wie berechne ich den Recall aus den Werten der Konfusionsmatrix?
+    
+- item100068:
+    answer_id: 100033
+    question_options: [100030, 100025, 100034]
+    content: |
+        markdown<recall = \frac{TruePositive}{TruePositive+FalseNegative}/>
+    
+- item100069:
+    question_id: 100034
+    following_answer_id: 100034
+    content: |
+        Wie berechne ich die Precision aus den Werten der Konfusionsmatrix?
+    
+- item100070:
+    answer_id: 100034
+    question_options: [100030, 100025, 100033]
+    content: |
+        markdown<precision = \frac{TruePositive}{TruePositive+FalsePositive}/>
+
+- item300001:
+    question_id: 300001
+    following_answer_id: 300001
+    content: |
+      Ich möchte etwas über Merkmalsextraktion erfahren.
+- item300002:
+    question_id: 300002
+    following_answer_id: 300002
+    content: |
+      Was bringen mir diese Merkmale?
+- item300003:
+    question_id: 300003
+    following_answer_id: 300003
+    content: |
+      Was sind Beispiele für solche Merkmale für dieses Problem?
+- item300004:
+    question_id: 300004
+    following_answer_id: 300004
+    content: Was gibt es für einfache Methoden?
+- item300005:
+    question_id: 300005
+    following_answer_id: 300024
+    content: Was gibt es für fortgeschrittene Methoden?
+- item300006:
+    question_id: 300006
+    following_answer_id: 300025
+    content: Was gibt es für schwierige Methoden?
+- item300007:
+    question_id: 300007
+    following_answer_id: 300007
+    content: |
+      Welche Merkmale sollte ich nutzen?
+- item300008:
+    question_id: 300008
+    following_answer_id: 300008
+    content: |
+      Was sind Histogramme?
+- item300009:
+    question_id: 300009
+    following_answer_id: 300009
+    content: |
+      Wie nutze ich Histogramme für Bilder?
+- item300010:
+    question_id: 300011
+    following_answer_id: 300011
+    content: |
+      Wie sieht ein Code-Beispiel dafür aus?
+- item300011:
+    question_id: 300012
+    following_answer_id: 300012
+    content: |
+      Wie sieht ein graphisches Beispiel dafür aus?
+- item300012:
+    question_id: 300013
+    following_answer_id: 300013
+    content: |
+      Welche Parameter kann ich für die Methode nutzen?
+- item300013:
+    question_id: 300014
+    following_answer_id: 300014
+    content: |
+      In welchem Format muss input sein?
+- item300014:
+    question_id: 300015
+    following_answer_id: 300015
+    content: |
+      Was bewirkt der Parameter bins?
+- item300015:
+    question_id: 300016
+    following_answer_id: 300016
+    content: |
+      Auf welchen Wert sollte ich Bins setzen?
+- item300016:
+    question_id: 300017
+    following_answer_id: 300017
+    content: |
+      Was bringt mir der Parameter range?
+- item300017:
+    question_id: 300018
+    following_answer_id: 300018
+    content: |
+      Wo finde ich die Dokumentation für Histogramme?
+- item300018:
+    question_id: 300010
+    following_answer_id: 300010
+    content: |
+      Wie kann ich mir die Histogramme anzeigen lassen?
+- item300019:
+    question_id: 300019
+    following_answer_id: 300999
+    content: |
+      Ich möchte mir selbst ein Histogramm aus einem Balkendiagramm zusammenbauen. (Hilfe)
+- item300020:
+    question_id: 300020
+    following_answer_id: 300020
+    content: |
+      Ich möchte nutzbaren Code haben.
+- item300021:
+    question_id: 300021
+    following_answer_id: 300021
+    content: |
+      Ich habe das Histogramm schon erzeugt.
+- item300022:
+    question_id: 300022
+    following_answer_id: 300022
+    content: |
+      Ich habe das Histogramm noch nicht erzeugt.
+- item300023:
+    question_id: 300023
+    following_answer_id: 300023
+    content: |
+      Wieso sollte ich Histogramme nutzen?
+- item300024:
+    answer_id: 300001
+    question_options: [300002, 300003]
+    content: |
+      Merkmalsextraktion beschäftigt sich mit der Extraktion sogenannter "high-level features" (also "höher" als Rohdaten) von Daten, beispielsweise die Form eines Bildes anstatt das Bild selbst.
+- item300025:
+    answer_id: 300002
+    question_options: []
+    content: |
+      Oftmals wird dadurch der Datensatz kleiner, glossar<Overfitting/> wird reduziert und für klassische Klassifikatoren wird eine höhere Genauigkeit erreicht.
+- item300026:
+    answer_id: 300003
+    question_options: []
+    content: |
+      Für das Problem der Blueberrys gibt es einige Methoden, die du testen könntest, wie z.B. Histogramme oder PCA. Wir haben die Methoden nach einfach, mittel und fortgeschritten aufgrund des Implementierungsaufwands und Schwierigkeit des Verständnis aufgeteilt.
+- item300027:
+    answer_id: 300004
+    question_options: [300008]
+    content: |
+      Zu den einfachen Methoden der Merkmalsextaktion gehören Histogramme und Patches.
+- item300028:
+    answer_id: 300008
+    question_options: [300009, 300012, 300011]
+    content: |
+      Histogramme unterteilen Werte in Klassen (Buckets) und stellen eine Häufigkeitsverteilung dar. In einem sehr dunklem Bild wären z.B. die niedrigen Grauwerte stark vertreten.
+- item300029:
+    answer_id: 300009
+    question_options: [300013, 300018]
+    content: |
+      Du kannst dafür die Methode codeinline<numpy.histogram(input, bins=10, range=None)/> nutzen.
+- item300030:
+    answer_id: 300011
+    question_options: []
+    content: |
+      code<
+      # wähle den Grün-Anteil
+      image_g = image[:,:,1]
+      # das Histogramm des Bildes mit 2 Klassen (bins)
+      # lege die Grenzen innerhalb von 0 und 255
+      # (d.h. die zwei Klassen sind 0 bis 127 und 128 bis 255)
+      np.histogram(image_g, bins=2, range=(0,255))
+      />
+- item300031:
+    answer_id: 300012
+    question_options: []
+    content: |
+      img<resources/feature_extraction/histogram_example.png/>
+- item300032:
+    answer_id: 300013
+    question_options: [300014, 300015, 300016, 300017]
+    content: |
+      Die wichtigsten Parameter sind input, bins und range. Darüber hinaus gibt es noch die Parameter weights und density.
+- item300033:
+    answer_id: 300014
+    question_options: []
+    content: |
+      Am besten sollte input im Format eines Numpy-Arrays sein. Das darf auch im 2D-Format sein.
+- item300034:
+    answer_id: 300015
+    question_options: []
+    content: |
+      Der Parameter bins legt, wenn du einen int übergibst, die Anzahl der Klassen fest. Du kannst aber auch eine Liste oder ein Numpy-Array übergeben, das die Grenzen direkt angibt.
+- item300035:
+    answer_id: 300016
+    question_options: []
+    content: |
+      Werte von 8 oder 16 bieten sich bei Bildern an. Du kannst aber auch den Wert automatisch mit bins="auto" festlegen.
+- item300036:
+    answer_id: 300017
+    question_options: []
+    content: |
+      Der Parameter range legt die untere und obere Grenze fest, mit dem das Histogramm erstellt werden soll. Für Bilder sollte range=(0,255) genutzt werden. Standardmäßig ist range auf den minimalen und maximalen Wert der Eingabe gesetzt.
+- item300037:
+    answer_id: 300018
+    question_options: []
+    content: |
+      Du findest sie unter: link<https://numpy.org/doc/stable/reference/generated/numpy.histogram.html>
+- item300038:
+    answer_id: 300010
+    question_options: [300019, 300020]
+    content: |
+      Schau dir dafür Balkendiagramme in der Hilfe an. Alternativ kannst du hier auch direkt den Code kopieren und anpassen.
+- item300039:
+    answer_id: 300020
+    question_options: [300021, 300022]
+    content: |
+      Dann hast du zwei Optionen. Entweder hast du direkt schon das Histogramm erzeugt oder möchtest aus den Eingabedaten ein Histogramm und dessen Graph erzeugen.
+- item300040:
+    answer_id: 300021
+    question_options: []
+    content: |
+      Du kannst mit folgendem Code ein erzeugtes Diagramm anzeigen lassen. bin_eges sind die Grenzen der Klassen und normalerweise möchtest du dir die Breite der Balken als Breite der Klassen anzeigen lassen, die du über bin_size steuern kannst.
+      code<
+      hist,bin_edges = np.histogram(...)
+      fig = go.Figure([go.Bar(x=bin_edges, y=hist, width=bin_size)])
+      fig.show()
+      />
+- item300041:
+    answer_id: 300022
+    question_options: []
+    content: |
+      Dann kannst du plotly.express.histogram nutzen. Die Eingabe muss 1-dimensional sein, deswegen ruf davor data.reshape(-1) auf.
+      code<
+      fig = px.histogram(data)
+      />
+- item300042:
+    answer_id: 300023
+    question_options: []
+    content: |
+      Histogramme bieten sich deswegen an, da nicht alle Pixel und alle Pixelwerte die gleiche Aussagekraft haben. Z.B. sind wir bei der Unterscheidung von Blut und Wasser an anderen Farbreichweiten interessiert.
+- item300043:
+    answer_id: 300024
+    question_options: [300024]
+    content: Zu den fortgeschrittenen Methoden zählt z.B. die PCA.
+- item300044:
+    question_id: 300024
+    following_answer_id: 300036
+    content: Was ist eine PCA?
+- item300045:
+    question_id: 300025
+    following_answer_id: ''
+    content: Wie nutze ich die PCA?
+- item300046:
+    question_id: 300026
+    following_answer_id: ''
+    content: Was bringt mir dieses Verfahren?
+- item300047:
+    question_id: 300027
+    following_answer_id: ''
+    content: Was ist die Fourier-Transformation?
+- item300048:
+    question_id: 300028
+    following_answer_id: 300025
+    content: Wie nutze ich die Fourier-Transformation?
+- item300049:
+    answer_id: 300025
+    question_options: [300030, 300031]
+    content: Du kannst dafür von scipy.fft fft2 für ein 2D-Bild bzw. fftn für ein
+      Bild mit Farbkanälen nutzen.
+- item300050:
+    answer_id: 300026
+    question_options: [300028]
+    content: Die Fourier-Transformation (FT) interpretiert die Eingabe als eine Summe
+      von Wellen und überführt sie in ein Spektrum.
+- item300051:
+    question_id: 300029
+    following_answer_id: 300035
+    content: Was bringt mir die Fourier-Transformation?
+- item300052:
+    answer_id: 300027
+    question_options: []
+    content: Mit der FT kannst du hohe Frequenzen aus dem Bild filtern, die z.B. Rauschen
+      im Bild repräsentieren. Du kannst auch andere Filter auf das Bild anwenden.
+- item300053:
+    answer_id: 300028
+    question_options: [300027]
+    content: Zu den schwierigen Methoden zählt z.B. die Fourier-Transformation.
+- item300054:
+    question_id: 300030
+    following_answer_id: 300029
+    content: Wie sieht der Code konkret dafür aus?
+- item300055:
+    question_id: 300031
+    following_answer_id: 300030
+    content: Was ist die Ausgabe von fft, fft2 und fftn?
+- item300056:
+    question_id: 300032
+    following_answer_id: ''
+    content: Was kann ich mit den komplexen Zahlen anfangen?
+- item300057:
+    question_id: 300033
+    following_answer_id: ''
+    content: Was sind komplexe Zahlen?
+- item300058:
+    question_id: 300034
+    following_answer_id: ''
+    content: Wie kann ich sie mir geometrisch vorstellen?
+- item300059:
+    answer_id: 300029
+    question_options: [300035]
+    content: code<fft2(image[:,:,channel]).flatten()> oder code<fftn(image, axis=[0,1])>
+- item300060:
+    answer_id: 300030
+    question_options: [300033, 300034]
+    content: Die Ausgabe von fft2 bzw. fftn ist ein Array von komplexen Zahlen.
+- item300061:
+    question_id: 300035
+    following_answer_id: ''
+    content: Was macht der Parameter axis und wieso axis=[0,1]?
+- item300062:
+    answer_id: 300031
+    question_options: []
+    content: Der Parameter axis bestimmt, in welchen Dimensionen die Fourier-Transformation
+      angewandt werden soll. Für alle drei Dimensionen (Höhe, Breite und RGB) nutze
+      axis=[0,1,2].
+- item300063:
+    answer_id: 300032
+    question_options: []
+    content: (geometrische Darstellung von komplexen Zahlen)
+- item300064:
+    answer_id: 300033
+    question_options: []
+    content: In den meisten Fällen werden sie für den Betrag genutzt.
+- item300065:
+    question_id: 300036
+    following_answer_id: ''
+    content: Wie berechne ich den Betrag der komplexen Zahlen?
+- item300066:
+    answer_id: 300034
+    question_options: []
+    content: Du kannst dafür code<np.abs(x)> vom numpy-Packet nutzen.
+- item300067:
+    answer_id: 300035
+    question_options: []
+    content: Mit der Fourier-Transformation können sowohl hohe und niedrige Frequenzen
+      herausgefiltert werden, als auch das Frequenzspektrum analysiert werden. In
+      diesem Fall kannst du die Ergebnisse auch als Merkmale nutzen.
+- item300068:
+    answer_id: 300036
+    question_options: [300025, 300037, 300026]
+    content: Eine PCA zielt darauf ab, die Dimensionen der Eingabe zu reduzieren.
+- item300069:
+    question_id: 300037
+    following_answer_id: ''
+    content: Wie funktioniert die PCA genau?
+- item300070:
+    question_id: 300038
+    following_answer_id: ''
+    content: Was nimmt die PCA als Parameter?
+- item300071:
+    answer_id: 300037
+    question_options: []
+    content: |-
+      Du kannst PCA mit dem Packet code<sklearn.decomposition.PCA> nutzen. Rufe dafür folgenden Code auf:
+      code<from sklearn.decomposition import PCA>
+- item300072:
+    question_id: 300039
+    following_answer_id: ''
+    content: Wie transformiere ich die Daten mit der PCA?
+- item300073:
+    answer_id: 300038
+    question_options: []
+    content: Der wichtigste Parameter für die PCA ist n_components.
+- item300074:
+    question_id: 300040
+    following_answer_id: ''
+    content: Welche Werte funktionieren gut mit der PCA?
+- item300075:
+    answer_id: 300039
+    question_options: []
+    content: Es gibt verschiedene Ansätze dafür. Entweder probierst du verschiedene
+      Werte aus und wertest die Ergebnisse auf einem Validationsdatensatz aus, bestimmst
+      die Anzahl an Dimensionen mithilfe der erklärten Varianz oder lässt sklearn
+      eine Anazhl an Komponenten auswählen.
+- item300076:
+    question_id: 300041
+    following_answer_id: ''
+    content: Wie bestimme ich die Anzahl an Komponenten mithilfe der erklärten Varianz?
+- item300077:
+    question_id: 300042
+    following_answer_id: ''
+    content: Was ist die erklärte Varianz?
+- item300078:
+    question_id: 300043
+    following_answer_id: ''
+    content: Wie lasse ich sklearn automatisch die Anzahl an Komponenten bestimmen?
+- item300079:
+    answer_id: 300040
+    question_options: []
+    content: Die erklärte Varianz beschreibt, wie viel Varianz durch die von der PCA
+      erzeugten Komponenten beschrieben wird. Wird z.B. eine Eingabe mit 5 Dimensionen
+      transformiert, dann könnten die ersten beiden Komponenten der PCA 90% der Varianz
+      beschreiben.
+- item300080:
+    answer_id: 300041
+    question_options: []
+    content: Wenn du code<pca = PCA(...)> genutzt hast, dann kannst du die Varianz
+      der einzelnen Komponenten mithilfe von pca.explained_variance_ratio_ erfahren.
+- item300081:
+    question_id: 300044
+    following_answer_id: ''
+    content: Wie erfahre ich die Varianz der einzelnen Komponenten?
+- item300082:
+    question_id: 300045
+    following_answer_id: ''
+    content: Und wie bestimme ich die Anzahl der Komponenten damit?
+- item300083:
+    answer_id: 300042
+    question_options: []
+    content: Normalerweise soll die PCA etwa 90-95% der Varianz abdecken. Dies kann
+      aber auch stark vom Problem und von der Klassifikationsmethode abhängen.
+
+- item400001:
+    question_id: 400000
+    following_answer_id: 400001
+    content: Was ist ein Klassifikator?    
+
+- item400002:
+    answer_id: 400001 
+    question_options: [400001]
+    content: |
+        Ein Klassifikator ist ein Verfahren zur Einteilung von Objekten oder Situationen in verschiedene Klassen. Hier in diesem Beispiel wird der Klassifikator eingesetzt, um gute Blaubeeren von schlechten Blaubeeren zu unterscheiden, das heißt die Einteilung der Blaubeeren in die Klassen „gut“ und „schlecht“.
+
+- item400003:
+    question_id: 400001
+    following_answer_id: 400002
+    content:  Welche Klassifikatoren gibt es?
+
+- item400004:
+    answer_id: 400002
+    question_options: [400002, 400003]
+    content: |
+        Es gibt viele Klassifikatoren, einige Beispiele sind Random Forests, Neuronale Netze, Support Vector Machines oder auch Clusteringverfahren. 
+
+- item400005:
+    question_id: 400002
+    following_answer_id: 400003
+    content: |
+        Ich möchte mehr darüber erfahren.
+
+- item400006:
+    answer_id: 400003
+    question_options: []
+    content: |
+        Dann sieh dir gerne diese Seiten an: link< https://deacademic.com/dic.nsf/dewiki/772371/Klassifikator_(Informatik)/>.
+
+- item400007:
+    question_id: 400003
+    following_answer_id: 400004
+    content: |
+        Ich brauche Hilfe bei der Methode codeinline<hyperparameters_search/>.
+
+- item400008:
+    answer_id: 400004
+    question_options: [400004, 400005, 400006]
+    content: |
+        Für diese Methode solltest du dich für ein Modell, das heißt für einen Klassifikator entscheiden.
+
+- item400009:
+    question_id: 400004
+    following_answer_id: 400005
+    content: |
+        Ich möchte einen Random Forest erstellen.
+
+- item400010:
+    question_id: 400005
+    following_answer_id: 
+    content: |
+        Ich möchte eine Support Vector Machine nutzen.
+
+- item400011:
+    question_id: 400006
+    following_answer_id: 
+    content: |
+        Ich möchte ein Neuronales Netz erstellen.
+
+- item400012:
+    answer_id: 400005
+    question_options: [400007, 400008, 400009]
+    content: |
+        Für den RandomForestClassifier kannst du dir hier die Dokumentation anschauen: link<https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html/>.
+
+- item400013:
+    question_id: 400007
+    following_answer_id: 400006
+    content: |
+        Leider Hilft mir die Dokumentation nicht weiter.
+
+- item400014:
+    answer_id: 400006
+    question_options: [400008, 400009, 400010]
+    content: |
+        Okay, im Rahmen dieser Funktion soll ein Modell erstellt werden, daher soll die Funktion RandomForestClassifier aufgerufen werden.
+
+- item400015:
+    question_id: 400008
+    following_answer_id: 400007
+    content: |
+        Wie rufe ich diese Funktion auf?
+    
+- item400016:
+    answer_id: 400007
+    question_options: [400009, 400010]
+    content: |
+        Zum Beispiel mit codeinline<model = RandomForestClassifier()/>, wobei einige der Parameter noch gesetzt werden sollten.
+
+- item400017:
+    question_id: 400009
+    following_answer_id: 400008
+    content: |
+        Welche Parameter sollte ich setzen?
+
+- item400018:
+    answer_id: 400008
+    question_options: [400010]
+    content: |
+        Dafür solltest du dir besonders die Parameter n_estimators, max_depth, min_samples_split, min_samples_leaf, random_state anschauen.
+
+- item400019:
+    question_id: 400010
+    following_answer_id: 400009
+    content: |
+         Mir ist leider weiterhin nicht klar wie ich damit umgehen soll.
+
+- item400020:
+    answer_id: 400009
+    question_options: [400011, 400014, 400016, 400019, 400021]
+    content: |
+        Bei welchem der Parameter hast du Probleme?
+
+- item400021:
+    question_id: 400011
+    following_answer_id: 400010
+    content: |
+        Bei dem Parameter n_estimators.
+
+- item400022:
+    answer_id: 400010
+    question_options: [400012]
+    content: |
+        Mit diesem Parameter wird die Anzahl der Bäume in dem Random Forest bestimmt. Die Eingabe ist ein int und per default 100.
+
+- item400023:
+    question_id: 400012
+    following_answer_id: 400011
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?
+
+- item400024:
+    answer_id: 400011
+    question_options: [400013, 400024]
+    content: |
+        In diesem Fall gilt, dass der Random Forest seine Vorteile hat, da viele Entscheidungsbäume erstellt werden. Daher sind viele Bäume oft besser als wenige Bäume, trotzdem besteht bei vielen Bäumen die Gefahr des Overfittings. Ein sinnvoller Wert kann n_estimators=300 sein.
+
+- item400025:
+    question_id: 400013
+    following_answer_id: 400012
+    content: |
+        Was bedeutet Overfitting?
+
+- item400026:
+    answer_id: 400012
+    question_options: [400024, 400026, 400031, 400076]
+    content: |
+        Overfitting bedeutet Überanpassung, es bedeutet hier also, dass das Modell im Fall von Overfitting die Testdaten auswendig lernt. Im glossar<Glossar/> kannst du mehr zu dem Thema lesen.
+
+- item400027:
+    question_id: 400014
+    following_answer_id: 400013
+    content: |
+        Bei dem Parameter max_depth.
+
+- item400028:
+    answer_id: 400013
+    question_options: [400015, 400026, 400076]
+    content: |
+         Hier wird die maximale Tiefe der Bäume gesetzt. Die Eingabe ist ein int.
+
+- item400029:
+    question_id: 400015
+    following_answer_id: 400014
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?
+
+- item400030:
+    answer_id: 400014
+    question_options: [400026, 400076]
+    content: |
+        Ein sinnvoller Wert ist groß genug, um genügend genaue Informationen zu erhalten aber klein genug, um Overfitting zu verhindern. Zum Beispiel max_depth=15.
+
+- item400031:
+    question_id: 400016
+    following_answer_id: 400015
+    content: |
+        Bei dem Parameter min_samples_split.
+
+- item400032:
+    answer_id: 400015
+    question_options: [400017, 400018, 400026, 400076]
+    content: |
+        Dieser Parameter beschreibt die minimale Anzahl an Beobachtungen, die es braucht, um einen Split in einem inneren Knoten eines Baumes durchzuführen. Die Eingabe ist ein int.
+
+- item400033:
+    question_id: 400017
+    following_answer_id: 400016
+    content: |
+        Was ist ein Split?
+
+- item400034:
+    answer_id: 400016
+    question_options: [400018, 400026, 400076]
+    content: |
+        Ein Split bezeichnet die Aufteilung eines Knotens. Im glossar<Glossar/> kannst du mehr drüber lesen.
+
+- item400035:
+    question_id: 400018
+    following_answer_id: 400017
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?
+
+- item400036:
+    answer_id: 400017
+    question_options: [400026, 400076]
+    content: |
+        Ein Wert, der mindestens 2 beträgt ist hier sinnvoll, da ansonsten kein Split durchgeführt werden muss. Der Wert sollte nicht zu groß sein, da ansonsten in zu vielen Fällen kein Split durchgeführt wird. Sinnvoll ist hier zum Beispiel min_samples_split = 4.
+
+- item400037:
+    question_id: 400019
+    following_answer_id: 400018
+    content: |
+        Bei dem Parameter min_samples_leaf. 
+
+- item400038:
+    answer_id: 400018
+    question_options: [400020, 400026, 400076]
+    content: |
+        Dieser Parameter definiert die minimale Anzahl an Beobachtungen, die ein Blatt der Bäume des Random Forests bilden. Die Eingabe ist ein int.
+
+- item400039:
+    question_id: 400020
+    following_answer_id: 400019
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?
+
+- item400040:
+    answer_id: 400019
+    question_options: [400026, 400076]
+    content: |
+        Sinnvoll kann hier min_samples_leaf=1 sein.
+
+- item400041:
+    question_id: 400021
+    following_answer_id: 400020
+    content: |
+        Bei dem Parameter random_state.
+
+- item400042:
+    answer_id: 400020
+    question_options: [400022, 400023, 400026, 400076]
+    content: |
+        Dieser Parameter kontrolliert die Zufälligkeit des Bootstrappings. Die Eingabe ist ein int, eine Instanz von RandomState oder None.
+
+- item400043:
+    question_id: 400022
+    following_answer_id: 400021
+    content: |
+        Was ist Bootstrapping?
+
+- item400044:
+    answer_id: 400021
+    question_options: [400023, 400026, 400076]
+    content: |
+        Bootstrapping ist eine Methode, um Trainings- und Testdaten auszuwählen. Dabei wird aus der Stichprobe aller Daten mit Zurücklegen gezogen. Im glossar<Glossar/> kannst du mehr drüber lesen.
+
+- item400045:
+    question_id: 400023
+    following_answer_id: 400022
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?
+
+- item400046:
+    answer_id: 400022
+    question_options: [400024, 400026, 400076]
+    content: |
+        Sinnvoll ist hier random_state=RANDOM_STATE.
+
+- item400047:
+    question_id: 400024
+    following_answer_id: 400023
+    content: |
+        Wie finde ich denn jetzt geeignete Parameter für den RandomForestClassifier?
+
+- item400048:
+    answer_id: 400023
+    question_options: [400025, 400026, 400027, 400031]
+    content: |
+        Dafür sind die Funktionen RepeatedStratifiedKFold und RandomizedSearchCV hilfreich. Hier der Link zu den jeweiligen Dokumentationen. Es kann aber auch eine Möglichkeit in hyperparameters_search geben, in der die Parameter festgelegt werden.
+
+- item400049:
+    question_id: 400025
+    following_answer_id: 400024
+    content: |
+        Ich möchte die Parameter selbst festlegen können.
+
+- item400050:
+    answer_id: 400024
+    question_options: [400026]
+    content: |
+        Um die Parameter selbst festzulegen, nutze die Funktion RandomForestClassifier und weise den Parametern manuell Werte zu.
+
+- item400051:
+    question_id: 400026
+    following_answer_id: 400025
+    content: |
+        Wie nutze ich den RandomForestClassifier.
+
+- item400052:
+    answer_id: 400025
+    question_options: [400027, 400031, 400076]
+    content: |
+        Genutzt werden kann der Klassifizierer, um ein Modell zu erstellen: codeinline<model = RandomForestClassifier(random_state=RANDOM_STATE, n_estimators=300, min_samples_split=4, min_samples_leaf=1, max_depth=15)>.
+
+- item400053:
+    question_id: 400027
+    following_answer_id: 400026
+    content: |
+        Wie halte ich die beiden Möglichkeiten offen sowohl von Hand die Parameter zu wählen als auch nach geeigneten Parametern zu suchen?
+
+- item400054:
+    answer_id: 400026
+    question_options: [400028, 400029, 400076]
+    content: |
+        Die Funktion hyperparameters_search kann dafür einen booleschen Eingabeparameter erhalten.
+
+- item400055:
+    question_id: 400028
+    following_answer_id: 400027
+    content: |
+        Wie kann das aussehen?
+
+- item400056:
+    answer_id: 400027
+    question_options: [400029, 400031, 400076]
+    content: |
+        Das kann wie folgt aussehen: codeinline<hyperparameters_search(fixed_hyperparams=False)/>. Per Default ist der Parameter hier False.
+
+- item400057:
+    question_id: 400029
+    following_answer_id: 400028
+    content: |
+        Wie verwende ich dann diesen Parameter?
+
+- item400058:
+    answer_id: 400028
+    question_options: [400030, 400031, 400076]
+    content: |
+        Dieser Parameter kann dazu verwendet werden, um in einer if-Bedingung abgefragt zu werden.
+
+- item400059:
+    question_id: 400030
+    following_answer_id: 400029
+    content: |
+        Wie kann diese Bedingung aussehen?
+
+- item400060:
+    answer_id: 400029
+    question_options: [400031, 400076]
+    content: |
+        Diese Bedingung kann zum Beispiel so aussehen: codeinline<if (fixed_hyperparams)/>:. Wenn die Parameter also manuell festgelegt werden sollen, kann hier der das Modell erstellt werden und zurückgegeben werden.
+
+- item400061:
+    question_id: 400031
+    following_answer_id: 400030
+    content: |
+        Wie gestalte ich die Suche nach geeigneten Parametern?
+
+- item400062:
+    answer_id: 400030
+    question_options: [400032]
+    content: |
+        Zuerst solltest du wählen, nach welchen Parametern hier gesucht werden soll.
+
+- item400063:
+    question_id: 400032
+    following_answer_id: 400031
+    content: |
+        Welche Parameter sind hier sinnvoll?
+
+- item400064:
+    answer_id: 400031
+    question_options: [400033, 400040]
+    content: |
+        Sinnvoll ist es zum Beispiel verschiedene Werte für n_estimators, max_depth, min_samples_split, min_samples_leaf durchzuprobieren.
+
+- item400065:
+    question_id: 400033
+    following_answer_id: 400032
+    content: |
+        Welcher Wertebereich ist für n_estimators geeignet?
+
+- item400066:
+    answer_id: 400032
+    question_options: [400034, 400035]
+    content: |
+        Hier kannst du selbst entscheiden welchen Wertebereich du betrachten möchtest. Beachte aber je größer die betrachteten Intervalle sind, desto mehr verlängert sich die Laufzeit.
+
+- item400067:
+    question_id: 400034
+    following_answer_id: 400033
+    content: |
+        Kannst du mir trotzdem einen Wertebereich vorgeben?
+
+- item400068:
+    answer_id: 400033
+    question_options: [400035, 400040]
+    content: |
+        Der Wertebereich für n_estimators kann zum Beispiel zwischen 10 und 700 liegen. Dabei kann aber auch in größeren Schritten vorgegangen werden.
+
+- item400069:
+    question_id: 400035
+    following_answer_id: 400034
+    content: |
+        Wie betrachte ich denn diesen Wertebereich mit größeren Schritten?
+
+- item400070:
+    answer_id: 400034
+    question_options: [400036]
+    content: |
+        Über den Wertebereich kannst du mit einer for-Schleife laufen. Um einen Start- und Zielwert, sowie die Größe der Schritte zu definieren, sieh dir die Funktion numpy.linspace an.
+
+- item400071:
+    question_id: 400036
+    following_answer_id: 400035
+    content: |
+        Mit welchem der Parameter gebe ich die Schrittgröße vor?
+
+- item400072:
+    answer_id: 400035
+    question_options: [400037, 400076]
+    content: |
+        Der Parameter num gibt an wie viele Werte generiert werden sollen. Darüber kann die Schrittgröße angepasst werden.
+
+- item400073:
+    question_id: 400037
+    following_answer_id: 400036
+    content: |
+        Kannst du mir ein Beispiel dafür geben?
+
+- item400074:
+    answer_id: 400036
+    question_options: [400038, 400039]
+    content: |
+        Ein Beispiel wäre codeinline<np.linspace(10, 700, num=7)/>, hierbei ist die Ausgabe codeinline<array([ 10., 125., 240., 355., 470., 585., 700.])/> und die Schrittgröße 115.
+
+- item400075:
+    question_id: 400038
+    following_answer_id: 400037
+    content: |
+        Wie definiere ich denn den Wertebereich mit linspace und einer for-Schleife?
+
+- item400076:
+    answer_id: 400037
+    question_options: [400039, 400040, 400076]
+    content: |
+        Ein Beispiel ist codeinline<parameters = {"n_estimators": [int(x) for x in np.linspace(start=10, stop=700, num=7)]}/>.
+
+- item400077:
+    question_id: 400039
+    following_answer_id: 400038
+    content: |
+        Wie kann ich vorgehen, um dann Wertebereiche weiterer Parameter zu betrachten?
+
+- item400078:
+    answer_id: 400038
+    question_options: [400040, 400041]
+    content: |
+        Die Variable parameters lässt sich analog zu n_estimators erweitern, nicht immer muss aber mit einer for-Schleife agiert werden.
+
+- item400079:
+    question_id: 400040
+    following_answer_id: 400039
+    content: |
+        Kannst du mir zeigen, wie das aussehen kann bei max_depth?
+
+- item400080:
+    answer_id: 400039
+    question_options: [400041, 400074, 400076]
+    content: |
+        Für die beiden Parameter n_estimators und max_depth kann das aussehen wie folgt:  codeinline<parameters = {"n_estimators": [int(x) for x in np.linspace(start=10, stop=700, num=7)], "max_depth": [5, 10, 20]}/>. 
+        Für die Parameter min_samples_leaf und min_samples_split kann analog dazu vorgegangen werden.
+
+- item400081:
+    question_id: 400041
+    following_answer_id: 400040
+    content: |
+        Nachdem die Werte der Parameter in parameters gespeichert sind, wie wird dann nach geeigneten Parameter gesucht?
+
+- item400082:
+    answer_id: 400040
+    question_options: [400042, 400050, 400074, 400076]
+    content: |
+        Dafür sind die Funktionen RepeatedStratifiedKFold und RandomizedSearchCV hilfreich. Hier der Link zu den jeweiligen Dokumentationen: link<https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RepeatedStratifiedKFold.html/> und link<https://scikit-learn.org/stable/modules/generated/sklearn.model_selection.RandomizedSearchCV.html/>.
+
+- item400083:
+    question_id: 400042
+    following_answer_id: 400041
+    content: |
+        Was macht die Funktion RepeatedStratifiedKFold?
+
+- item400084:
+    answer_id: 400041
+    question_options: [400042, 400044, 400046, 400048, 400050]
+    content: |
+        RepeatedStratifiedKFold ist eine Form der Kreuzvalidierung. Wenn du mehr darüber erfahren möchtest, kannst du im glossar<Glossar/> nachlesen.
+
+- item400085:
+    question_id: 400043
+    following_answer_id: 400042
+    content: |
+        Was ist Kreuzvalidierung?
+
+- item400086:
+    answer_id: 400042
+    question_options: [400044, 400046, 400048, 400050]
+    content: |
+        link<https://de.mathworks.com/discovery/cross-validation.html/>. Oder lies im glossar<Glossar/> nach.
+
+- item400087:
+    question_id: 400044
+    following_answer_id: 400043
+    content: |
+        Kannst du mir den Parameter n_splits erklären?
+
+- item400088:
+    answer_id: 400043
+    question_options: [400045, 400046, 400048, 400050]
+    content: |
+        Dieser Parameter gibt die Anzahl an Faltungen an. Die Eingabe ist ein int.
+
+- item400089:
+    question_id: 400045
+    following_answer_id: 400044
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?    
+
+- item400090:
+    answer_id: 400044
+    question_options: [400046, 400048, 400050]
+    content: |
+        Sinnvoll ist hier zum Beispiel n_splits=5.
+
+- item400091:
+    question_id: 400046
+    following_answer_id: 400045
+    content: |
+        Kannst du mir den Parameter n_repeats erklären?
+
+- item400092:
+    answer_id: 400045
+    question_options: [400047, 400048, 400050]
+    content: |
+        Dieser Parameter gibt an, wie häufig die Kreuzvalidierung wiederholt wird. Die Eingabe ist ein int.
+
+- item400093:
+    question_id: 400047
+    following_answer_id: 400046
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?
+
+- item400094:
+    answer_id: 400046
+    question_options: [400048, 400050]
+    content: |
+        Sinnvoll ist hier zum Beispiel n_repeats=5.
+
+- item400095:
+    question_id: 400048
+    following_answer_id: 400047
+    content: |
+        Kannst du mir den Parameter random_state erklären?
+
+- item400096:
+    answer_id: 400047
+    question_options: [400049, 400050, 400074]
+    content: |
+        Dieser Parameter kontrolliert die Generierung der Zufallswerte für jede Wiederholung. Die Eingabe ist ein int, eine Instanz von RandomState oder None.
+
+- item400097:
+    question_id: 400049
+    following_answer_id: 400048
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?
+
+- item400098:
+    answer_id: 400048
+    question_options: [400050, 400051]
+    content: |
+        Sinnvoll ist hier random_state=RANDOM_STATE.
+
+- item400099:
+    question_id: 400050
+    following_answer_id: 400049
+    content: |
+        Wie kann der Aufruf von RepeatedStratifiedKFold aussehen?
+
+- item400100:
+    answer_id: 400049
+    question_options: [400051, 400074, 400076]
+    content: |
+        Der Aufruf kann zum Beispiel so aussehen: 
+        codeinline<RepeatedStratifiedKFold(n_splits=5, n_repeats=5, random_state=RANDOM_STATE)/>. Um das Ergebnis in der Funktion RandomizedSearchCV verwenden zu können, sollte eine Variable angelegt werden.
+
+
+- item400101:
+    question_id: 400051
+    following_answer_id: 400050
+    content: |
+        Was macht die Funktion RandomizedSearchCV?
+
+- item400102:
+    answer_id: 400050
+    question_options: [400052]
+    content: |
+        Diese Funktion sucht randomisiert nach geeigneten Parametern für den Klassifikator.
+
+- item400103:
+    question_id: 400052
+    following_answer_id: 400051
+    content: |
+        Welche Parameter sollte ich setzen?
+
+- item400104:
+    answer_id: 400051
+    question_options: [400053, 400074]
+    content: |
+        Dafür solltest du dir besonders die Parameter estimator, scoring, param_distributions, n_iter, cv, verbose, n_jobs, random_state anschauen. 
+
+- item400105:
+    question_id: 400053
+    following_answer_id: 400052
+    content: |
+        Mir ist leider weiterhin nicht klar wie ich damit umgehen soll.
+
+- item400106:
+    answer_id: 400052
+    question_options: [400054, 400056, 400060, 400062, 400064, 400067, 400069, 400071]
+    content: |
+        Bei welchem der Parameter hast du Probleme?
+
+- item400107:
+    question_id: 400054
+    following_answer_id: 400053
+    content: |
+        Bei dem Parameter estimator.
+
+- item400108:
+    answer_id: 400053
+    question_options: [400055]
+    content: |
+        Hier sollte die Eingabe der Klassifizierer sein. Dafür ist es nützlich ein Modell zu erstellen, zum Beispiel: codeinline<randfor = RandomForestClassifier(random_state=RANDOM_STATE)/>.
+
+- item400109:
+    question_id: 400055
+    following_answer_id: 400054
+    content: |
+        Was gebe ich dann für estimator an?
+
+- item400110:
+    answer_id: 400054
+    question_options: [400056, 400060, 400062, 400064, 400067, 400069, 400071]
+    content: |
+        Diesen Parameter kannst du als estimator=randfor setzen.
+
+- item400111:
+    question_id: 400056
+    following_answer_id: 400055
+    content: |
+        Bei dem Parameter scoring.
+
+- item400112:
+    answer_id: 400055
+    question_options: [400057]
+    content: |
+        Dieser Parameter gibt die Strategie an, nach der das Modell evaluiert werden soll.
+
+- item400113:
+    question_id: 400057
+    following_answer_id: 400056
+    content: |
+        Was ist eine sinnvolle Eingabe für diesen Parameter?
+
+- item400114:
+    answer_id: 400056
+    question_options: [400058, 400060]
+    content: |
+        Diesen Parameter kannst du zum Beispiel als scoring="f1_macro" setzen.
+
+- item400115:
+    question_id: 400058
+    following_answer_id: 400057
+    content: |
+        Was bedeutet f1_macro?
+
+- item400116:
+    answer_id: 400057
+    question_options: [400059]
+    content: |
+        f1_macro bedeutet, dass der f1_score für jedes Label bestimmt wird als Mittelwert der Metriken.
+
+- item400117:
+    question_id: 400059
+    following_answer_id: 400058
+    content: |
+        Was ist der f1_score?
+
+- item400118:
+    answer_id: 400058
+    question_options: []
+    content: |
+        Der f1_score bestimmt Gütemaße wie zum Beispiel Sensitivity und Precision. Um mehr darüber zu erfahren, lies im glossar<Glossar/> nach.
+
+- item400119:
+    question_id: 400060
+    following_answer_id: 400059
+    content: |
+        Bei dem Parameter param_distributions.
+
+- item400120:
+    answer_id: 400059
+    question_options: [400061]
+    content: |
+        Bei diesem Parameter kommt dein erstelltes Dictionary mit den Parametern zum Einsatz, die du betrachten möchtest. Falls du noch kein solches Dictionary erstellt hast, kannst du unter „Wie gestalte ich die Suche nach geeigneten Parametern“ nachlesen.
+
+- item400121:
+    question_id: 400061
+    following_answer_id: 400060
+    content: |
+        Wie setze ich denn diesen Parameter, wenn ich ein Dictionary erstellt habe?
+
+- item400122:
+    answer_id: 400060
+    question_options: []
+    content: |
+        Angenommen das Dictionary oder die Liste mehrerer Dictionaries hat den Namen parameters, dann kannst du param_distributions=parameters setzen.
+
+- item400123:
+    question_id: 400062
+    following_answer_id: 400061
+    content: |
+        Bei dem Parameter n_iter.
+
+- item400124:
+    answer_id: 400061
+    question_options: [400063]
+    content: |
+        Dieser Parameter gibt an, wie viele Parametereinstellungen probiert werden. Die Eingabe ist ein int.
+
+- item400125:
+    question_id: 400063
+    following_answer_id: 400062
+    content: |
+        Welchen Wert kann ich für n_iter wählen?
+
+- item400126:
+    answer_id: 400062
+    question_options: []
+    content: |
+        Per Default ist n_iter=10. Eine höhere Zahl ist auch möglich, hier kannst du auch n_iter=25 setzen ohne die Laufzeit stark zu verlängern.
+
+- item400127:
+    question_id: 400064
+    following_answer_id: 400063
+    content: |
+        Bei dem Parameter cv.
+
+- item400128:
+    answer_id: 400063
+    question_options: [400065]
+    content: |
+        Dieser Parameter setzt die Strategie, nach der die Kreuzvalidierung vorgenommen wird.
+
+- item400129:
+    question_id: 400065
+    following_answer_id: 400064
+    content: |
+        Wie kann ich diesen Parameter wählen?
+
+- item400130:
+    answer_id: 400064
+    question_options: [400066]
+    content: |
+        Wenn du bereits die Funktion RepeatedStratifiedKFold oder eine andere Funktion zur Kreuzvalidierung verwendet hast, dann sollte die Ausgabe der Funktion gleich diesem Parameter gesetzt werden.
+
+- item400131:
+    question_id: 400066
+    following_answer_id: 400065
+    content: |
+        Wie genau sieht das dann aus?
+
+- item400132:
+    answer_id: 400065
+    question_options: []
+    content: |
+        Angenommen das Ergebnis von RepeatedStratifiedKFold wurde als Variable cv gesetzt, dann kannst du den Parameter cv=cv setzen.
+
+- item400133:
+    question_id: 400067
+    following_answer_id: 400066
+    content: |
+        Bei dem Parameter verbose.
+
+- item400134:
+    answer_id: 400066
+    question_options: [400068]
+    content: |
+        Dieser Parameter kontrolliert die Ausführlichkeit. Das bedeutet je höher der Eingabewert als in int ist, desto mehr Nachrichten werden ausgegeben,
+
+- item400135:
+    question_id: 400068
+    following_answer_id: 400067
+    content: |
+        Wie kann ich diesen Parameter wählen?
+
+- item400136:
+    answer_id: 400067
+    question_options: []
+    content: |
+        Du kannst zum Beispiel verbose=50 wählen.
+
+- item400137:
+    question_id: 400069
+    following_answer_id: 400068
+    content: |
+        Bei dem Parameter n_jobs.
+
+- item400138:
+    answer_id: 400068
+    question_options: [400070]
+    content: |
+        Dieser Parameter ist zuständig dafür, wie viele Aufgaben parallel durchgeführt werden. Die Eingabe ist ein int.
+
+- item400139:
+    question_id: 400070
+    following_answer_id: 400069
+    content: |
+        Wie kann ich diesen Parameter wählen?
+
+- item400140:
+    answer_id: 400069
+    question_options: []
+    content: |
+        Du kannst zum Beispiel n_jobs=8 wählen, oder auch n_jobs=-1 was bedeutet, dass alle Prozessoren verwendet werden.
+
+- item400141:
+    question_id: 400071
+    following_answer_id: 400070
+    content: |
+        Bei dem Parameter random_state.
+
+- item400142:
+    answer_id: 400070
+    question_options: [400072]
+    content: |
+        Dieser Parameter kontrolliert die Generierung der Zufallswerte. Die Eingabe ist ein int, eine Instanz von RandomState oder None.
+
+- item400143:
+    question_id: 400072
+    following_answer_id: 400071
+    content: |
+        Welcher Wert wäre für diesen Parameter sinnvoll?
+
+- item400144:
+    answer_id: 400071
+    question_options: [400073, 400074, 400076]
+    content: |
+        Sinnvoll ist hier codeinline<random_state=RANDOM_STATE/>.
+
+
+- item400145:
+    question_id: 400073
+    following_answer_id: 400072
+    content: |
+        Wie kann der Aufruf von RandomizedSearchCV aussehen?
+
+- item400146:
+    answer_id: 400072
+    question_options: [400074, 400076]
+    content: |
+        Um eine Rückgabe für codeinline<hyperparameters_search/> zu bekommen, sollte das Modell gespeichert werden. Daher kann der Aufruf von codeinline<RandomizedSearchCV/> so aussehen: codeinline<model = RandomizedSearchCV(estimator=randfor, scoring="f1_macro", param_distributions=parameters, n_iter=25, cv=cv, verbose=50, n_jobs=8, random_state=RANDOM_STATE)/>.
+        Dabei ist randfor der Random Forest Klassifikator und parameters die Menge der Parameter mit deren Wertebereich, die betrachtet werden sollen.
+
+- item400147:
+    question_id: 400074
+    following_answer_id: 400073
+    content: |
+        Was sollte ich zurückgeben?
+
+- item400148:
+    answer_id: 400073
+    question_options: [400075, 400076]
+    content: |
+        Du solltest hier das Modell zurückgeben.
+
+- item400149:
+    question_id: 400075
+    following_answer_id: 400074
+    content: |
+        Wie kann das aussehen?
+
+- item400150:
+    answer_id: 400074
+    question_options: [400076]
+    content: |
+        Die Rückgabe eines Modells, das als model gespeichert wurde, erfolgt mit codeinline<return model/>.
+ 
+- item400151:
+    question_id: 400076
+    following_answer_id: 400075
+    content: |
+        Ich habe Probleme in der codeinline<main/>.
+
+- item400152:
+    answer_id: 400075
+    question_options: [400077, 400080, 400086, 400105]
+    content: |
+        In welcher Zeile liegt das Problem?
+
+- item400153:
+    question_id: 400077
+    following_answer_id: 400076
+    content: |
+        Das Problem liegt in der Zeile, in der ein Modell erstellt werden soll.
+
+- item400154:
+    answer_id: 400076
+    question_options: [400078]
+    content: |
+        Um in dieser Zeile ein Modell zu erstellen, erinnere dich an die bereits geschriebene Funktion codeinline<hyperparameters_search/> weiter oben.
+
+- item400155:
+    question_id: 400078
+    following_answer_id: 400077
+    content: |
+        Was ist denn hier mit dieser Funktion zu tun?
+
+- item400156:
+    answer_id: 400077
+    question_options: [400079]
+    content: |
+        Da die Rückgabe von codeinline<hyperparameters_search/> ein Modell ist, reicht es hier aus die Funktion aufzurufen.
+
+- item400157:
+    question_id: 400079
+    following_answer_id: 400078
+    content: |
+        Leider ist mir nicht ganz klar wie dieser Aufruf aussieht.
+
+- item400158:
+    answer_id: 400078
+    question_options: []
+    content: |
+        Der Funktionsaufruf kann so aussehen: codeinline<model = hyperparameters_search(fixed_hyperparams=True)/>, oder codeinline<model = hyperparameters_search(fixed_hyperparams=False)/>, falls keine Hyperparametersuche durchgeführt werden soll.
+
+- item400159:
+    question_id: 400080
+    following_answer_id: 400079
+    content: |
+        Das Problem liegt in der Zeile, in der das Modell trainiert werden soll.
+
+- item400160:
+    answer_id: 400079
+    question_options: [400081]
+    content: |
+        Zum Trainieren des Modells, kann die Funktion codeinline<fit(X, y[, sample_weight])/>, link< https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.fit/> hilfreich sein.
+
+- item400161:
+    question_id: 400081
+    following_answer_id: 400080
+    content: |
+        Wie verwende ich die Funktion codeinline<fit/>?
+
+- item400162:
+    answer_id: 400080
+    question_options: [400082, 400083]
+    content: |
+        Das Modell soll auf den Trainingsdaten trainiert werden.
+
+- item400163:
+    question_id: 400082
+    following_answer_id: 400081
+    content: |
+        Leider ist mir noch nicht klar, wie die Funktion codeinline<fit/> anzuwenden ist.
+
+- item400164:
+    answer_id: 400081
+    question_options: [400083]
+    content: |
+        Die Parameter von codeinline<fit/> sind die Trainingsdaten X_train und y_train.
+
+- item400165:
+    question_id: 400083
+    following_answer_id: 400082
+    content: |
+        Nur mit den Parametern klappt der Aufruf von codeinline<fit/> nicht.
+
+- item400166:
+    answer_id: 400082
+    question_options: [400084]
+    content: |
+        Es muss angegeben sein, welches Modell trainiert werden soll.
+
+- item400167:
+    question_id: 400084
+    following_answer_id: 400083
+    content: |
+        Wie gebe ich an welches Modell trainiert werden soll?
+
+- item400168:
+    answer_id: 400083
+    question_options: [400085]
+    content: |
+        Indem codeinline<model.fit()/> mit den Trainingsdaten als Parameter aufgerufen wird, stellst du sicher, dass dein erstelltes Modell trainiert wird.
+
+- item400169:
+    question_id: 400085
+    following_answer_id: 400084
+    content: |
+        Kannst du mir bitte vorgeben wie der Aufruf von codeinline<fit/> hier aussehen kann?
+
+- item400170:
+    answer_id: 400084
+    question_options: []
+    content: |
+        Der Aufruf lautet dann codeinline<model.fit(X_train, y_train)/>.
+
+- item400171:
+    question_id: 400086
+    following_answer_id: 400085
+    content: |
+        Das Problem liegt in der Zeile, in der die Metriken ausgegeben werden sollen.
+
+- item400172:
+    answer_id: 400085
+    question_options: [400087, 400088]
+    content: |
+        Zum Ausgeben der Metriken kannst du dir die Funktion codeinline<print_metrics/> weiter oben anschauen.
+
+- item400173:
+    question_id: 400087
+    following_answer_id: 400086
+    content: |
+        Was ist denn hier mit dieser Funktion zu tun?
+
+- item400174:
+    answer_id: 400086
+    question_options: [400088, 400090, 400092]
+    content: |
+        Es reicht aus die Funktion hier aufzurufen.
+
+- item400175:
+    question_id: 400088
+    following_answer_id: 400087
+    content: |
+        Wie sind die Parameter von codeinline<print_metrics/> hier zu setzen?
+
+- item400176:
+    answer_id: 400087
+    question_options: [400089, 400090]
+    content: |
+        codeinline<print_metrics/> erwartet als Eingabeparameter die Label des Datensatzes, dessen Metriken betrachtet werden möchten, die vorhergesagten Label dieser Daten und die Bezeichnung des betrachteten Datensatzes als String.
+
+- item400177:
+    question_id: 400089
+    following_answer_id: 400088
+    content: |
+        Was sind Label?
+
+- item400178:
+    answer_id: 400088
+    question_options: [400090]
+    content: |
+        Das sind die Klassen, in diesem Fall also ob die Blaubeeren „gut“ oder „schlecht“ sind.
+
+- item400179:
+    question_id: 400090
+    following_answer_id: 400089
+    content: |
+        Wo finde ich die Label des Datensatzes?
+
+- item400180:
+    answer_id: 400089
+    question_options: [400091, 400092]
+    content: |
+        Die Label der hier betrachteten Trainingsdaten sind durch das Einlesen der Bilder gespeichert.
+
+- item400181:
+    question_id: 400091
+    following_answer_id: 400090
+    content: |
+        Wie heißt die Variable, die als erster Parameter in codeinline<print_metrics/> übergeben werden soll?
+
+- item400182:
+    answer_id: 400090
+    question_options: []
+    content: |
+        In der Regel werden die Label des Datensatzes als y_train bezeichnet.
+
+- item400183:
+    question_id: 400092
+    following_answer_id: 400091
+    content: |
+        Wo finde ich die vorhergesagten Label der Trainingsdaten?
+
+- item400184:
+    answer_id: 400091
+    question_options: [400093]
+    content: |
+        Die vorhergesagten Label der Trainingsdaten sind von dir zu bestimmen.
+
+- item400185:
+    question_id: 400093
+    following_answer_id: 400092
+    content: |
+        Wie mache ich diese Vorhersage?
+
+- item400186:
+    answer_id: 400092
+    question_options: [400094, 400095]
+    content: |
+        Eine hilfreiche Funktion dafür ist codeinline<predict(X)/> link< https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict/>.
+
+- item400187:
+    question_id: 400094
+    following_answer_id: 400093
+    content: |
+        Wie verwende ich diese Funktion?
+
+- item400188:
+    answer_id: 400093
+    question_options: [400095]
+    content: |
+        Als Parameter erwartet codeinline<predict(X)/> link< https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict/> die Stichprobe, für die die Label vorhergesagt werden möchten.
+
+- item400189:
+    question_id: 400095
+    following_answer_id: 400094
+    content: |
+        Welchen Parameter muss ich hier übergeben?
+
+- item400190:
+    answer_id: 400094
+    question_options: [400096]
+    content: |
+        Der Parameter ist die Menge der Merkmale in den Trainingsdaten.
+
+- item400191:
+    question_id: 400096
+    following_answer_id: 400095
+    content: |
+        Wo finde ich diese Menge?
+
+- item400192:
+    answer_id: 400095
+    question_options: [400097]
+    content: |
+        Die Merkmale der hier betrachteten Trainingsdaten sind durch das Einlesen der Bilder gespeichert.
+        In der Regel werden die Merkmale des Datensatzes als X_train bezeichnet.
+
+- item400193:
+    question_id: 400097
+    following_answer_id: 400096
+    content: |
+        Warum funktioniert der Aufruf von codeinline<predict(X_train)/> nicht?
+
+- item400194:
+    answer_id: 400096
+    question_options: [400098]
+    content: |
+        Es muss angegeben sein, auf Basis welchen Modells vorhergesagt werden soll.
+
+- item400195:
+    question_id: 400098
+    following_answer_id: 400097
+    content: |
+        Wie gebe ich an welches Modell genommen werden soll?
+
+- item400196:
+    answer_id: 400097
+    question_options: [400099]
+    content: |
+        Indem codeinline<model.predict()/> mit den Trainingsdaten als Parameter aufgerufen wird, stellst du sicher, dass dein erstelltes Modell zur Vorhersage genutzt wird.
+
+- item400197:
+    question_id: 400099
+    following_answer_id: 400098
+    content: |
+        Kannst du mir bitte vorgeben wie der Aufruf von codeinline<predict/> hier aussehen kann?
+
+- item400198:
+    answer_id: 400098
+    question_options: [400100]
+    content: |
+        Wichtig ist, dass die Vorhersage in einer Variablen gespeichert wird.
+
+- item400199:
+    question_id: 400100
+    following_answer_id: 400099
+    content: |
+        Kannst du mir bitte vorgeben, wie das aussehen kann?
+
+- item400200:
+    answer_id: 400099
+    question_options: [400101]
+    content: |
+        Das Speichern der Vorhersage kann wie folgt aussehen: codeinline<train_predictions = model.predict(X_train)/>.
+
+- item400201:
+    question_id: 400101
+    following_answer_id: 400100
+    content: |
+        Wie heißt die Variable, die als zweiter Parameter in codeinline<print_metrics/> übergeben werden soll?
+
+- item400202:
+    answer_id: 400100
+    question_options: [40102]
+    content: |
+        Die Bezeichnung hast du selbst gewählt, bei dem Aufruf der Funktion codeinline<predict(X)/> link< https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html#sklearn.ensemble.RandomForestClassifier.predict/>. Eine passende Bezeichnung kann zum Beispiel train_predictions sein.
+
+- item400203:
+    question_id: 400102
+    following_answer_id: 400101
+    content: |
+        Welcher String ist der dritte Parameter der Funktion codeinline<print_metrics/>?
+
+- item400204:
+    answer_id: 400101
+    question_options: [400103]
+    content: |
+        Diesen String kannst du selbst wählen, beachte, dass hier die Trainingsdaten betrachtet werden.
+
+- item400205:
+    question_id: 400103
+    following_answer_id: 400102
+    content: |
+        Kannst du mir sagen, welche Bezeichnung sinnvoll ist?
+
+- item400206:
+    answer_id: 400102
+    question_options: [400104]
+    content: |
+        Sinnvoll ist zum Beispiel der String „training“.
+
+- item400207:
+    question_id: 400104
+    following_answer_id: 400103
+    content: |
+        Wie sieht der gesamte Aufruf von codeinline<print_metrics/> aus?
+
+- item400208:
+    answer_id: 400103
+    question_options: []
+    content: |
+        Der Aufruf kann so aussehen: codeinline<print_metrics(y_train, train_predictions, "training")/>.
+
+- item400209:
+    question_id: 400105
+    following_answer_id: 400104
+    content: |
+        Das Problem liegt in der Zeile, in der das Modell evaluiert werden soll.
+
+- item400210:
+    answer_id: 400105
+    question_options: [400105]
+    content: |
+        Hier sollte wieder die Funktion predict verwendet werden.
+
+- item400211:
+    question_id: 400106
+    following_answer_id: 400105
+    content: |
+        Und wo liegt der Unterschied zu dem Aufruf von predict auf den Trainingsdaten?
+
+- item400212:
+    answer_id: 400105
+    question_options: [400106]
+    content: |
+        Der einzige Unterschied besteht darin, dass die Funktion nicht auf den Trainings-, sondern auf den Testdaten aufgerufen wird.
+
+# TODO wrong id
+- item400213:
+    question_id: 400106
+    following_answer_id: 400106
+    content: |
+        Und wie sieht der Aufruf dann aus?
+
+- item400214:
+    answer_id: 400106
+    question_options: [400107]
+    content: |
+        Wichtig ist, dass die Vorhersage in einer Variablen gespeichert wird.
+
+- item400215:
+    question_id: 400107
+    following_answer_id: 400107
+    content: |
+        Kannst du mir bitte vorgeben, wie das aussehen kann?
+
+- item400216:
+    answer_id: 400107
+    question_options: []
+    content: |
+        Das Speichern der Vorhersage kann wie folgt aussehen: codeinline<predictions = model.predict(X_test)/>.
+        Auch hier können dann wieder die Metriken ausgegeben werden.
+
+
+
+
+

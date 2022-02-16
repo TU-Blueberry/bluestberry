@@ -59,12 +59,12 @@ export class HintViewerComponent implements OnInit {
   loadFile(yamlString: string): void {  
   
     var loadedYaml = load(yamlString) as Array<Object>
-    
+
     for (let item_id in loadedYaml) {
       var outerItem = loadedYaml[item_id] as any
       var name = Object.keys(outerItem)[0]
       var item = outerItem[name]
-      
+
       if(name == "files") {
         for(let subfile_id in item) {
           const subfileName = item[subfile_id]
@@ -172,7 +172,7 @@ export class HintViewerComponent implements OnInit {
       )
 
       answer = this.error_answer;
-    } 
+    }
 
     this.dialogue_history_.push(answer!)
     console.log(answer!.getTextDividers())
@@ -183,14 +183,14 @@ export class HintViewerComponent implements OnInit {
     }
   }
 
-  simpleUndo(): void { 
+  simpleUndo(): void {
 
     if (this.dialogue_history_.length < 2) {
       return
     }
 
     this.dialogue_options_ = [] // clear current options
-    this.dialogue_history_.pop() 
+    this.dialogue_history_.pop()
     this.dialogue_history_.pop()
 
     const last_answer = this.dialogue_history_[
@@ -223,8 +223,7 @@ export class HintViewerComponent implements OnInit {
 
   openGlossary(glossaryFileName: string): void {
 
-    // TODO
-    const path = "/sortierroboter/Glossary/" + glossaryFileName
+    const path = "/glossary/" + glossaryFileName
     console.log("opening glossary at " + path)
 
     this.fsService.getFileAsBinary(path).subscribe(node => {
@@ -309,7 +308,7 @@ abstract class DialogueContent {
     var match;
     var last_regex_end_index = 0;
     while((match = this.re_divider.exec(original_content)) != null) {
-      
+
       var text = original_content.slice(last_regex_end_index, match.index);
       this.text_slices.push(text);
       last_regex_end_index = match.index + match[0].length;
@@ -341,7 +340,7 @@ abstract class DialogueContent {
           }
 
           divider_type = TextDividerTypes.HREF;
-        
+
         } else if(match.startsWith("markdown")) {
 
           actual_content = match.slice(9, -2).trim();
@@ -369,23 +368,23 @@ abstract class DialogueContent {
 
           actual_content = match.slice(9, -2).trim();
           divider_type = TextDividerTypes.GLOSSARY;
-          
+
           var content_split = actual_content.split('|')
           if(content_split.length > 1) {
             actual_content = content_split[0].trim();
             optional = content_split[1].trim();
           }
-        } 
+        }
 
         this.text_dividers.push([actual_content, optional, divider_type]);
       }
     }
   }
-  
+
   getTextSlice(index: number): string {
     if(index < this.text_slices.length) {
       return this.text_slices[index];
-    } 
+    }
     return "error";
   }
 
@@ -393,7 +392,7 @@ abstract class DialogueContent {
     if(index < this.text_dividers.length) {
       console.log(this.text_dividers[index])
       return this.text_dividers[index];
-    } 
+    }
     return ["error", undefined, TextDividerTypes.NONE];
   }
 

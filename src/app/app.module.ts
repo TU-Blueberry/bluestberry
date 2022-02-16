@@ -30,6 +30,9 @@ import { ViewSizeState } from './viewer/sizes.state';
 import { ActionbarState } from './actionbar/actionbar.state';
 import { ExperienceState } from './experience/experience.state';
 import { AppState } from './app.state';
+import { PlotlyModule } from './plotly/plotly.module';
+import { PyodideService } from 'src/app/pyodide/pyodide.service';
+
 
 /**
  * Here we can adjust how the ngx-markdown renderer transforms markdown to html (if needed for styling for example)
@@ -52,6 +55,7 @@ export function markedOptionsFactory(): MarkedOptions {
     FormsModule,
     FilesystemModule,
     UnityModule,
+    PlotlyModule,
     SharedModule, 
     HttpClientModule,
     GuidedTourModule,
@@ -84,7 +88,7 @@ export function markedOptionsFactory(): MarkedOptions {
   bootstrap: [AppComponent],
 })
 export class AppModule {
-  constructor(private injector: Injector) {
-    setupPythonCalls(injector);
+  constructor(private injector: Injector, private pyodideService: PyodideService) {
+    setupPythonCalls(injector, pyodideService);
   }
 }

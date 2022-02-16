@@ -9,15 +9,15 @@
 .tab-button {
   display: flex;
   align-items: center;
+  margin-right: 4px;
   flex-direction: row;
-  border: black;
   padding: 0.5em;
   color: rgb(240, 240, 240);
-  width: 12em;
+  width: auto;
   flex-shrink: 0;
-  border-left-width: 1px;
   background-color: rgb(58, 58, 58);
   cursor: pointer;
+  border: none;
 
   &.active {
     background-color: rgb(38, 38, 38);
@@ -47,4 +47,4 @@
 
 .tab-icon {
   padding-right: 0.2em;
-} 
+}

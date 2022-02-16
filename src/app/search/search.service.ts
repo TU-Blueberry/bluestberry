@@ -11,11 +11,12 @@ export class SearchService {
   private readonly MAX_SEARCH_SUGGESTIONS = 5;
   lastSearchedTerms: string[] = []
   lastSearches$ = new BehaviorSubject<string[]>(this.lastSearchedTerms);
-  filePaths: string[] = [
+  filePaths: string[] = [ // TODO: Either dynamically expand on folder/workspace creation or generalize search function
     '/sortierroboter',
     '/sortierroboter/BlueberryData/TrainingData',
     '/sortierroboter/glossary',
-    '/sortierroboter/test_files'  //TODO: Remove eventually
+    '/sortierroboter/test_files',  //TODO: Remove eventually
+    '/glossary'
   ];
 
   constructor(private fsService: FilesystemService) { }

@@ -85,9 +85,9 @@ export class TabGroupComponent implements AfterViewInit {
       
       if (tab.type === "HINT" || tab.type === "UNITY") {
         existingTab = this.dataSource.find(t => t.type === tab.type);
-      } else {
-        existingTab = this.dataSource.find(t => t.path === tab.path);
-      }
+      } else if(tab.type != 'PLOTLY') {
+        existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+      } 
 
       if (!existingTab) {
         this.dataSource.push(tab);

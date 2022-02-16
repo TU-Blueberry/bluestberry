@@ -1,45 +1,21 @@
 .hint-container {
-    background-color: lightgray;
+    background-color: #262626;
+    color: #c6c6c6;
     display: flex;
     height: 100%;
-}
-
-
-.hint-footer-bar {
-    position: absolute;
-
-    display: flex;
-    justify-items: center;
     justify-content: center;
 
-    padding-top: 5px;
-    padding-bottom: 5px;
-    bottom: 10px;
-}
-
-.hint-footer-bar-button {
-    height: 24px;
-    padding: 10px;
-    margin: 10px;
-    border-radius: 50%;
-    color: #ffffff66;
-    background-color: rgb(46, 49, 56);
-
-    &:hover {
-        background-color: rgb(66, 70, 80);
-        cursor: pointer;
-        color: rgb(240, 240, 240);
+    a {
+        color: #c6c6c6;
     }
 }
 
 .hint-dialogue > * {
-    margin-top: 7px;
     width: fit-content;
-
+    max-width: 70%;
+    margin-top: 7px;
     padding: 7px;
     border-radius: 5px;
-
-    max-width: 70%;
 }
 
 .markdown > p {
@@ -47,20 +23,19 @@
 }
 
 .hint-dialogue {
-    height: 90vh;
+    height: 75vh;
     width: 100%;
     overflow: auto;
 }
 
 .hint-question {
-    background-color: #AAD7EC;
+    background-color: #218838;
     margin-right: 10%;
     margin-left: auto;
-
 }
 
 .hint-answer {
-    background-color: #46C0DE;
+    background-color: #0068b3;
     margin-left: 10%;
 }
 
@@ -69,10 +44,10 @@
 }
 
 #hint-option {
-    background-color: #FFDC82;
+    background-color: #218838;
 
     &:hover {
-        background-color: #FFCA44;
+        filter: brightness(150%);
         cursor: pointer;
     }
 }

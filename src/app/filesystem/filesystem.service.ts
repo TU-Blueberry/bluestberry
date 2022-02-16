@@ -22,9 +22,9 @@ export class FilesystemService {
   EXP_HINT_ROOT_PATH = new Set<string>();
   EXP_GLOSSARY_PATH = new Set<string>();
 
-  // Keep track of readonly folders as they need to be adjusted before and after syncing 
-  private READONLY_FOLDERS = new Set<string>(); 
-  
+  // Keep track of readonly folders as they need to be adjusted before and after syncing
+  private READONLY_FOLDERS = new Set<string>();
+
   public test = this.init();
   PyFS?: typeof FS & MissingInEmscripten;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
@@ -39,8 +39,8 @@ export class FilesystemService {
 
   private init(): Observable<never> {
     return concat(
-      this.pyService.pyodide.pipe(tap(py => { 
-        this.PyFS = py.FS; 
+      this.pyService.pyodide.pipe(tap(py => {
+        this.PyFS = py.FS;
         console.log("FS: ", this.PyFS)
         this.fsSubject.next(this.PyFS);
       }), ignoreElements()),
@@ -115,7 +115,7 @@ export class FilesystemService {
   private chmodFolders(addWritePermission: boolean): Observable<never> {
     return defer(() => {
       const mode = addWritePermission ? 0o777 : 0o555;
-      Array.from(this.READONLY_FOLDERS).forEach(path => { 
+      Array.from(this.READONLY_FOLDERS).forEach(path => {
         this.chmod(path, mode);
       });
     })
@@ -178,7 +178,7 @@ export class FilesystemService {
       switchMap(node => this.testCurrentPath(node, mountpoint, paths))
     )
   }
-  
+
   mountExternal(): void {
     // TODO: Mount, call checkPermissions for extenral mountpoint
     // TODO: read/write permissions?
@@ -691,7 +691,7 @@ export class FilesystemService {
     this.checkFilesystem();
     return this.PyFS!.isDir(mode);
   }
-  
+
   // TODO: Additional checks?
   private N_createSymlink(oldPath: string, newPath: string) {
     this.checkFilesystem();

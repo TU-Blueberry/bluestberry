@@ -16,7 +16,7 @@ export class TerminalViewerComponent implements OnInit {
   ngOnInit(): void {
     this.pyodideService.getStdOut().subscribe(result => {
         this.error = false;
-        this.terminalOutput = this.terminalOutput +  ("\n" + result + "\n");
+        this.terminalOutput = this.terminalOutput +  (result + "\n");
     });
 
     this.pyodideService.getStdErr().pipe(

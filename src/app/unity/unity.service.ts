@@ -13,9 +13,6 @@ export class UnityService {
   isReady = false
 
   initUnity(path: string): any {
-    if (this.gameInstance) {
-      return this.gameInstance
-    }
     const loader = (window as any).UnityLoader
     this.gameInstance = loader.instantiate('gameContainer', path, {
       onProgress: (gameInstance: any, progress: number) => {
@@ -23,14 +20,18 @@ export class UnityService {
         if (progress === 1) {
           this.isReady = true
           this.disableWebGLInput()
-          //this.initialPresentation()
+          // this.initialPresentation()
         }
       },
-    })
+    });
 
     return this.gameInstance
   }
   updateUnity(update: number) {}
+
+  cleanUpUnity(): void {
+    this.gameInstance.Quit()
+  }
 
   @PythonCallable
   public toggleRobot() {
@@ -40,7 +41,7 @@ export class UnityService {
   @PythonCallable
   public sendClassification(berries: string) {
     console.log('Sending Classification to Unity')
-    console.log(berries)
+    //console.log(berries)
     this.gameInstance.SendMessage(
       'AngularCommunicator',
       'receiveClassification',
@@ -112,15 +113,15 @@ export class UnityService {
     var berryParts: string[] = berry.split(',')
     var imagePath = berryParts[2]
     var berryImage = this.fsService.getFileAsBinary(imagePath)
-    console.log(imagePath)
+    //console.log(imagePath)
 
     // TODO: This is bad practice but I can't help it right now.
     if (!berryImage) {
       return
     }
-    this.gameInstance.SendMessage('AngularCommunicator', 'queueBerry', berry)
 
     berryImage.subscribe((result) => {
+      //console.log(berryImage)
       if (result instanceof Uint8Array) {
         var blob = new Blob([result], { type: 'image/png' })
 
@@ -129,7 +130,11 @@ export class UnityService {
         reader.onloadend = () => {
           var base64data = reader.result
           if (base64data) {
-            this.sendImage(base64data.toString().split(',')[1])
+            this.gameInstance.SendMessage(
+              'AngularCommunicator',
+              'queueBerryWithImage',
+              berry + ',' + base64data.toString().split(',')[1]
+            )
           }
         }
       }
@@ -190,7 +195,7 @@ export class UnityService {
     for (var berry of berries) {
       var berrystring = `${berry.classification}, ${berry.trait},`
 
-      console.log(berry.trait)
+      // console.log(berry.trait)
 
       berrystring =
         berry.trait == '1'

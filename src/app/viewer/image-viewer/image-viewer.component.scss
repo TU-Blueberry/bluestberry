@@ -1,6 +1,4 @@
-
 .image-container {
-    background-color: grey;
     display: flex;
     height: 100%;
     justify-content: center;
@@ -9,3 +7,10 @@
     overflow-y: auto;
 }
 
+#image-wrapper {
+  display: flex;
+  justify-content: center;
+  height: 75vh;
+  width: 100%;
+  overflow: auto;
+}

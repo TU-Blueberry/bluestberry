@@ -1,28 +1,45 @@
-import {EventEmitter, Injectable} from '@angular/core';
+import {Injectable} from '@angular/core';
 import {Location} from '@angular/common';
-import initCode from '!raw-loader!../../assets/util/init.py';
-import {BehaviorSubject, concat, defer, EMPTY, forkJoin, from, Observable, ReplaySubject} from 'rxjs';
-import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
+import {defer, Observable, of, race, Subject, timer} from 'rxjs';
+import {filter, map, mapTo, shareReplay, switchMap, tap} from 'rxjs/operators';
+import {MessageType, PyodideWorkerMessage, PythonCallableData} from 'src/app/pyodide/pyodide.types';
+import {LessonEventsService} from 'src/app/lesson/lesson-events.service';
 
 @Injectable({
   providedIn: 'root',
 })
 export class PyodideService {
-  // standard packages included with pyodide
-  static readonly DEFAULT_LIBS = ['micropip'];
-  static readonly startFolderName = '';
-  private results$ = new BehaviorSubject([]);
-  // cache 1000 lines of stdout and stderr
-  private stdOut$ = new ReplaySubject<string>(1000);
-  private stdErr$ = new ReplaySubject<string>(1000);
-  private afterExecution$ = new EventEmitter<void>();
+  // This pyodide is only used for FS access
   pyodide = this.initPyodide();
+  private worker!: Worker;
 
-  // Overwrite stderr and stdout. Sources:
-  // https://pyodide.org/en/stable/usage/faq.html#how-can-i-control-the-behavior-of-stdin-stdout-stderr
-  // https://github.com/pyodide/pyodide/issues/8
+  onMessageListener$ = new Subject<PyodideWorkerMessage>();
 
-  constructor(private location: Location) {
+  private interruptBuffer = new Uint8Array(new SharedArrayBuffer(1));
+  private loadedLibs: Set<string> = new Set<string>();
+  private pythonCallbacks: string[] = [];
+  private mountPoint = '';
+  private _modulePaths: string[] = [];
+  set modulePaths(paths: string[]) {
+    this._modulePaths = paths;
+    this.worker.postMessage({ type: MessageType.SET_SYSPATH, data: paths });
+  }
+
+  constructor(private location: Location,
+              private lessonEventService: LessonEventsService) {
+    this.lessonEventService.onExperienceOpened.pipe(
+      map(lessonEvent => lessonEvent.preloadPythonLibs),
+    ).subscribe(preloadedPythonLibs => {
+      preloadedPythonLibs.forEach(lib => this.loadedLibs.add(lib));
+      this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: preloadedPythonLibs });
+    });
+    this.lessonEventService.onExperienceOpened.pipe(
+      map(lessonEvent => lessonEvent.name),
+    ).subscribe(lessonName => {
+      this.mountPoint = lessonName;
+      this.worker.postMessage({ type: MessageType.MOUNT, data: this.mountPoint });
+    });
+    this.initWorker();
   }
 
   private initPyodide(): Observable<Pyodide> {
@@ -34,49 +51,100 @@ export class PyodideService {
 
       return loadPyodide({
         indexURL: this.location.prepareExternalUrl('/assets/pyodide'),
-        stdout: (text) => {
-          this.stdOut$.next(text)
-        },
-        stderr: (text) => {
-          this.stdErr$.next(text)
-        }
       }).then(pyodide => {
         // restore define to original value
         anyWindow.define = define;
         return pyodide;
       });
     }).pipe(
-     switchMap(pyodide => forkJoin(
-        PyodideService.DEFAULT_LIBS.map(lib => from(pyodide.loadPackage(lib)))
-      ).pipe(map(() => pyodide))),
-      switchMap(pyodide => from(pyodide.runPythonAsync(initCode)).pipe(map(() => pyodide))),
       shareReplay(1),
     );
   }
 
+  private initWorker() {
+    if (typeof Worker !== 'undefined') {
+      this.worker = new Worker(new URL('./pyodide.worker', import.meta.url));
+      this.worker.onmessage = ({ data }) => {
+        this.onMessageListener$.next(data);
+      };
+      this.worker.postMessage({ type: MessageType.SET_PYODIDE_LOCATION, data: this.location.prepareExternalUrl('/assets/pyodide')});
+      this.worker.postMessage({ type: MessageType.SET_INTERRUPT_BUFFER, data: { buffer: this.interruptBuffer }});
+      if (this._modulePaths.length > 0) {
+        // just execute the setter again
+        this.modulePaths = this._modulePaths;
+      }
+      if (this.pythonCallbacks.length > 0) {
+        this.setupPythonCallables(this.pythonCallbacks);
+      }
+      if (this.mountPoint.length > 0) {
+        this.worker.postMessage({ type: MessageType.MOUNT, data: this.mountPoint });
+      }
+      if (this.loadedLibs.size > 0) {
+        this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: [...this.loadedLibs] });
+      }
+    } else {
+      console.error('WebWorkers not supported by this Environment...');
+    }
+  }
+
   runCode(code: string): Observable<any> {
-    return this.pyodide.pipe(switchMap(pyodide => {
-      pyodide.globals.set('editor_input', code);
-      return defer(() => from(pyodide.runPythonAsync('await run_code()')))
-        .pipe(tap(res => this.results$.next(res)), tap(() => this.afterExecution$.emit()));
-    }));
+    this.worker.postMessage({ type: MessageType.EXECUTE, data: { code }})
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.AFTER_EXECUTION),
+      map(message => message.data),
+    );
+  }
+
+  terminateCode(gracePeriod: number): Observable<'soft' | 'hard'> {
+    // This cryptic statement will in theory interrupt a running python script
+    // It works as follows: the interruptBuffer is shared between the worker thread and main thread
+    // Pyodide uses this shared buffer to listen for posix style interrupts
+    // The number for SIGINT is 2 so we set a 2 into this buffer
+    const softTerminate$: Observable<'soft'> = this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.TERMINATED),
+      mapTo('soft')
+    );
+
+    const hardTerminate$: Observable<'hard'> = timer(gracePeriod).pipe(mapTo('hard'));
+
+    this.interruptBuffer[0] = 2;
+    this.worker.postMessage({ type: MessageType.TERMINATED });
+
+    return race(
+      softTerminate$,
+      hardTerminate$
+    ).pipe(
+      tap(result => {
+        if (result === 'hard') {
+          // The worker didn't terminate itself in the grace period
+          // We need a hard terminate
+          // The worker is completely terminated and reinitialized
+          this.worker.terminate();
+          this.initWorker();
+          this.onMessageListener$.next({ type: MessageType.STD_OUT, data: `Worker did not terminate after ${gracePeriod}ms! Reinitializing Context...`})
+        }
+      }),
+    );
   }
 
   // We use python globals() to store the result from matplotlib
-  getGlobal(key: string): Observable<string[]> {
-    return this.pyodide.pipe(map(pyodide => {
-      const strings = pyodide.globals.get(key)?.toJs();
-      return strings !== undefined ? strings : [];
-    }));
+  private getGlobal(key: string): Observable<string[]> {
+    this.worker.postMessage({ type: MessageType.GET_GLOBAL, data: { key }})
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.GET_GLOBAL),
+      map(message => message.data as string[]),
+    );
   }
 
-  setGlobal(key:string, value: any): Observable<void> {
-    return this.pyodide.pipe(map(pyodide => {
-      pyodide.globals.set(key, value);
-    }));
+  private setGlobal(key:string, value: any): Observable<void> {
+    this.worker.postMessage({ type: MessageType.SET_GLOBAL, data: { key, value }})
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.SET_GLOBAL),
+      map(_ => {})
+    );
   }
 
-  deleteGlobal(key: string): Observable<void> {
+  private deleteGlobal(key: string): Observable<void> {
     return this.pyodide.pipe(map(pyodide => {
       if (pyodide.globals.has(key)) {
         pyodide.globals.delete(key);
@@ -85,49 +153,46 @@ export class PyodideService {
   }
 
   getResults(): Observable<any> {
-    return this.results$.asObservable();
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.RESULT),
+      map(message => message.data),
+    );
   }
 
   getStdOut(): Observable<string> {
-    return this.stdOut$.asObservable();
-  }
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.STD_OUT),
+      map(message => message.data as string),
+    );  }
 
   getStdErr(): Observable<string> {
-    return this.stdErr$.asObservable();
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.STD_ERR),
+      map(message => message.data as string),
+    );
   }
 
-  getAfterExecution(): EventEmitter<void> {
-    return this.afterExecution$;
+  getAfterExecution(): Observable<void> {
+    return this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.AFTER_EXECUTION),
+      map(_ => {}),
+    );
   }
 
-  private runCodeSilently(code: string): Observable<never> {
-    return this.pyodide.pipe(switchMap(pyodide => {
-      pyodide.runPythonAsync(code);
-      return EMPTY;
-    }));
+  setupPythonCallables(callbacks: string[]): Observable<PythonCallableData> {
+    this.pythonCallbacks = callbacks;
+    this.worker.postMessage({ type: MessageType.SETUP_PYTHON_CALLABLE, data: callbacks });
+    return this.onMessageListener$.pipe(
+      filter(({ type }) => type === MessageType.PYTHON_CALLABLE),
+      map(({ data }) => data as PythonCallableData),
+    );
   }
 
-  public addToSysPath(path: string): Observable<never> {
-    const fullPath = `${!path.startsWith('/') ? '/' : ''}${path}`;
-    console.log("ADD TO SYS PATH!", path, fullPath)
-
-    const code = `
-import sys
-
-if "${fullPath}" not in sys.path:
-    sys.path.append("${fullPath}")`
-
-    return this.runCodeSilently(code);
+  addToSysPath(path: string): void {
+    this.modulePaths = [...this._modulePaths, path];
   }
 
-  public removeFromSysPath(path: string): Observable<never> {
-    const fullPath = `${!path.startsWith('/') ? '/' : ''}${path}`;
-    const code = `
-import sys
-
-if "${fullPath}" in sys.path:
-    sys.path.remove("${fullPath}")`
-
-    return this.runCodeSilently(code);
+  removeFromSysPath(path: string) {
+    this.modulePaths = this._modulePaths.filter(p => p === path);
   }
 }
