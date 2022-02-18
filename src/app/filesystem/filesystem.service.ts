@@ -415,10 +415,10 @@ export class FilesystemService {
       }
     });
 
-    const folderObservables = folders.map(folder => this.createFolder(`${name}/${folder}`, false));
+    const folderObservables = folders.map(folder => this.createFolder(`/${name}/${folder}`, false));
     const fileObservables = files.filter(file => file !== "config.json").map(
       file => this.getFileAsBuffer(unzippedLesson, file).pipe(
-      (switchMap(buffer => this.createFile(`${name}/${file}`, new Uint8Array(buffer), false)))));
+      (switchMap(buffer => this.createFile(`/${name}/${file}`, new Uint8Array(buffer), false)))));
 
     return concat(...folderObservables, forkJoin(fileObservables), this.sync(false));
   }
