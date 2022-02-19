@@ -33,6 +33,7 @@ export class HintViewerComponent implements OnInit {
   }
 
   base_path: string = '';
+  glossaryEntryPoint: string = '';
 
   imagePathToSafeUrl = new Map<string, SafeUrl>();
 
@@ -41,13 +42,13 @@ export class HintViewerComponent implements OnInit {
   private fsService: FilesystemService, private fsEventService: FilesystemEventService) {}
 
   ngOnInit() {
-    this.getHintRoot().pipe(
-      filter(path => path !== ''),
-      switchMap(path => this.fsService.getFileAsBinary(path).pipe(
+    this.conf.getHintRootAndGlossaryEntryPointOfCurrentExperience().pipe(
+      switchMap(paths => this.fsService.getFileAsBinary(paths.hintRoot).pipe(
           switchMap(data => {
-            this.base_path = path.split("/").slice(0,-1).join("/");
+            this.glossaryEntryPoint = paths.glossaryEntryPoint;
+            this.base_path = paths.hintRoot.split("/").slice(0,-1).join("/");
             var rootFileString = new TextDecoder().decode(data);
-            console.log("Hints file " + path + " loaded");
+            console.log("Hints file " + paths.hintRoot + " loaded");
             this.loadFile(rootFileString);
 
             return this.generateSafeUrls();
@@ -221,9 +222,9 @@ export class HintViewerComponent implements OnInit {
     )
   }
 
+  // TODO: Differ between local and global glossary files
   openGlossary(glossaryFileName: string): void {
-
-    const path = "/glossary/" + glossaryFileName
+    const path = `${this.glossaryEntryPoint}/${glossaryFileName}`;
     console.log("opening glossary at " + path)
 
     this.fsService.getFileAsBinary(path).subscribe(node => {
@@ -257,14 +258,6 @@ export class HintViewerComponent implements OnInit {
         );
         this.imagePathToSafeUrl.set(name, safeUrl);
       }))
-    )
-  }
-
-  private getHintRoot(): Observable<string> {
-    return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
-      switchMap(state => {
-        return !state.current ? of('') : this.conf.getHintRoot(state.current);
-      })
     )
   }
 }

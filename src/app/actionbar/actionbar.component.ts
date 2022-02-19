@@ -7,6 +7,7 @@ import { About } from './actions/about.action';
 import { Filetree } from './actions/filetree.action';
 import { Hints } from './actions/hints.action';
 import { ImportAction } from './actions/import.action';
+import { Simulation } from './actions/simulation.action';
 import { Tour } from './actions/tour.action';
 
 @Component({
@@ -20,7 +21,9 @@ export class ActionbarComponent implements OnInit {
     'terminal': { active: false },
     'hints': { active: false },
     'tour': { active: false },
-    'about': { active: false }
+    'about': { active: false },
+    'simulation': { active: false },
+    'import': { active: false }
   }
 
   actionBarState$: Observable<any>;
@@ -31,6 +34,8 @@ export class ActionbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.actionBarState$.subscribe(v => {
+      console.log("receive actionbar satet", v)
+
       this.settings = { ...v };
     }); 
   }
@@ -65,6 +70,6 @@ export class ActionbarComponent implements OnInit {
   }
 
   startSimulation() {
-    this.uiEv.startSimulation();
+    this.store.dispatch(new Simulation.Open())
   }
 }

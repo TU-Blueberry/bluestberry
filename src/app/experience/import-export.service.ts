@@ -45,7 +45,7 @@ export class ImportExportService {
 
         const isCurrent = state.current && state.current.uuid === conf.uuid;
         const expAvailbleOffline = [...state.lessons, ...state.sandboxes].find(exp => exp.uuid === conf.uuid)?.availableOffline || false;
-        const exp: Experience = { name: conf.name,  uuid: conf.uuid, type: conf.type, availableOffline: true };
+        const exp: Experience = { name: conf.name, uuid: conf.uuid, type: conf.type, availableOffline: true, preloadedPythonLibs: conf.preloadPythonLibs };
         let importObsv: Observable<never>;
 
         if (overwrite) {
@@ -57,9 +57,9 @@ export class ImportExportService {
               this.fs.storeExperience(zipFile, conf.uuid, true),
               this.fs.sync(false)
             ).pipe(finalize(() => this.store.dispatch([
+                new ImportAction.OverwriteCurrent(exp),
                 new ExperienceAction.UpdateExperience(exp), 
                 new ExperienceAction.ChangeCurrent(exp),
-                new ImportAction.OverwriteCurrent(exp)
               ])))
           } else {
             importObsv = concat(

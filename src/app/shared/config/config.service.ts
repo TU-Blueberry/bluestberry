@@ -56,8 +56,28 @@ export class ConfigService {
 
   public getHintRoot(exp: Experience): Observable<string> {
     return this.getConfigByExperience(exp).pipe(
-      switchMap(conf => of(`${conf.hintRoot}/root.yml`))
+      switchMap(conf => of(`/${conf.uuid}/${conf.hintRoot}/root.yml`))
     )
+  }
+
+  public getGlossaryEntryPoint(exp: Experience): Observable<string> {
+    return this.getConfigByExperience(exp).pipe(
+      switchMap(conf => of(`/${conf.uuid}/${conf.glossaryEntryPoint}`))
+    )
+  }
+
+  public getUnityEntryPoint(exp: Experience): Observable<string> {
+    return this.getConfigByExperience(exp).pipe(
+      switchMap(conf => of(`/${conf.uuid}/${conf.unityEntryPoint}`))
+    )
+  }
+
+  public getHintRootAndGlossaryEntryPointOfCurrentExperience(): Observable<{ hintRoot: string, glossaryEntryPoint: string }> {
+    return this.getCurrentExperience().pipe(
+      take(1),
+      switchMap(exp => zip(this.getHintRoot(exp), this.getGlossaryEntryPoint(exp))),
+      switchMap(([hintRoot, gep]) => of({ hintRoot: hintRoot, glossaryEntryPoint: gep }))
+    );
   }
 
   public saveStateOfCurrentExperience(): Observable<never> {

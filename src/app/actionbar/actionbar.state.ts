@@ -13,6 +13,7 @@ import { Reset } from "../shared/actions/reset.action";
 import { ConfigService } from "../shared/config/config.service";
 import { FilesystemService } from "../filesystem/filesystem.service";
 import { ImportAction } from "./actions/import.action";
+import { Simulation } from "./actions/simulation.action";
 
 export interface ActionbarModel {
     [itemId: string]: {
@@ -59,7 +60,7 @@ export class ActionbarState {
             'hints': { active: this.checkIfHintsAreOpen(action.openTabs) },
             'tour': { active: false },
             'about': { active: false },
-            'simulation': { active: false },
+            'simulation': { active: this.checkIfSimulationIsOpen(action.openTabs) },
             'import': { active: false }
         });
     }
@@ -140,6 +141,17 @@ export class ActionbarState {
     onImportWindowClose(ctx: StateContext<ActionbarModel>, action: ImportAction.CloseImportWindow) {
         this.updateActionbarStore(ctx, 'import', false);
     }
+
+    @Action(Simulation.Open)
+    onSimulationOpen(ctx: StateContext<ActionbarModel>, action: Simulation.Open) {
+        this.updateActionbarStore(ctx, 'simulation', true);
+        return this.tabManagement.openSimulation();    
+    }
+
+    @Action(Simulation.Close)
+    onSimulationClose(ctx: StateContext<ActionbarModel>, action: Simulation.Close) {
+        this.updateActionbarStore(ctx, 'simulation', false);
+    }
     
     private updateActionbarStore(ctx: StateContext<ActionbarModel>, item: string, active: boolean, data?: any) {
         const state = ctx.getState();
@@ -150,6 +162,10 @@ export class ActionbarState {
     }
 
     private checkIfHintsAreOpen(tabs: { path: string, on: string, active: boolean }[]): boolean {
-        return tabs.findIndex(tab => tab.path === 'HINT' && tab.active) > -1;
+        return tabs.findIndex(tab => tab.path.toUpperCase() === 'HINT' && tab.active) > -1;
     }
-}
+
+    private checkIfSimulationIsOpen(tabs: { path: string, on: string, active: boolean }[]): boolean {
+        return tabs.findIndex(tab => tab.path.toUpperCase() === 'UNITY' && tab.active) > -1;
+    }
+ }

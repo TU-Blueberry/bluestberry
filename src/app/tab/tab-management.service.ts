@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {concat, defer, EMPTY, merge, Observable, of, Subject} from 'rxjs';
+import {concat, defer, EMPTY, merge, Observable, of, Subject, throwError} from 'rxjs';
 import {catchError, filter, finalize, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
@@ -81,6 +81,21 @@ export class TabManagementService {
     );
   }
 
+  openSimulation(): Observable<never> {
+    return this.getUnityEntryPoint().pipe(
+      switchMap(path => this.filesystemService.getFileAsBinary(path).pipe(
+        switchMap(data => defer(() => {
+          const full = ({ content: data, base_path: path });
+          this._openTab.next({groupId: 'right', title: 'Simulation', type: 'UNITY' as TabType, path: '', data: full, active: true})
+        }))
+      ))
+    );
+  }
+
+  openPlotly(htmlContent: Uint8Array): void {
+    this._openTab.next({groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, path: '',data: htmlContent, active: true });
+  }
+
   createOpenTabEvent(path: string, active: boolean, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
     const fileType = type || this.filesystemService.getFileType(path);
     return (
@@ -127,13 +142,13 @@ export class TabManagementService {
 
   private getHintRoot(): Observable<string> {
     return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
-      switchMap(state => {
-        if (!state.current) {
-          return of('')
-        } else {
-          return this.conf.getHintRoot(state.current);
-        }
-      })
+      switchMap(state => !state.current ? throwError('No hint root in config') : this.conf.getHintRoot(state.current))
+    )
+  }
+
+  private getUnityEntryPoint(): Observable<string> {
+    return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
+      switchMap(state => !state.current ? throwError('No unity entry point in config') : this.conf.getUnityEntryPoint(state.current))
     )
   }
 }

@@ -28,6 +28,7 @@
     "@ngxs/store": "^3.7.3",
     "angular-split": "^13.1.0",
     "file-saver": "^2.0.5",
+    "fuse.js": "^6.5.3",
     "js-yaml": "^3.14.1",
     "jszip": "^3.7.1",
     "monaco-editor": "^0.29.1",

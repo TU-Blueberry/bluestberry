@@ -260,20 +260,20 @@ export class FilesystemService {
 
   // no restrictions, displays everything (for zip export, hint viewer etc.)
   public scanAll(path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
-    return this.scanB(path, depth, includeFiles, true, true)
+    return this.scan(path, depth, includeFiles, true, true)
   }
 
   // for search (no hidden files, no modules, no hints, no config, BUT include glossary)
   public scanForSearch(path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
-    return this.scanB(path, depth, includeFiles, false, true)
+    return this.scan(path, depth, includeFiles, false, true)
   }
 
   // for filetree/treenode (no hidden files, no modules, no hints, no config, no glossary)
   public scanUser(path: string, depth: number, includeFiles: boolean): Observable<FSNode[][]> {
-    return this.scanB(path, depth, includeFiles, false, false)
+    return this.scan(path, depth, includeFiles, false, false)
   }
 
-  private scanB(path: string, depth: number, includeFiles: boolean, scanAll: boolean, includeGlossary: boolean): Observable<FSNode[][]> {
+  private scan(path: string, depth: number, includeFiles: boolean, scanAll: boolean, includeGlossary: boolean): Observable<FSNode[][]> {
     return this.getNodeByPath(path).pipe(
       switchMap(node => {
         return this.N_isFile(node) ? of([]) : this.scanWithOutFetch((node.contents as FSNode), path, depth, includeFiles, scanAll, includeGlossary)
@@ -447,7 +447,7 @@ export class FilesystemService {
   public writeToFile(path: string, content: Uint8Array | string, withSync: boolean, mode?: number): Observable<never> {
     const writeObservable =  this.exists(path).pipe(
       switchMap(exists => !exists ? 
-        throwError("File doesn't yet exist. Use createFile instead") :
+        throwError(`File ${path} doesn't exist yet. Use createFile instead`) :
         (!this.isSystemDirectory(path) ? 
           this.writeFileTest(path, content, mode) : 
           throwError("Can't write to system files")
@@ -556,7 +556,7 @@ export class FilesystemService {
         if (isFile) {
           return of(this.N_readFileAsString(path)) 
         } else {
-          return throwError("Given path is no file")
+          return throwError(`Path ${path} is not a file`)
         }
       }
     ));
@@ -566,7 +566,7 @@ export class FilesystemService {
     return this.isFile(path).pipe(
       switchMap(isFile => isFile ? 
         of(this.N_readFileAsBinary(path)) : 
-        throwError("Given path is no file")
+        throwError(`Path ${path} is not a file`)
     ));
   }
 
@@ -575,7 +575,7 @@ export class FilesystemService {
     const renameObservable = this.exists(newPath).pipe(
       switchMap(exists => { 
         if (!exists) {
-          if (this.isSystemDirectory(oldPath) && !this.isSystemDirectory(newPath)) {
+          if (!this.isSystemDirectory(oldPath) && !this.isSystemDirectory(newPath)) {
             return defer(() => this.N_rename(oldPath, newPath))
           } else {
             return throwError("Can't rename system directories")
@@ -738,6 +738,6 @@ export class FilesystemService {
 
   getExtension(name: string): string {
     const extension_match = name.split(".");
-    return extension_match[extension_match.length - 1].toUpperCase();
+    return extension_match.length > 1 ? extension_match[extension_match.length - 1].toUpperCase() : '';
   }
 }

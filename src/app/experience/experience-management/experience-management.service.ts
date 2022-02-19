@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Location } from '@angular/common';
-import { concat, EMPTY, Observable, of, throwError } from 'rxjs';
+import { concat, defer, EMPTY, Observable, of, throwError } from 'rxjs';
 import { switchMap, take, tap } from 'rxjs/operators';
 import { FilesystemService } from '../../filesystem/filesystem.service';
 import { ZipService } from '../../filesystem/zip/zip.service';
@@ -70,7 +70,8 @@ export class ExperienceManagementService {
       modules: [],
       readonly: [],
       glossaryEntryPoint: '',
-      hintRoot: ''
+      hintRoot: '',
+      preloadPythonLibs: []
     }
 
     return concat(
@@ -102,18 +103,16 @@ export class ExperienceManagementService {
     return concat(
       this.fsService.mount(exp.uuid),
       this.fsService.sync(true),
-      this.py.addToSysPath(exp.uuid),
-      this.fsService.changeWorkingDirectory(`/${exp.uuid}/${PyodideService.startFolderName}`),
+      defer(() => this.py.addToSysPath(exp.uuid)),
+      this.fsService.changeWorkingDirectory(`/${exp.uuid}`),
       this.checkExperienceAfterMount(exp)
     )
   }
 
-  // TODO: SET STARTFOLDERNAME in pyservice
-
   // if delete flag is set, experience will be deleted before closing it
   public closeExperience(exp: Experience, deleteBeforeClose: boolean) {
     return concat(
-      this.py.removeFromSysPath(exp.uuid),
+      defer(() => this.py.removeFromSysPath(exp.uuid)),
       this.fsService.changeWorkingDirectory('/'),
       this.fsService.unmount(exp.uuid),
       this.fsService.reset(),
@@ -144,8 +143,8 @@ export class ExperienceManagementService {
   }
 
   /** Retrieves the lesson with the given name from the server */
-  private loadLessonFromServer(uuid: string) {
-    const url = this.location.prepareExternalUrl(`/assets/${uuid}.zip`);
+  private loadLessonFromServer(name: string) {
+    const url = this.location.prepareExternalUrl(`/assets/${name}.zip`);
     return this.http.get(url, { responseType: 'arraybuffer' });
   }
 
@@ -155,15 +154,15 @@ export class ExperienceManagementService {
   }
 
   private loadAndStoreLesson(lesson: Experience) {
-    return this.loadLessonFromServer(lesson.uuid).pipe(
+    return this.loadLessonFromServer(lesson.name).pipe(
       switchMap(buff => this.zipService.loadZip(buff)),
       switchMap(zip => 
         concat(
           this.fsService.mount(lesson.uuid),
           this.fsService.storeExperience(zip, lesson.uuid),
           this.fsService.sync(false),
-          this.fsService.changeWorkingDirectory(`/${lesson.uuid}/${PyodideService.startFolderName}`),
-          this.py.addToSysPath(lesson.uuid),
+          this.fsService.changeWorkingDirectory(`/${lesson.uuid}`),
+          defer(() => this.py.addToSysPath(lesson.uuid)),
           this.checkExperienceAfterMount(lesson)
         )
       )

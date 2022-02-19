@@ -1,9 +1,10 @@
 import {Injectable} from '@angular/core';
 import {Location} from '@angular/common';
 import {defer, Observable, of, race, Subject, timer} from 'rxjs';
-import {filter, map, mapTo, shareReplay, switchMap, tap} from 'rxjs/operators';
+import {filter, map, mapTo, shareReplay, tap} from 'rxjs/operators';
 import {MessageType, PyodideWorkerMessage, PythonCallableData} from 'src/app/pyodide/pyodide.types';
-import {LessonEventsService} from 'src/app/lesson/lesson-events.service';
+import {Actions, ofActionSuccessful} from '@ngxs/store';
+import {ExperienceAction} from '../experience/actions';
 
 @Injectable({
   providedIn: 'root',
@@ -26,19 +27,20 @@ export class PyodideService {
   }
 
   constructor(private location: Location,
-              private lessonEventService: LessonEventsService) {
-    this.lessonEventService.onExperienceOpened.pipe(
-      map(lessonEvent => lessonEvent.preloadPythonLibs),
-    ).subscribe(preloadedPythonLibs => {
-      preloadedPythonLibs.forEach(lib => this.loadedLibs.add(lib));
-      this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: preloadedPythonLibs });
-    });
-    this.lessonEventService.onExperienceOpened.pipe(
-      map(lessonEvent => lessonEvent.name),
-    ).subscribe(lessonName => {
-      this.mountPoint = lessonName;
-      this.worker.postMessage({ type: MessageType.MOUNT, data: this.mountPoint });
-    });
+              private action$: Actions) {
+    this.action$.pipe(
+      ofActionSuccessful(ExperienceAction.ChangeCurrent)
+    ).subscribe((action: ExperienceAction.ChangeCurrent) => {
+
+      if (action.exp.preloadedPythonLibs) {
+        action.exp.preloadedPythonLibs?.forEach(lib => this.loadedLibs.add(lib));  
+        this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: Array.from(this.loadedLibs) });
+  
+        this.mountPoint = action.exp.uuid;
+        this.worker.postMessage({ type: MessageType.MOUNT, data: this.mountPoint });
+      } 
+    }) 
+
     this.initWorker();
   }
 

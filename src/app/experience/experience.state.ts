@@ -1,6 +1,6 @@
 import { Injectable } from "@angular/core";
 import { Action, State, StateContext } from "@ngxs/store";
-import { concat, EMPTY, Observable } from "rxjs";
+import { concat, defer, EMPTY, Observable } from "rxjs";
 import { finalize, last, switchMap } from "rxjs/operators";
 import { AppAction } from "../app.actions";
 import { Reset } from "../shared/actions/reset.action";
@@ -58,6 +58,7 @@ export class ExperienceState {
     onExperienceOpened(ctx: StateContext<ExperienceStateModel>, action: ExperienceAction.Open) {
         const state = ctx.getState();
         let obsv: Observable<any>;
+        let preloadedLibs: string[] = [];
 
         ctx.dispatch(new AppAction.Change('SWITCHING'));
 
@@ -77,15 +78,33 @@ export class ExperienceState {
                 this.expMgmt.openSandbox(action.exp);
         }
         
-        return obsv.pipe(
-            finalize(() => {
-                ctx.dispatch([
-                    new AppAction.Change("READY"), 
-                    new ExperienceAction.UpdateExperience({...action.exp, availableOffline: true}),
-                    new ExperienceAction.ChangeCurrent({...action.exp, availableOffline: true})
-                ]);
-            })
-        );
+        return concat(
+                obsv,
+                action.exp.preloadedPythonLibs ? 
+                    EMPTY : 
+                    this.conf.getConfigByExperience(action.exp).pipe(
+                        switchMap(conf => defer(() => {
+                            preloadedLibs = conf.preloadPythonLibs;
+                        }))
+                    )
+            
+            ).pipe(
+                finalize(() => {
+                    const exp: Experience = {
+                        name: action.exp.name,
+                        uuid: action.exp.uuid, 
+                        type: action.exp.type,
+                        availableOffline: true,
+                        preloadedPythonLibs: action.exp.preloadedPythonLibs ? action.exp.preloadedPythonLibs : preloadedLibs
+                    }
+
+                    ctx.dispatch([
+                        new ExperienceAction.UpdateExperience(exp),
+                        new ExperienceAction.ChangeCurrent(exp),
+                        new AppAction.Change("READY")
+                    ]) 
+                })
+            )
     }
 
     @Action(ExperienceAction.Close)

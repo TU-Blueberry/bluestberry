@@ -44,16 +44,25 @@
         <circle cx="12" cy="12" r="10"></circle>
       </svg>
     </button>
+    <button class="action-bar-button" (click)="startSimulation()">
+      <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" 
+          fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
+          stroke-linejoin="miter" [class.active]="settings.simulation.active">
+        <path stroke-linecap="round" d="M16 10.087l5-1.578v7.997l-4.998-1.578"></path>
+        <path d="M16 7H3v11h13z"></path>
+        <title>Starte Simulation</title>
+      </svg>
+    </button>
     <button class="action-bar-button" (click)="openImport($event)">
       <svg class="svg-icon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
             aria-labelledby="uploadIconTitle" stroke="currentColor" stroke-width="2" 
             stroke-linecap="square" stroke-linejoin="miter" fill="none" color="none"
-            [class.active]="settings.import.active">>
+            [class.active]="settings.import.active">
         <title id="uploadIconTitle">Datei hochladen</title>
         <path d="M12,4 L12,17"/> 
         <polyline points="7 8 12 3 17 8"/>
         <path d="M20,21 L4,21"/>
-    </svg>
+      </svg>
     </button>
     <app-import></app-import> 
   </div>

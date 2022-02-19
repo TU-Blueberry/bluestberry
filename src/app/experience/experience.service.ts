@@ -98,7 +98,7 @@ export class ExperienceService {
       zip(..._exps.map(exp => this.conf.getConfigByExperience(exp)))
     ).pipe(
       switchMap(confs => {
-        const exps: Experience[] = confs.map(conf => ({ name: conf.name, uuid: conf.uuid, type: conf.type, availableOffline: true })) 
+        const exps: Experience[] = confs.map(conf => ({ name: conf.name, uuid: conf.uuid, type: conf.type, availableOffline: true, preloadedPythonLibs: conf.preloadPythonLibs })) 
 
         return concat(
           this.fs.unmountMany(paths),

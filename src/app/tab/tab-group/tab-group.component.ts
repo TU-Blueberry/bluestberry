@@ -18,6 +18,7 @@ import { TabChange } from '../actions/tab.action';
 import { ActiveChange } from '../actions/active.actions';
 import { Hints } from 'src/app/actionbar/actions/hints.action';
 import { ExperienceAction } from 'src/app/experience/actions';
+import { Simulation } from 'src/app/actionbar/actions/simulation.action';
 
 @Component({
   selector: 'app-tab-group',
@@ -86,8 +87,9 @@ export class TabGroupComponent implements AfterViewInit {
       if (tab.type === "HINT" || tab.type === "UNITY") {
         existingTab = this.dataSource.find(t => t.type === tab.type);
       } else if(tab.type != 'PLOTLY') {
-        existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+        existingTab = this.dataSource.find(t => t.path === tab.path);
       } 
+
 
       if (!existingTab) {
         this.dataSource.push(tab);
@@ -136,6 +138,10 @@ export class TabGroupComponent implements AfterViewInit {
 
     if (tab.type === 'HINT') {
       this.store.dispatch(new Hints.Close());
+    }
+
+    if (tab.type === 'UNITY') {
+      this.store.dispatch(new Simulation.Close());
     }
 
     if (this._activeTab === tab) {

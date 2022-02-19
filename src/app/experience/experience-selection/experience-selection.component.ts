@@ -18,7 +18,7 @@ export class ExperienceSelectionComponent implements OnInit {
   experiences$: Observable<ExperienceStateModel>
   app$: Observable<AppStateModel>;
   appState: AppStatus = "INITIALIZING";
-  selectedExperience: Experience = { name: '', type: "LESSON", uuid: ''};
+  selectedExperience: Experience = { name: '', type: "LESSON", uuid: '', preloadedPythonLibs: []};
   lessons: Experience[] = [];
   sandboxes: Experience[] = [];
   exporting?: Experience;
