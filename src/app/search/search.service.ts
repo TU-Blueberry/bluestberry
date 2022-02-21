@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Actions, ofActionSuccessful } from '@ngxs/store';
 import { BehaviorSubject, forkJoin, merge, Observable } from 'rxjs';
-import { finalize, switchMap } from 'rxjs/operators';
+import { filter, finalize, switchMap } from 'rxjs/operators';
 import { ExperienceAction } from '../experience/actions';
 import {FilesystemService} from "../filesystem/filesystem.service";
 import Fuse from 'fuse.js'
@@ -34,9 +34,17 @@ export class SearchService {
       ofActionSuccessful(ExperienceAction.Close)
     ).subscribe(() => this.reset())
 
-    this.ev.onDeletePath.subscribe(path => this.onDeletePath(path));
-    this.ev.onMovePath.subscribe(params => this.onMovePath(params));
-    this.ev.onWriteToFile.subscribe(params => this.onWriteToFile(params));
+    this.ev.onDeletePath.pipe(
+      filter(() => this.isLoaded)
+    ).subscribe(path => this.onDeletePath(path));
+
+    this.ev.onMovePath.pipe(
+      filter(() => this.isLoaded)
+    ).subscribe(params => this.onMovePath(params));
+
+    this.ev.onWriteToFile.pipe(
+      filter(() => this.isLoaded)
+    ).subscribe(params => this.onWriteToFile(params));
   }
 
   private scan(path: string, depth: number): Observable<any> {
@@ -59,36 +67,35 @@ export class SearchService {
 
   // delete every matching entry
   private onDeletePath(path: string) {
-    if (this.isLoaded) {
-      this.fuse.remove(doc => doc.path.startsWith(path));
-    }
+    this.fuse.remove(doc => doc.path.startsWith(path));
   }
 
   // add file if it doesn't exist yet
-  private onWriteToFile(params: { path: string, bytesWritten: number }) {
-    if (this.isLoaded) {     
-      if (this.fuse.search(`="${params.path}"`).length === 0) {
-        const name = params.path.split('/').pop();
-  
-        if (name) {
+  private onWriteToFile(params: { path: string, bytesWritten: number }) {  
+    if (this.fuse.search(`="${params.path}"`).length === 0) {
+      const parts = params.path.split('/')
+      const name = parts.pop();
+
+      if (name && this.fsService.isAllowedPath(params.path, false, true)) {
+        // hide config.json on root level of expierience (/<uuid>/config.json)
+        if ((name !== 'config.json') || (name === 'config.json' && parts.length > 2)) {
           this.fuse.add({ name: name, path: params.path })
-        }
-      } 
-    }
+        } 
+      }
+    } 
   }
 
   // onMovePath is triggered for both files and folders
   private onMovePath(params: { oldPath: string, newPath: string, extension: string }) {
-    if (this.isLoaded) {
-      const removed = this.fuse.remove(doc => doc.path.startsWith(params.oldPath));
-      removed.forEach(entry => {
-        const updatedEntry: SearchEntry = {
-          name: params.extension === '' ? entry.name : params.newPath.split('/').pop() || '', 
-          path: entry.path.replace(params.oldPath, params.newPath) 
-        }
-        this.fuse.add(updatedEntry);
-      })
-    }
+    const removed = this.fuse.remove(doc => doc.path.startsWith(params.oldPath));
+    removed.forEach(entry => {
+      const updatedEntry: SearchEntry = {
+        // folders have no extension
+        name: params.extension === '' ? entry.name : params.newPath.split('/').pop() || '', 
+        path: entry.path.replace(params.oldPath, params.newPath) 
+      }
+      this.fuse.add(updatedEntry);
+    })
   }
 
   public addSearchToHistory(searchTerm: string) {

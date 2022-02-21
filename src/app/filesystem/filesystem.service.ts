@@ -289,14 +289,8 @@ export class FilesystemService {
     const subfolders: FSNode[] = [];
     const filesInFolder: FSNode[] = [];
 
-    // keep everything if scanAll is set to true
-    // else remove all elements which are hidden, modules, system dirs, hints; potentially also remove glossary entries
     const remainingObjects = Object.entries(node)
-      .filter(([_, value], key) => (scanAll || !this.isHiddenPath(`${path}/${value.name}`))
-                                    && (scanAll || !this.isModulePath(`${path}/${value.name}`))
-                                    && (scanAll || !this.isSystemDirectory(`${path}/${value.name}`))
-                                    && (scanAll || !this.isHintPath(`${path}/${value.name}`))
-                                    && (scanAll || includeGlossary || !this.isGlossaryPath(`${path}/${value.name}`)));
+      .filter(([_, value], key) => this.isAllowedPath(`${path}/${value.name}`, scanAll, includeGlossary))
 
     // for each remaining object, get the results from isFile and isDirectory in parallel
     // depending on the results we put the node into the corresponding array
@@ -315,6 +309,16 @@ export class FilesystemService {
       forkJoin(test).pipe(ignoreElements()),
       of([subfolders, filesInFolder])
     );
+  }
+
+  // keep everything if scanAll is set to true
+  // else remove all elements which are hidden, modules, system dirs, hints; potentially also remove glossary entries
+  public isAllowedPath(path: string, scanAll: boolean, includeGlossary: boolean): boolean {
+    return (scanAll || !this.isHiddenPath(path)
+              && (scanAll || !this.isModulePath(path))
+              && (scanAll || !this.isSystemDirectory(path)
+              && (scanAll || !this.isHintPath(path)
+              && (scanAll || includeGlossary || !this.isGlossaryPath(path)))))
   }
 
   private getFileAsBuffer(unzippedLesson: JSZip, file: string): Observable<ArrayBuffer>{
@@ -725,9 +729,6 @@ export class FilesystemService {
 
   resetLesson(): void {
 
-  }
-
-  updateLesson(): void {
   }
 
   getFileType(path: string): FileType {
