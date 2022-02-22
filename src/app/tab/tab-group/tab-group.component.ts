@@ -13,7 +13,12 @@ import {TabTemplateDirective} from 'src/app/tab/tab-template.directive';
 import {Tab} from 'src/app/tab/model/tab.model';
 import {TabManagementService} from 'src/app/tab/tab-management.service';
 import {filter} from 'rxjs/operators';
-import {LessonEventsService} from 'src/app/lesson/lesson-events.service';
+import { Actions, ofActionSuccessful, Store } from '@ngxs/store';
+import { TabChange } from '../actions/tab.action';
+import { ActiveChange } from '../actions/active.actions';
+import { Hints } from 'src/app/actionbar/actions/hints.action';
+import { ExperienceAction } from 'src/app/experience/actions';
+import { Simulation } from 'src/app/actionbar/actions/simulation.action';
 
 @Component({
   selector: 'app-tab-group',
@@ -40,7 +45,16 @@ export class TabGroupComponent implements AfterViewInit {
 
   _activeTab?: Tab;
   set activeTab(value) {
+    if (this._activeTab && this._activeTab.type === 'HINT') {
+      this.store.dispatch(new Hints.Inactive());
+    }
+
+    if (value?.type === 'HINT') {
+      this.store.dispatch(new Hints.Active());
+    }
+
     this._activeTab = value;
+    this.dispatchActiveChange();
     this.viewContainerRef?.detach();
     if (value) {
       if (!value.view) {
@@ -55,18 +69,15 @@ export class TabGroupComponent implements AfterViewInit {
       }
     }
   }
+
   get activeTab() {
     return this._activeTab;
   }
 
-  constructor(private tabEventService: TabManagementService,
-    private lessonEventService: LessonEventsService) {
+  constructor(private tabEventService: TabManagementService, private store: Store, private action$: Actions) {
   }
 
   ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.activeTab = this.dataSource[0];
-    });
     this.tabEventService.openTab$.pipe(
       filter(tab => !!this.templates?.find(template => template.type === tab.type)),
       filter(tab => tab.groupId === this.id),
@@ -76,18 +87,30 @@ export class TabGroupComponent implements AfterViewInit {
       if (tab.type === "HINT" || tab.type === "UNITY") {
         existingTab = this.dataSource.find(t => t.type === tab.type);
       } else if(tab.type != 'PLOTLY') {
-        existingTab = this.dataSource.find(t => t.data?.path === tab.data?.path);
+        existingTab = this.dataSource.find(t => t.path === tab.path);
       } 
+
 
       if (!existingTab) {
         this.dataSource.push(tab);
         this.dataSourceChange.emit(this.dataSource);
-        this.activeTab = tab;
+
+        if (tab.active) {
+          this.activeTab = tab;
+        }
       } else {
         this.activeTab = existingTab;
       }
+
+      // Tab contains view and data (latter can be arbitrarly nested), which doesnt bode well with NGXS
+      // Need to clone data *here* (instead of in action handler) as everything passed to NGXS is frozen; 
+      // freezing EmbeddedViewRef however causes significant performance degradation, which isn't worth the
+      // hassle (especially since EmbeddedViewRef isn't even stored in state)
+      this.dispatchTabChange()
     });
-    this.lessonEventService.onExperienceClosed.subscribe(() => this.closeAllTabs());    
+    this.action$.pipe(
+      ofActionSuccessful(ExperienceAction.Close)
+    ).subscribe(() => this.closeAllTabs())
   }
 
   handleScroll(event: WheelEvent) {
@@ -100,10 +123,11 @@ export class TabGroupComponent implements AfterViewInit {
     //TBD
   }
 
+  // only used when closing an experience, thus no state changes intended
   closeAllTabs(): void {
     this.viewContainerRef?.clear();
     this.dataSource = [];
-    this.dataSourceChange.emit(this.dataSource);
+    this._activeTab = undefined;
   }
 
   closeTab(index: number) {
@@ -111,10 +135,42 @@ export class TabGroupComponent implements AfterViewInit {
     tab.view?.destroy();
     this.dataSource.splice(index, 1);
     this.dataSourceChange.emit(this.dataSource);
+
+    if (tab.type === 'HINT') {
+      this.store.dispatch(new Hints.Close());
+    }
+
+    if (tab.type === 'UNITY') {
+      this.store.dispatch(new Simulation.Close());
+    }
+
     if (this._activeTab === tab) {
       // if activeTab is closed, set activeTab to tab on the right. If last tab is closed, set to tab on the left.
       // setter handles undefined correctly (in case last tab is closed)
       this.activeTab = this.dataSource[index] || this.dataSource[index - 1];
+      this.dispatchActiveChange();
     }
+
+    this.dispatchTabChange();
+  }
+
+  private dispatchTabChange(): void {
+    this.store.dispatch(new TabChange(this.id, this.cloneDataSource()))
+  }
+
+  private dispatchActiveChange(): void {
+    this.store.dispatch(new ActiveChange(this.id, this.cloneActiveTab()));
+  }
+
+  private cloneActiveTab(): Tab | undefined {
+    return this.activeTab ? [{ ...this.activeTab }].map(t => ({ type: t.type, title: t.title, path: this.toRelativePath(t.path) })).shift() : undefined;
+  }
+
+  private cloneDataSource() {
+    return [...this.dataSource].map(t => ({ type: t.type, title: t.title, path: this.toRelativePath(t.path) }));
+  }
+
+  private toRelativePath(absolutePath: string): string {
+    return absolutePath.split("/").slice(2).join("/");
   }
 }

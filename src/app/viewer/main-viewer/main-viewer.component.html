@@ -1,40 +1,58 @@
-<div id="main-wrapper">
-<as-split direction="horizontal" class="main-split" [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
+<as-split (dragEnd)="onDragEnd($event)" direction="horizontal"
+  class="main-split" #parent [gutterSize]="3" [restrictMove]="true" [useTransition]="true">
   <as-split-area
-    [visible]="filetreeVisible"
-    [order]="0"
-    [minSize]="minSizeFiletree"
-    [size]="currentSizeFiletree"
-    [maxSize]="maxSizeFiletree">
-    <as-split direction="vertical" [gutterSize]="4" [unit]="'pixel'" [useTransition]="true">
+    [visible]="viewSettings.filetree.visible"
+    [size]="viewSettings.filetree.size"
+    [minSize]="viewSettings.filetree.minSize"
+    [maxSize]="viewSettings.filetree.maxSize"  
+    [order]="viewSettings.filetree.order">
+    <as-split direction="vertical" [gutterSize]="4" [unit]="'pixel'" [useTransition]="true" #sidebar>
       <as-split-area [order]="0" [minSize]="200" [size]="400" (contextmenu)="onRightClick($event, false)">
-        <app-filetree [isGlossary]="false" #data (expandChange)="onFilesExpandChange($event)"></app-filetree>
+        <app-filetree [isGlossary]="false" (expandChange)="updateSidebarSizes(false, $event)"></app-filetree>
       </as-split-area>
       <as-split-area [order]="1" [minSize]="200" (contextmenu)="onRightClick($event, true)">
-        <app-filetree [isGlossary]="true" #glossary (expandChange)="onGlossaryExpandChange($event)"></app-filetree>
+        <app-filetree [isGlossary]="true" (expandChange)="updateSidebarSizes(true,$event)"></app-filetree>
       </as-split-area>
     </as-split>
   </as-split-area>
   <as-split-area
-    [order]="1"
-    [minSize]="minSizeLeftTab"
-    [size]="currentSizeLeftTab"
-    [maxSize]="maxSizeLeftTab">
-    <as-split direction="vertical" [gutterSize]="4" [restrictMove]="true" [useTransition]="true">
-      <as-split-area id="split-left" [order]="0" [minSize]="20">
+    [order]="viewSettings.left.order"
+    [size]="viewSettings.left.size"
+    [minSize]="viewSettings.left.minSize"
+    [maxSize]="viewSettings.left.maxSize"     
+    [visible]="viewSettings.left.visible">
+    <as-split direction="vertical" [gutterSize]="4" (dragEnd)="onDragEndLeftGroup($event)" [restrictMove]="true" [useTransition]="true">
+      <as-split-area 
+        [order]="viewSettings.code.order" 
+        [minSize]="viewSettings.code.minSize"
+        [maxSize]="viewSettings.code.maxSize"
+        [size]="viewSettings.code.size">
         <app-tab-group-facade id="left"></app-tab-group-facade>
       </as-split-area>
-      <as-split-area id="split-terminal" [order]="1" [minSize]="34" [visible]="terminalVisible">
+      <as-split-area 
+        [order]="viewSettings.terminal.order" 
+        [minSize]="viewSettings.terminal.minSize"
+        [maxSize]="viewSettings.terminal.maxSize"
+        [size]="viewSettings.terminal.size"
+        [visible]="viewSettings.terminal.visible">
         <app-terminal-viewer></app-terminal-viewer>
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area
-    [order]="2"
-    [minSize]="minSizeRightTab"
-    [size]="currentSizeRightTab"
-    [maxSize]="maxSizeRightTab">
+  <as-split-area 
+    [order]="viewSettings.right.order"
+    [size]="viewSettings.right.size"
+    [minSize]="viewSettings.right.minSize"
+    [maxSize]="viewSettings.right.maxSize"  
+    [visible]="viewSettings.right.visible">
     <app-tab-group-facade id="right"></app-tab-group-facade>
   </as-split-area>
+  <as-split-area
+    [size]="viewSettings.emptyMessage.size"
+    [minSize]="viewSettings.emptyMessage.minSize"
+    [maxSize]="viewSettings.emptyMessage.maxSize"  
+    [visible]="viewSettings.emptyMessage.visible"
+    [order]="viewSettings.emptyMessage.order">
+      <app-empty-viewer></app-empty-viewer>
+  </as-split-area>
 </as-split>
-</div>

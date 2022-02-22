@@ -3,7 +3,18 @@
 // The list of file replacements can be found in `angular.json`.
 
 export const environment = {
-  production: false
+  production: false,
+  aesKey: {
+    "key_ops": [
+      "decrypt",
+      "encrypt"
+    ],
+    "ext": true,
+    "kty": "oct",
+    "k": "8se6O7K1kUmmE4ipFURXig6GygErAnW1Yw75ypcZAso",
+    "alg": "A256GCM"
+  },
+  iv: new Uint8Array([ 138, 34, 38, 4, 144, 89, 15, 5, 155, 11, 244, 21])
 };
 
 /*
@@ -13,4 +24,4 @@ export const environment = {
  * This import should be commented out in production mode because it will have a negative impact
  * on performance if an error is thrown.
  */
-// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.
+import 'zone.js/plugins/zone-error';  // Included with Angular CLI.

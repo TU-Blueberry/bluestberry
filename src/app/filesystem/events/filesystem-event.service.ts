@@ -1,8 +1,7 @@
 import { EventEmitter, Injectable } from '@angular/core';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
-import { FileType, FileTypes } from 'src/app/shared/files/filetypes.enum';
-import { ConfigObject } from '../model/config';
+import { FileType } from 'src/app/shared/files/filetypes.enum';
 
 @Injectable({
   providedIn: 'root'

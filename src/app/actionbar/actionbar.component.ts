@@ -1,6 +1,14 @@
 import { Component, OnInit } from '@angular/core';
-import { filter } from 'rxjs/operators';
-import { UiEventsService } from '../ui-events.service';
+import { Store } from '@ngxs/store';
+import { Observable } from 'rxjs';
+import { Terminal } from '../viewer/actions/terminal.actions';
+import { ActionbarModel } from './actionbar.state';
+import { About } from './actions/about.action';
+import { Filetree } from './actions/filetree.action';
+import { Hints } from './actions/hints.action';
+import { ImportAction } from './actions/import.action';
+import { Simulation } from './actions/simulation.action';
+import { Tour } from './actions/tour.action';
 
 @Component({
   selector: 'app-actionbar',
@@ -8,38 +16,60 @@ import { UiEventsService } from '../ui-events.service';
   styleUrls: ['./actionbar.component.scss']
 })
 export class ActionbarComponent implements OnInit {
-  showFiles = true;
-  showTerminal = true;
+  settings: ActionbarModel = {
+    'filetree': { active: true },
+    'terminal': { active: false },
+    'hints': { active: false },
+    'tour': { active: false },
+    'about': { active: false },
+    'simulation': { active: false },
+    'import': { active: false }
+  }
 
-  constructor(private uiEv: UiEventsService) { }
+  actionBarState$: Observable<any>;
+
+  constructor(private store: Store) {   
+    this.actionBarState$ = this.store.select(state => state.actionbar);
+  }
 
   ngOnInit(): void {
+    this.actionBarState$.subscribe(v => {
+      console.log("receive actionbar satet", v)
+
+      this.settings = { ...v };
+    }); 
   }
 
   toggleFiles(): void {
-    this.showFiles = !this.showFiles;
-    this.uiEv.changeFiletree(this.showFiles);
+    this.settings.filetree.active ? this.store.dispatch(new Filetree.Close(0)) : this.store.dispatch(new Filetree.Open(0));
   }
 
+  // clicking on openHints if hints are already open causes hint file to be loaded from fs again
+  // because tab group component has no mechanism to refocus an existing tab
+  // same "problem" applies to every other element in the filetree 
   openHints(): void {
-    this.uiEv.changeHints();
+    this.store.dispatch(new Hints.Open());
   }
 
   toggleTerminal(): void {
-    this.showTerminal = !this.showTerminal;
-    this.uiEv.toggleTerminal();
+    this.settings.terminal.active ? this.store.dispatch(new Terminal.Close()) : this.store.dispatch(new Terminal.Open());
   }
 
   startTour(): void {
-    this.uiEv.startTour();
+    this.store.dispatch(new Tour.Start());
   }
 
   openAbout(ev: Event): void {
     ev.stopPropagation();
-    this.uiEv.toggleAbout(true);
+    this.store.dispatch(new About.Open());
+  }
+
+  openImport(ev: Event): void {
+    ev.stopPropagation();
+    this.store.dispatch(new ImportAction.OpenImportWindow());
   }
 
   startSimulation() {
-    this.uiEv.startSimulation();
+    this.store.dispatch(new Simulation.Open())
   }
 }

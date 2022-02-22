@@ -1,19 +1,21 @@
   <div class="folder" [style.padding-left.px]="(node.isTentativeNode) ? 10 * node.depth + 20 : 10 * node.depth" 
-    [class.root-folder]="node.isRoot" 
-    [class.active]="isActive" 
-    (click)="toggleSubfolders($event)"
-    (contextmenu)="toggleContextMenu($event)">
+      [class.root-folder]="node.isRoot" 
+      [class.active]="isActive" 
+      (click)="toggleSubfolders($event)"
+      (contextmenu)="toggleContextMenu($event)">
     <div class="folder-heading">
       <div class="folder-icon">
-        <svg class="arrow" *ngIf="!showSubfolders && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-          aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
-          stroke-linejoin="miter" fill="none">
+        <svg class="arrow" *ngIf="!showSubfolders && !this.isRenaming" 
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+            aria-labelledby="chevronRightIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square"
+            stroke-linejoin="miter" fill="none">
           <title id="chevronRightIconTitle">Ausklappen</title>
           <polyline points="10 6 16 12 10 18 10 18" />
         </svg>
-        <svg class="arrow" *ngIf="showSubfolders && !this.isRenaming" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-          aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
-          stroke-linejoin="miter" fill="none"> 
+        <svg class="arrow" *ngIf="showSubfolders && !this.isRenaming" 
+            xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+            aria-labelledby="chevronDownIconTitle" stroke="currentColor" stroke-width="2" stroke-linecap="square" 
+            stroke-linejoin="miter" fill="none"> 
           <title id="chevronDownIconTitle">Einklappen</title>
           <polyline points="6 10 12 16 18 10"/> 
         </svg>
@@ -30,15 +32,16 @@
     <div *ngIf="!isRenaming" class="common-actions" [class.show]="showContextMenu" [style.top.px]="offsetY - 20" [style.left.px]="offsetX">
       <app-common-actions [isRoot]="node.isRoot" [isFile]="false" [mode]="node?.mode || -1" (close)="closeContextMenu()"
       (createNewFromUI)="this.createNewFromUI($event)" (delete)="this.deleteFolder($event)" 
-      (startRenaming)="this.startRenaming($event)" (selectedFiles)="this.onNewFile($event)"></app-common-actions>
+      (startRenaming)="this.startRenaming($event)" (selectedFiles)="this.onNewFile($event)" [isVisible]="showContextMenu"></app-common-actions>
     </div>
 </div>
 
-<div [hidden]="!showSubfolders" class="options">
-  <div *ngIf="node.isEmptyNode && !node.isTentativeNode && tentativeNode === undefined" [style.padding-left.px]="10 * node.depth + 20">
+<div [hidden]="!showSubfolders" class="options" [class.mt]="isEmptyNode()">
+  <div *ngIf="isEmptyNode()" [style.padding-left.px]="10 * node.depth + 20">
     <div *ngIf="node.isRoot && !isRenaming">
-      <div class="link" (click)="this.createNewFromUI({ ev: $event, isFile: false })">Ordner erstellen</div>
-      <div class="link" (click)="this.createNewFromUI({ ev: $event, isFile: true })">Datei erstellen</div>
+      <app-common-actions [isInlineMenu]="true" [isVisible]="true"
+        (createNewFromUI)="this.createNewFromUI($event)"
+        (selectedFiles)="this.onNewFile($event)"></app-common-actions>
     </div>
     <div *ngIf="!node.isRoot">
       Leerer Ordner

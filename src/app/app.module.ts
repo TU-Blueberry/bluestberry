@@ -18,8 +18,18 @@ import { MarkdownModule, MarkedOptions, MarkedRenderer } from "ngx-markdown";
 import { NgIconsModule } from '@ng-icons/core';
 import { SharedModule } from './shared/shared.module';
 import { HeroChip, HeroDocument, HeroDocumentText, HeroLightningBolt, HeroPhotograph, HeroX, HeroBookOpen } from '@ng-icons/heroicons';
-import { LessonModule } from './lesson/lesson.module';
+import { ExperienceModule } from './experience/experience.module';
 import { SearchComponent } from './search/search.component';
+import { NgxsModule } from '@ngxs/store';
+import { NgxsReduxDevtoolsPluginModule } from '@ngxs/devtools-plugin';
+import { environment } from 'src/environments/environment';
+import { NgxsLoggerPluginModule } from '@ngxs/logger-plugin';
+import { NgxsStoragePluginModule } from '@ngxs/storage-plugin';
+import { TabState } from './tab/tab.state';
+import { ViewSizeState } from './viewer/sizes.state';
+import { ActionbarState } from './actionbar/actionbar.state';
+import { ExperienceState } from './experience/experience.state';
+import { AppState } from './app.state';
 import { PlotlyModule } from './plotly/plotly.module';
 import { PyodideService } from 'src/app/pyodide/pyodide.service';
 
@@ -39,7 +49,7 @@ export function markedOptionsFactory(): MarkedOptions {
   imports: [
     BrowserModule,
     AppRoutingModule,
-    AngularSplitModule,
+    AngularSplitModule.forRoot(),
     MonacoEditorModule.forRoot(),
     ViewerModule,
     FormsModule,
@@ -57,7 +67,19 @@ export function markedOptionsFactory(): MarkedOptions {
         useFactory: markedOptionsFactory,
       },
     }),
-    LessonModule,
+    ExperienceModule,
+    NgxsModule.forRoot([ViewSizeState, TabState, ActionbarState, ExperienceState, AppState], {
+      developmentMode: !environment.production
+    }),
+    NgxsReduxDevtoolsPluginModule.forRoot({
+      disabled: environment.production
+    }),
+    NgxsLoggerPluginModule.forRoot({
+      disabled: environment.production
+    }),
+    NgxsStoragePluginModule.forRoot({
+      key: "experiences"
+    })
   ],
   providers: [
     GuidedTourService,

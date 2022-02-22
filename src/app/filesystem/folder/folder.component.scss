@@ -13,19 +13,10 @@
     }
 }
 
-.link {
-   color: #8f8f8f;
-   text-decoration: underline;
-
-   &:hover {
-       color: #afafaf;
-       cursor: pointer;
-   }
-}
-
 .folder-heading {
     display: flex;
     align-items: center;
+    overflow: hidden;
 }
 
 .show {
@@ -57,11 +48,15 @@
 .folder-text {
     color: white;
     margin-left: 5px;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .root-text {
     text-transform: uppercase;
     font-size: 0.875rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .folder-icon > .arrow{
@@ -72,4 +67,8 @@
 
 .options {
     margin: 0px;
+}
+
+.mt {
+    margin-top: 10px;
 }

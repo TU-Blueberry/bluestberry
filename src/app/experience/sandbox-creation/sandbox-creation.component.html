@@ -1,0 +1,25 @@
+<form class="form" [formGroup]="formGroup" (submit)="onSubmit()">
+    <h1 class="mt-0">Neue Sandbox erstellen</h1>
+    <label for="name-input">Name</label>
+    <input id="name-input" 
+        type="text" 
+        placeholder="Name der neuen Sandbox"
+        [formControl]="nameFormControl"> 
+    
+    <div class="errors" *ngIf="formGroup.get('nameFormControl')?.hasError('error') && formGroup.get('nameFormControl')?.dirty">
+        {{ formGroup.get('nameFormControl')?.errors?.error}}
+    </div>
+
+    <div class="prereq">
+        Voraussetzungen:
+        <ul>
+            <li>Name darf nicht leer sein</li>
+            <li>Name darf keine Leerzeichen oder Schrägstriche beinhalten</li>
+            <li>Name darf maximal 50 Zeichen lang sein</li>
+        </ul>
+    </div>
+    <div class="buttons">
+        <button class="pg-btn" type="button" (click)="onCancel()">Abbrechen</button>
+        <button class="pg-btn" type="submit" (click)="onSubmit()" [disabled]="!formGroup.dirty || formGroup.invalid">Erstellen</button>
+    </div>
+</form>

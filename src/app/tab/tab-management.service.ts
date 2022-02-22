@@ -1,13 +1,17 @@
 import {Injectable} from '@angular/core';
-import {concat, EMPTY, merge, Observable, of, Subject} from 'rxjs';
-import {catchError, filter, map, switchMap} from 'rxjs/operators';
+import {concat, defer, EMPTY, merge, Observable, of, Subject, throwError} from 'rxjs';
+import {catchError, filter, finalize, map, switchMap} from 'rxjs/operators';
 import {TabType} from 'src/app/tab/model/tab-type.model';
 import {FilesystemEventService} from 'src/app/filesystem/events/filesystem-event.service';
 import {OpenTabEvent} from 'src/app/tab/model/open-tab-event';
 import {FilesystemService} from 'src/app/filesystem/filesystem.service';
 import {FileType} from '../shared/files/filetypes.enum';
-import {LessonEventsService} from '../lesson/lesson-events.service';
-
+import { Actions, ofActionSuccessful, Store } from '@ngxs/store';
+import { ExperienceAction } from '../experience/actions';
+import { ConfigService } from '../shared/config/config.service';
+import { ExperienceState, ExperienceStateModel } from '../experience/experience.state';
+import { FromConfig } from '../viewer/actions/from-config.action';
+import { ImportAction } from '../actionbar/actions/import.action';
 
 @Injectable({
   providedIn: 'root'
@@ -22,50 +26,77 @@ export class TabManagementService {
   constructor(
     private filesystemEventService: FilesystemEventService,
     private filesystemService: FilesystemService,
-    private lessonEventService: LessonEventsService
+    private store: Store, 
+    private action$: Actions, 
+    private conf: ConfigService
   ) {
-    const lesson$ = lessonEventService.onExperienceOpened.pipe(
-        switchMap(({open}) => concat(...open.map(file => {
+    const lesson$ = merge(
+      action$.pipe(ofActionSuccessful(ExperienceAction.Open)),
+      action$.pipe(ofActionSuccessful(ImportAction.OverwriteCurrent))
+    ).pipe(
+      switchMap((e: ExperienceAction.Open) => conf.getConfigByExperience(e.exp)),
+      switchMap(conf => {
+        return concat(...conf.open.map(file => {
           if (file.path.toLowerCase().endsWith('unity')) {
             return of({
               groupId: file.on,
               title: 'Simulation',
               type: 'UNITY' as TabType,
+              path: '',
+              active: file.active
             });
           } else if (file.path.toLowerCase().endsWith('hint')) {
             return of({
               groupId: file.on,
               title: 'Hinweise',
               type: 'HINT' as TabType,
+              path: '',
+              active: file.active
             });
           }
-          return this.createOpenTabEvent(file.path).pipe(map(ote => ({...ote, groupId: file.on})))
+          return this.createOpenTabEvent(`/${conf.uuid}/${file.path}`, file.active).pipe(map(ote => ({...ote, groupId: file.on})))
         })
+        ).pipe(
+          finalize(() => this.store.dispatch(new FromConfig(conf.splitSettings, conf.open)))
         )
-      )
-    );
+      })
+    )
 
     const userOpenEvent$ = filesystemEventService.onOpenFile.pipe(
       filter(e => e.byUser),
-      switchMap(e => this.createOpenTabEvent(e.path, e.type, e.fileContent)),
+      switchMap(e => this.createOpenTabEvent(e.path, true, e.type, e.fileContent)),
     );
 
     merge(lesson$, userOpenEvent$).subscribe(t => this._openTab.next(t));
   }
 
-  openHintsManually(data: {path: string, content: Uint8Array}): void {
-    this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, data: data});
+  openHints(): Observable<never> {
+    return this.getHintRoot().pipe(
+      switchMap(path => this.filesystemService.getFileAsBinary(path).pipe(
+        switchMap(data => defer(() => {
+          const full = ({ content: data, base_path: path });
+          this._openTab.next({groupId: 'right', title: 'Hinweise', type: 'HINT' as TabType, path: '', data: full, active: true})
+        }))
+      ))
+    );
   }
 
-  startSimulationManually(data: {path: string, content: Uint8Array}): void {
-    this._openTab.next({groupId: 'right', title: 'Simulation', type: 'UNITY' as TabType, data: data});
+  openSimulation(): Observable<never> {
+    return this.getUnityEntryPoint().pipe(
+      switchMap(path => this.filesystemService.getFileAsBinary(path).pipe(
+        switchMap(data => defer(() => {
+          const full = ({ content: data, base_path: path });
+          this._openTab.next({groupId: 'right', title: 'Simulation', type: 'UNITY' as TabType, path: '', data: full, active: true})
+        }))
+      ))
+    );
   }
 
   openPlotly(htmlContent: Uint8Array): void {
-    this._openTab.next({groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, data: {path: '', content: htmlContent}});
+    this._openTab.next({groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, path: '',data: htmlContent, active: true });
   }
 
-  createOpenTabEvent(path: string, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
+  createOpenTabEvent(path: string, active: boolean, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {
     const fileType = type || this.filesystemService.getFileType(path);
     return (
       fileContent ? of(fileContent) : this.filesystemService.getFileAsBinary(path)
@@ -78,7 +109,9 @@ export class TabManagementService {
       title: path.split('/').pop() || path,
       groupId: this.mapFileTypeToTabGroup(fileType),
       type: this.mapFileTypeToTabType(fileType),
-      data: { path: path, content: fileContent },
+      data: { content: fileContent },
+      path: path,
+      active: active
     })));
   }
 
@@ -91,7 +124,7 @@ export class TabManagementService {
         return 'CODE';
     }
   }
-
+  
   private mapFileTypeToTabGroup(fileType?: FileType): string {
     switch (fileType) {
       case FileType.PROGRAMMING_LANGUAGE:
@@ -105,5 +138,17 @@ export class TabManagementService {
       default:
         return 'left';
     }
+  }
+
+  private getHintRoot(): Observable<string> {
+    return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
+      switchMap(state => !state.current ? throwError('No hint root in config') : this.conf.getHintRoot(state.current))
+    )
+  }
+
+  private getUnityEntryPoint(): Observable<string> {
+    return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
+      switchMap(state => !state.current ? throwError('No unity entry point in config') : this.conf.getUnityEntryPoint(state.current))
+    )
   }
 }

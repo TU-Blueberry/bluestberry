@@ -1,3 +1,5 @@
+import { TabType } from "src/app/tab/model/tab-type.model";
+
 export enum FileType {
     IMAGE,
     DATA,
@@ -16,6 +18,7 @@ export class FileTypes {
     static readonly unknownFilePath = "assets/icons/unknown_file.png";
     static readonly unityPath = "assets/icons/experiment.png";
     static readonly hintPath = "assets/icons/lightbulb.png";
+    static readonly plotlyPath = "assets/icons/line-chart.png";
 
     private static extToType = new Map([
         ["MD", FileType.MARKDOWN],
@@ -51,5 +54,24 @@ export class FileTypes {
     public static getType(extension: string): FileType {
         const type = this.extToType.get(extension.toUpperCase());
         return type !== undefined ? type : FileType.OTHER;
+    }
+
+    public static getFileIconPath(type: FileType | undefined): string {
+        switch (type) {
+            case FileType.IMAGE: return FileTypes.imageIconPath;
+            case FileType.DATA: return FileTypes.tableIconPath;
+            case FileType.PLAIN_TEXT: return FileTypes.plainTextPath;
+            case FileType.OTHER: return FileTypes.unknownFilePath;
+            default: return FileTypes.unknownFilePath;
+        }
+    }
+
+    public static getTabIconPath(type: TabType | undefined): string {
+        switch (type) {
+            case 'UNITY': return FileTypes.unityPath;
+            case 'HINT': return FileTypes.hintPath;
+            case 'PLOTLY': return FileTypes.plotlyPath;
+            default: return FileTypes.unknownFilePath;
+        }
     }
 }

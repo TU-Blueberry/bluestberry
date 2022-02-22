@@ -16,6 +16,7 @@ import { MarkdownViewerComponent } from "./markdown-viewer/markdown-viewer.compo
 import { MarkdownModule } from "ngx-markdown";
 import { TabModule } from 'src/app/tab/tab.module';
 import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group-facade.component';
+import { EmptyViewerComponent } from './empty-viewer/empty-viewer.component';
 import { PlotlyViewerComponent } from './plotly-viewer/plotly-viewer.component';
 
 /**
@@ -40,6 +41,7 @@ import { PlotlyViewerComponent } from './plotly-viewer/plotly-viewer.component';
     HintViewerComponent,
     MarkdownViewerComponent,
     TabGroupFacadeComponent,
+    EmptyViewerComponent,
     PlotlyViewerComponent,
   ],
   imports: [

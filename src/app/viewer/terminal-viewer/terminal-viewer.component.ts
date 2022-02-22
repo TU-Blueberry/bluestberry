@@ -1,4 +1,5 @@
 import {Component, OnInit} from '@angular/core';
+import { filter } from 'rxjs/operators';
 import {PyodideService} from "../../pyodide/pyodide.service";
 import {filteredTerminalErrorPrefixes} from "./terminal-viewer.filtered-errors";
 
@@ -30,7 +31,9 @@ export class TerminalViewerComponent implements OnInit {
       }
     });
 
-    this.pyodideService.getStdErr().subscribe(errorOutput => {
+    this.pyodideService.getStdErr().pipe(
+      filter(result => !result.toLowerCase().includes("syncfs operations in flight at once, probably just doing extra work".toLowerCase()))
+    ).subscribe(errorOutput => {
       for (let errorPrefix of filteredTerminalErrorPrefixes) {
         if (errorOutput.startsWith(errorPrefix)) { return; }
       }
@@ -41,7 +44,7 @@ export class TerminalViewerComponent implements OnInit {
 
       this.error = true;
       this.terminalOutput += (errorOutput + "\n");
-    });
+    });   
   }
 
   clearOutput(): void {

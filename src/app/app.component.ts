@@ -1,7 +1,8 @@
 import { Component } from '@angular/core';
-import { delay } from 'rxjs/operators';
-import { LessonEventsService } from './lesson/lesson-events.service';
-import { UiEventsService } from './ui-events.service';
+import { Store } from '@ngxs/store';
+import { Observable } from 'rxjs';
+import { About } from './actionbar/actions/about.action';
+import { AppState, AppStateModel } from './app.state';
 
 @Component({
   selector: 'app-root',
@@ -12,18 +13,23 @@ export class AppComponent {
   title = 'BluestBerry';
   isLoading = true;
   showAbout = false;
+  settings$: Observable<any>;
+  appState$: Observable<any>;
 
-  constructor(private lse: LessonEventsService, private uiEv: UiEventsService) {
-    this.lse.onExperienceOpened.pipe(delay(1000)).subscribe(
-      () => {this.isLoading = false}, 
-      (err: any) => { console.error(err) }, 
-      () => this.isLoading = false
-    )
+  constructor(private store: Store) {
+    this.appState$ = this.store.select<AppStateModel>(AppState);
 
-    this.uiEv.onAboutToggle.subscribe(show => this.showAbout = show);
+    this.appState$.subscribe(res => {
+      this.isLoading = (res.status === "LOADING" || res.status === "INITIALIZING");
+    })
+
+    this.settings$ = this.store.select(state => state.actionbar.about);
+    this.settings$.subscribe(s => {
+      this.showAbout = s.active
+    });
   }
 
   closeAbout(): void {
-    this.uiEv.toggleAbout(false);
+   this.store.dispatch(new About.Close());
   }
 }

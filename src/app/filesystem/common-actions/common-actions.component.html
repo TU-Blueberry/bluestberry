@@ -1,25 +1,25 @@
-<div class="common-actions">
+<div class="common-actions" [ngClass]="{'ctx-menu': !isInlineMenu, 'inline-menu': isInlineMenu}">
   <div class="message" *ngIf="isReadonly">
     {{ READONLY_MSG }}
   </div>
 
-  <div class="entry" *ngIf="!isRoot && !isReadonly" (click)="this.emitDelete($event)">
+  <div class="ctx-entry" *ngIf="!isRoot && !isReadonly && !isInlineMenu" (click)="this.emitDelete($event)">
     {{ DELETE_MSG }}
   </div>
 
-  <div class="entry" *ngIf="!isRoot && !isReadonly" (click)="this.emitStartRenaming($event)">
+  <div class="ctx-entry" *ngIf="!isRoot && !isReadonly && !isInlineMenu" (click)="this.emitStartRenaming($event)">
     {{ RENAME_MSG }}
   </div>
 
-  <div class="entry" *ngIf="!isFile && !isReadonly" (click)="this.emitCreateFromUi({ev: $event, isFile: false})">
+  <div [class.ctx-entry]="!isInlineMenu" *ngIf="!isFile && !isReadonly" (click)="this.emitCreateFromUi({ev: $event, isFile: false})">
     {{ CREATE_FOLDER_MSG }}
   </div>
 
-  <div class="entry" *ngIf="!isFile && !isReadonly" (click)="this.emitCreateFromUi({ev: $event, isFile: true})">
+  <div [class.ctx-entry]="!isInlineMenu" *ngIf="!isFile && !isReadonly" (click)="this.emitCreateFromUi({ev: $event, isFile: true})">
     {{ CREATE_FILE_MSG }}
   </div>
 
-  <div class="entry" *ngIf="!isFile && !isReadonly" (click)="stopPropagation($event)">
+  <div [class.ctx-entry]="!isInlineMenu" *ngIf="!isFile && !isReadonly" (click)="stopPropagation($event)">
     <label class="common-action-icon">
       <input type="file" multiple="true" (change)="filesChange($event)" class="invisible">  
       <span>{{UPLOAD_MSG}}</span>
