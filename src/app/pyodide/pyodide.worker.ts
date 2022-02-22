@@ -4,7 +4,8 @@ import {bindCallback, concat, defer, forkJoin, from, merge, Observable, ReplaySu
 import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
 import initCode from '!raw-loader!./../../assets/util/init.py';
 import {
-  ExecutionRequestData, InterruptBufferData,
+  ExecutionRequestData,
+  InterruptBufferData,
   MessageType,
   PyodideWorkerMessage,
   PythonCallableData

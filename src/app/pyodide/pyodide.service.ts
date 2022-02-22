@@ -10,6 +10,7 @@ import {ExperienceAction} from '../experience/actions';
   providedIn: 'root',
 })
 export class PyodideService {
+  private static FILESYSTEM_DEBUG = false;
   // This pyodide is only used for FS access
   pyodide = this.initPyodide();
   private worker!: Worker;
@@ -59,6 +60,30 @@ export class PyodideService {
         return pyodide;
       });
     }).pipe(
+      map(pyodide => {
+        if (PyodideService.FILESYSTEM_DEBUG) {
+          const interceptMethodCalls = (obj: any, fn: any) => {
+            return new Proxy(obj, {
+              get(target, prop) { // (A)
+                if (typeof target[prop] === 'function') {
+                  return new Proxy(target[prop], {
+                    apply: (target, thisArg, argumentsList) => { // (B)
+                      fn(prop, argumentsList);
+                      return Reflect.apply(target, thisArg, argumentsList);
+                    }
+                  });
+                } else {
+                  return Reflect.get(target, prop);
+                }
+              }
+            });
+          };
+          pyodide.FS = interceptMethodCalls(pyodide.FS, (key: any, args: any) => {
+            console.debug(`${key}`, ...args);
+          });
+        }
+        return pyodide;
+      }),
       shareReplay(1),
     );
   }
