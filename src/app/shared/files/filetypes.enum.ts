@@ -18,6 +18,7 @@ export class FileTypes {
     static readonly unknownFilePath = "assets/icons/unknown_file.png";
     static readonly unityPath = "assets/icons/experiment.png";
     static readonly hintPath = "assets/icons/lightbulb.png";
+    static readonly plotlyPath = "assets/icons/line-chart.png";
 
     private static extToType = new Map([
         ["MD", FileType.MARKDOWN],
@@ -69,6 +70,7 @@ export class FileTypes {
         switch (type) {
             case 'UNITY': return FileTypes.unityPath;
             case 'HINT': return FileTypes.hintPath;
+            case 'PLOTLY': return FileTypes.plotlyPath;
             default: return FileTypes.unknownFilePath;
         }
     }

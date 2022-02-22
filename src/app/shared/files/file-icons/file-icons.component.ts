@@ -13,7 +13,7 @@ export class FileIconsComponent {
   private _isActive = false;
   private _isTentative = false;
   private _isRenaming = false;
-  private _specialTabTypes = ['HINT', 'UNITY'];
+  private _specialTabTypes = ['HINT', 'UNITY', 'PLOTLY'];
   
   public _tabType?: TabType;
   public fileTypeEnum = FileType;
