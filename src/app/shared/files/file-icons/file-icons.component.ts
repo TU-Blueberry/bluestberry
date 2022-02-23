@@ -74,6 +74,10 @@ export class FileIconsComponent implements OnInit {
     return FileTypes.imageIconPath; 
   }
 
+  public getCsvIconPath(): string {
+    return FileTypes.csvIconPath;
+  }
+
   public getTableIconPath(): string {
     return FileTypes.tableIconPath;
   }

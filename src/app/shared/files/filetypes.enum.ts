@@ -13,6 +13,7 @@ export enum FileType {
 export class FileTypes {
     static readonly imageIconPath = "assets/icons/picture.png";
     static readonly tableIconPath = "assets/icons/table.png";
+    static readonly csvIconPath = "assets/icons/table_csv.png";
     static readonly plainTextPath = "assets/icons/plaintext.png";
     static readonly unknownFilePath = "assets/icons/unknown_file.png";
     static readonly unityPath = "assets/icons/experiment.png";

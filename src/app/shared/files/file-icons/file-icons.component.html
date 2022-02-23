@@ -9,6 +9,7 @@
     <img *ngIf="fileType === fileTypeEnum.IMAGE" src="{{ getImageIconPath() }}" style="width: 20px; height: 20px;">
     <img *ngIf="fileType === fileTypeEnum.DATA" src="{{ getTableIconPath() }}" style="width: 20px; height: 20px;">
     <img *ngIf="fileType === fileTypeEnum.PLAIN_TEXT" src="{{ getPlainTextIconPath() }}" style="width: 20px; height: 20px;">
+    <img *ngIf="fileType === fileTypeEnum.TABULAR" src="{{ getCsvIconPath() }}" style="width: 20px; height: 20px;">
     <img *ngIf="fileType === fileTypeEnum.OTHER" src="{{ getUnknownFileTypeIconPath() }}" style="width: 20px; height: 20px;">
 </ng-container>
 <div *ngIf="fileType === undefined && _tabType === undefined" class="folder-icon" [class.rename-margin]="isRenaming && !isTentative">
