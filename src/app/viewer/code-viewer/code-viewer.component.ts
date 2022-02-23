@@ -34,12 +34,12 @@ export class CodeViewerComponent implements OnInit {
   
   code = ""
   isExecutableCode = false;
+  languageId = "python";
 
   saveSubject = new Subject<void>()
   constructor(
     private pyodideService: PyodideService,
     private fileTabDirective: FileTabDirective,
-    private tabManagementService: TabManagementService,
     private filesystemService: FilesystemService
   ) {
     monaco.languages.register({

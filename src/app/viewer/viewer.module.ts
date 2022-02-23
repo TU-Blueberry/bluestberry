@@ -55,7 +55,7 @@ import { PblNgridDragModule } from '@pebula/ngrid/drag';
     MarkdownViewerComponent,
     TabGroupFacadeComponent,
     TableViewerComponent,
-    PlotlyViewerComponent
+    PlotlyViewerComponent,
     EmptyViewerComponent,
     PlotlyViewerComponent,
   ],
