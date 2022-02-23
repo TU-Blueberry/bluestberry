@@ -1,6 +1,20 @@
 
 @import '@pebula/ngrid/themes/default-dark.css';
 
+button {
+    background-color: #262626;
+    color: white;
+    border: 2px solid white;
+    border-radius: 5px;
+    margin: 5px;
+}
+
+button:disabled,
+button[disabled] {
+    color: rgb(97, 97, 97);
+    border: 2px solid rgb(97, 97, 97);
+}
+
 .root { 
     flex-direction: column;
     max-width: 100%;
@@ -8,4 +22,9 @@
 
 .pbl-ngrid-container {
     height: 100vh;
+}
+
+.row-selected {
+    transition: all 200ms ease;
+    background-color: #2a253b;
 }

@@ -1,11 +1,16 @@
 <div class="root">
-    <button (click)="test()">Save Changes</button>
+    <div class="actionsMenu">
+        <button (click)="addEntry()">Add Entry</button>
+        <button [disabled]="null" (click)="deleteSelected()">Delete Selected</button> 
+        <button (click)="saveChanges()">Save Changes</button>
+        <button (click)="discardChanges()">Discard Changes</button>
+    </div>
     <pbl-ngrid 
         #pblTbl
         matSort
-        rowReorder columnReorder
         [dataSource]="pblDatasource" 
         [columns]="pblColumns"
+        (rowClick)="onClickEvents($event)"
         class="pbl-ngrid-cell-ellipsis pbl-ngrid-header-cell-ellipsis">
         
         <div *pblNgridHeaderCellDef="'*'; col as col">
@@ -18,6 +23,8 @@
         <div *pblNgridNoDataRef class="pbl-ngrid-no-data">
             <span>No Results</span>
         </div>
+
+        <span *pblNgridCellDraggerRef="let ctx" [pblNgridColumnDrag]="ctx.col" cdkDragRootElementClass="cdk-drag column-reorder-handle" ></span>
 
         <div *pblNgridCellDef="'*'; let ctx">
             <a (click)="ctx.startEdit(true)">{{ ctx.value }}</a>
