@@ -24,6 +24,7 @@ import {TabGroupFacadeComponent} from 'src/app/viewer/tab-group-facade/tab-group
 import { TableViewerComponent } from './table-viewer/table-viewer.component';
 import { PblNgridConfigService, PblNgridModule } from '@pebula/ngrid';
 import { PblNgridTargetEventsModule } from '@pebula/ngrid/target-events';
+import { EmptyViewerComponent } from './empty-viewer/empty-viewer.component';
 import { PlotlyViewerComponent } from './plotly-viewer/plotly-viewer.component';
 import { PblNgridMatSortModule } from '@pebula/ngrid-material/sort';
 import { PblNgridTransposeModule } from '@pebula/ngrid/transpose';
@@ -55,6 +56,8 @@ import { PblNgridDragModule } from '@pebula/ngrid/drag';
     TabGroupFacadeComponent,
     TableViewerComponent,
     PlotlyViewerComponent
+    EmptyViewerComponent,
+    PlotlyViewerComponent,
   ],
   imports: [
     CommonModule,

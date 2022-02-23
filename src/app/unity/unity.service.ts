@@ -1,4 +1,3 @@
-import { ThrowStmt } from '@angular/compiler'
 import { Injectable } from '@angular/core'
 import { FilesystemService } from '../filesystem/filesystem.service'
 import { PythonCallable } from '../python-callable/python-callable.decorator'
@@ -14,9 +13,6 @@ export class UnityService {
   isReady = false
 
   initUnity(path: string): any {
-    if (this.gameInstance) {
-      return this.gameInstance
-    }
     const loader = (window as any).UnityLoader
     this.gameInstance = loader.instantiate('gameContainer', path, {
       onProgress: (gameInstance: any, progress: number) => {
@@ -24,14 +20,18 @@ export class UnityService {
         if (progress === 1) {
           this.isReady = true
           this.disableWebGLInput()
-          //this.initialPresentation()
+          // this.initialPresentation()
         }
       },
-    })
+    });
 
     return this.gameInstance
   }
   updateUnity(update: number) {}
+
+  cleanUpUnity(): void {
+    this.gameInstance.Quit()
+  }
 
   @PythonCallable
   public toggleRobot() {

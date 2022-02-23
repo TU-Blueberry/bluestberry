@@ -1,5 +1,6 @@
-.terminal-wrapper {
-  height: inherit;
+.terminal-parent {
+  height: 100%;
+  overflow: hidden;
 }
 
 .terminal {

@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError, switchMap } from 'rxjs/operators';
+import { ConfigService } from 'src/app/shared/config/config.service';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FileComponent } from '../file/file.component';
@@ -46,10 +47,10 @@ export class FolderComponent implements OnInit, OnDestroy {
   @ViewChild('subfolders', { read: ViewContainerRef, static: true }) foldersRef!: ViewContainerRef;
   @ViewChild('files', { read: ViewContainerRef, static: true }) filesRef!: ViewContainerRef;
   constructor(private uiEv: UiEventsService, private fsService: FilesystemService, private ev: FilesystemEventService, 
-    private componentFactoryResolver: ComponentFactoryResolver, private cd: ChangeDetectorRef) {
+    private componentFactoryResolver: ComponentFactoryResolver, private cd: ChangeDetectorRef, private conf: ConfigService) {
     this.folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
     this.fileFactory = this.componentFactoryResolver.resolveComponentFactory(FileComponent);
-    this._node = new TreeNode(this.uiEv, this.fsService, this.ev);
+    this._node = new TreeNode(this.uiEv, this.fsService, this.ev, this.conf);
   }
 
   ngOnInit(): void {
@@ -69,7 +70,7 @@ export class FolderComponent implements OnInit, OnDestroy {
 
   private init(): void {
     this.addListeners();
-    this.fsService.scan(this._node.path, this._node.depth, true).subscribe(([folders, files]) => {
+    this.fsService.scanUser(this._node.path, this._node.depth, true).subscribe(([folders, files]) => {
       folders.forEach(folder => this.createSubcomponent(false, `${this._node.path}/${folder.name}`, folder));
       files.forEach(file => this.createSubcomponent(true, `${this._node.path}/${file.name}`, file));
     }); 
@@ -110,22 +111,19 @@ export class FolderComponent implements OnInit, OnDestroy {
   // need to use catchError here as the node that was just deleted will also attempt to scan its children, thus yielding and error as the path doesn't exist anymore
   // (in which case we do nothing as this component will be deleted soon anyways)
   private checkForNewFolders() {
-    this._node.getSubfolders().pipe(catchError(() => of([]))).subscribe(folders => {
+    this._node.getSubfolders().pipe(
+      catchError(() => of([]))
+    ).subscribe(folders => {
         folders.filter(folder => !this.folders.has(this.getName(folder.path)))
-          .forEach(folder => this.createSubcomponent(false, folder.path, folder.node));
-          this.cd.detectChanges();
+               .forEach(folder => this.createSubcomponent(false, folder.path, folder.node));
+        this.cd.detectChanges();
       });
-
-      // TODO: Braucht es das?
-    /* if (this._node.isRoot) {
-      this._node.checkPermissions(); // set permissions after every execution
-    } */
   }
 
   // called once new node from user is synced to fs
   private triggerUpdate(path: string, isFile: boolean) {
     const element = isFile ? this.files.get(this.getName(path)) : this.folders.get(this.getName(path));
-    
+
     if (element) {
       const instance = element.instance;
       instance.node.path = path;
@@ -134,6 +132,7 @@ export class FolderComponent implements OnInit, OnDestroy {
       if (!isFile) {
         (instance as FolderComponent).init();
         (instance as FolderComponent).setActive();
+        (instance as FolderComponent).cd.detectChanges();
       } 
 
       this.cd.detectChanges();
@@ -215,6 +214,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     
     if (this._node) {
       const treeNode = path ? this._node.generateTreeNode(this._node.depth + 1, path, node) : this._node.generateTreeNode(this._node.depth + 1);
+      treeNode.isGlossary = this._node.isGlossary;
       // treeNode.parentPath = this._node.path;
       nodeComponentRef.instance.node = treeNode;
     }
@@ -367,5 +367,9 @@ export class FolderComponent implements OnInit, OnDestroy {
     }
 
     this.cd.detectChanges();
+  }
+
+  public isEmptyNode(): boolean {
+    return this.node.isEmptyNode && !this.node.isTentativeNode && this.tentativeNode === undefined;
   }
 }

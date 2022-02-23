@@ -1,7 +1,7 @@
-
 import { ComponentRef } from "@angular/core";
-import { forkJoin, Subscription } from "rxjs";
+import { forkJoin } from "rxjs";
 import { filter, map, switchMap, tap } from "rxjs/operators";
+import { ConfigService } from "src/app/shared/config/config.service";
 import { UiEventsService } from "../../ui-events.service";
 import { FilesystemEventService } from "../events/filesystem-event.service";
 import { FileComponent } from "../file/file.component";
@@ -17,8 +17,9 @@ export class TreeNode {
     private _isRoot = false;
     private _rootName = '';
     private _tempName = '';
+    private _isGlossary = false;
 
-    constructor(private uiEv: UiEventsService, private fs: FilesystemService, private ev: FilesystemEventService) { }
+    constructor(private uiEv: UiEventsService, private fs: FilesystemService, private ev: FilesystemEventService, private conf: ConfigService) { }
 
     // ----- Methods provided by this class -----
     public getSubfolders() {
@@ -26,7 +27,7 @@ export class TreeNode {
     }
     
     public getNodes() {
-        return this.fs.scan(this._path, this._depth, true)
+        return this.fs.scanUser(this._path, this._depth, true)
             .pipe(tap(([files, folders]) => this._isEmptyNode = folders.length === 0 && files.length === 0));
     }
 
@@ -45,7 +46,7 @@ export class TreeNode {
         const entries = this._ref?.contents;
         
         if (this._path !== '' && this._ref && entries !== undefined && entries !== null && !this.fs.N_isFile(this._ref)) {
-             this.fs.scanWithoutFetch((entries as FSNode), this._path, this._depth, true).subscribe(([folders, files]) => {
+             this.fs.scanWithOutFetchUser((entries as FSNode), this._path, this._depth, true).subscribe(([folders, files]) => {
                 this._isEmptyNode = folders.length === 0 && files.length === 0;
             }); 
         }
@@ -55,8 +56,8 @@ export class TreeNode {
         }
     }
 
-    public generateTreeNode(depth: number, fullPath?: string, node?: FSNode, rootName?: string, ): TreeNode  {
-        const treeNode = new TreeNode(this.uiEv, this.fs, this.ev);
+    public generateTreeNode(depth: number, fullPath?: string, node?: FSNode, rootName?: string): TreeNode  {
+        const treeNode = new TreeNode(this.uiEv, this.fs, this.ev, this.conf);
         treeNode.depth = depth ;
         treeNode.parentPath = this._path;
    
@@ -80,6 +81,7 @@ export class TreeNode {
             ...files.map(node => this.generateTreeNode(this._depth + 1,`${this._path}/${node.name}`, node))]));
     }
 
+
     // ----- Observables for events -----
     public onDelete() {
         return this.ev.onDeletePath.pipe(filter(path => this.isDirectChild(path)), tap(() => this.updateEmptyStatus()));
@@ -91,8 +93,17 @@ export class TreeNode {
            tap(() => this.updateEmptyStatus()),
            switchMap(params => this.fs.getNodeByPath(params.path).pipe(
                 filter(node => node !== undefined),
+                filter(node => !this.isUpdateToInvisibleFile(params.path, node.name)),
                 map(node => ({node: node, path: params.path})))
             ))
+    }
+
+    // writing to file (= newly created *OR* just updated) causes listener (addNewFilesListener) to be called with info about the file 
+    // need to make sure that it wasn't an update to a file which shouldn't be visible in filetree (e.g. config, hidden files etc.)
+    // without this check we would realize that hidden file isn't included in filesMap yet (as should be) and mistakenly create a subcomponent
+    private isUpdateToInvisibleFile(path: string, name: string) {
+        return this.fs.isSystemDirectory(path) || this.fs.isHiddenPath(path) || this.fs.isModulePath(path)
+                || this.fs.isHintPath(path) || this.fs.isGlossaryPath(path) || (this._depth === 0 && name === 'config.json');
     }
 
     public addAfterCodeExecutionListener() {
@@ -228,5 +239,13 @@ export class TreeNode {
 
     public get rootName() {
         return this._rootName;
+    }
+
+    public get isGlossary() {
+        return this._isGlossary;
+    }
+
+    public set isGlossary(isGlossary: boolean) {
+        this._isGlossary = isGlossary;
     }
 }

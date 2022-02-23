@@ -19,8 +19,8 @@ export class PlotlyViewerComponent implements AfterViewInit {
 
   ngAfterViewInit(): void {
     this.fileTabDirective.dataChanges.subscribe((data) => {
-      var htmlContent = new TextDecoder().decode(data.content)
-      this.iframe.nativeElement.setAttribute('srcdoc', htmlContent)
+      var htmlContent = new TextDecoder().decode(data)
+       this.iframe.nativeElement.setAttribute('srcdoc', htmlContent)
     })
   }
 }

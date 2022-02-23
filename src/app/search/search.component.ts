@@ -3,6 +3,8 @@ import { SearchService } from 'src/app/search/search.service';
 import {SearchEntry} from "./search.model";
 import {FilesystemEventService} from "../filesystem/events/filesystem-event.service";
 import {UiEventsService} from "../ui-events.service";
+import { FilesystemService } from '../filesystem/filesystem.service';
+import Fuse from 'fuse.js'
 
 @Component({
   selector: 'app-search',
@@ -14,10 +16,11 @@ export class SearchComponent {
   isBlurred = true;
   highlightedIndex = -1;
   lastSearches: string[] = [];
-  matchingEntries: SearchEntry[] = []
+  matchingEntries: Fuse.FuseResult<SearchEntry>[] = [];
 
   constructor(
     private searchService: SearchService,
+    private fs: FilesystemService,
     private ev: FilesystemEventService,
     private uiEv: UiEventsService,
   ) { }
@@ -28,16 +31,16 @@ export class SearchComponent {
     });
   }
 
-  clickSuggestion(entry: SearchEntry): void {
-    if(entry.file.contents instanceof Uint8Array) {
-      this.ev.onUserOpenFile(entry.file.name, entry.file);
-      this.uiEv.onActiveElementChange.emit(entry.file.name);
-    }
+  clickSuggestion(entry: Fuse.FuseResult<SearchEntry>): void {
+    this.fs.getNodeByPath(entry.item.path).subscribe(node => {
+      this.ev.onUserOpenFile(entry.item.path, node);
+      this.uiEv.onActiveElementChange.emit(entry.item.name);
 
-    this.searchService.addSearchToHistory(this.searchTerm);
-    this.clearSearch();
-    this.highlightedIndex = -1;
-    this.isBlurred = true;
+      this.searchService.addSearchToHistory(this.searchTerm);
+      this.clearSearch();
+      this.highlightedIndex = -1;
+      this.isBlurred = true;
+    })
   }
 
   onEnter(): void {

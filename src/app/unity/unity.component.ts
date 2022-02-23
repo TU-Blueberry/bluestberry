@@ -3,6 +3,7 @@ import {
   Component,
   Input,
   OnChanges,
+  OnDestroy,
   OnInit,
 } from '@angular/core'
 import { UnityScenes } from '../shared/unity/unity.scenes.enum'
@@ -13,7 +14,7 @@ import { UnityService } from './unity.service'
   templateUrl: './unity.component.html',
   styleUrls: ['./unity.component.scss'],
 })
-export class UnityComponent implements OnInit, OnChanges, AfterViewInit {
+export class UnityComponent implements OnInit, OnChanges, OnDestroy, AfterViewInit {
   gameInstance: any
   progress = 0
   isReady = 0
@@ -34,6 +35,10 @@ export class UnityComponent implements OnInit, OnChanges, AfterViewInit {
   // Initialize Unity with our standard Scene.
   ngOnInit(): void {
     this.gameInstance = this.unityService.initUnity(UnityScenes.BerrySorter)
+  }
+
+  ngOnDestroy(): void {
+    this.unityService.cleanUpUnity();
   }
 
   startUnity() {

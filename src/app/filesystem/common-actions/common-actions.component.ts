@@ -17,6 +17,8 @@ export class CommonActionsComponent implements OnInit {
 
   isReadonly = false;
 
+  @Input() isInlineMenu: boolean = false;
+  @Input() isVisible: boolean = false;
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
   @Input() set mode(mode: number) {
@@ -46,17 +48,20 @@ export class CommonActionsComponent implements OnInit {
     // change detection, but it's way faster at least)
     this.zone.runOutsideAngular(() => {
       fromEvent(document, 'click').pipe(
-        tap(ev => (this.stopPropagation(ev), ev.preventDefault())),
-        filter(ev => !this.ref.nativeElement.contains(ev.target)),
-        tap(() => this.close.emit())
+        filter(ev => !this.ref.nativeElement.contains(ev.target) && this.isVisible),
+        tap((ev) => this.emit(ev))
       ).subscribe()
 
       fromEvent(document, 'keydown').pipe(
         filter(ev => (ev as KeyboardEvent).key === 'Escape'),
-        tap(ev => (this.stopPropagation(ev), ev.preventDefault)),
-        tap(() => this.close.emit())
-      ).subscribe();
+        tap(ev => this.emit(ev))
+      ).subscribe(); 
     });
+  }
+
+  emit(ev: Event): void {
+    this.stopPropagation(ev);
+    this.close.emit();
   }
 
   stopPropagation(ev: Event): void {

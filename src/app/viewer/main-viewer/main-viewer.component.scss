@@ -67,10 +67,10 @@ app-terminal-viewer {
 :host {
   as-split {
     max-height: calc(100vh - 48px); // subtract height of navbar
+    max-width: calc(100vw - 48px); // subtract width of actionbar
 
     ::ng-deep .as-split-gutter {
-      background-color: #262626;
-      background: none;
+     background-color: lighten(#262626, 10%);
 
       &:hover {
         box-shadow: 0 0 0 1px #1389fd;

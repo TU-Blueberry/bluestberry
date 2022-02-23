@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { ConfigService } from 'src/app/shared/config/config.service';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
 import { FilesystemService } from '../filesystem.service';
@@ -49,8 +50,8 @@ export class FileComponent implements OnInit, OnDestroy {
   }
 
   @Output() onDeleteRequested: EventEmitter<boolean> = new EventEmitter();
-  constructor(private fsService: FilesystemService, private ev: FilesystemEventService, private uiEv: UiEventsService, private cd: ChangeDetectorRef) {
-    this._node = new TreeNode(this.uiEv, this.fsService, this.ev);
+  constructor(private fsService: FilesystemService, private ev: FilesystemEventService, private uiEv: UiEventsService, private cd: ChangeDetectorRef, private conf: ConfigService) {
+    this._node = new TreeNode(this.uiEv, this.fsService, this.ev, this.conf);
     this.closeContextMenuSubscription = this.uiEv.onCloseAllContextMenues.subscribe(() => {
       this.showContextMenu = false;
       this.cd.detectChanges();

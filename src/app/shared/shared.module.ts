@@ -5,6 +5,7 @@ import { LoadingAnimationComponent } from './loading-animation/loading-animation
 import { ConfirmationDialogComponent } from './confirmation-dialog/confirmation-dialog.component';
 import { ModalComponent } from './modal/modal.component';
 import { AboutComponent } from './about/about.component';
+import { ProgressSpinnerComponent } from './progress-spinner/progress-spinner.component';
 
 @NgModule({
   declarations: [
@@ -12,7 +13,8 @@ import { AboutComponent } from './about/about.component';
     LoadingAnimationComponent,
     ConfirmationDialogComponent,
     ModalComponent,
-    AboutComponent
+    AboutComponent,
+    ProgressSpinnerComponent
   ],
   imports: [
     CommonModule
@@ -22,7 +24,8 @@ import { AboutComponent } from './about/about.component';
     LoadingAnimationComponent,
     ConfirmationDialogComponent,
     ModalComponent,
-    AboutComponent
+    AboutComponent,
+    ProgressSpinnerComponent
   ]
 })
 export class SharedModule { }

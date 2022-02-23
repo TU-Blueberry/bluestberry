@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { TabType } from 'src/app/tab/model/tab-type.model';
 import { FileType, FileTypes } from '../filetypes.enum';
@@ -8,25 +8,24 @@ import { FileType, FileTypes } from '../filetypes.enum';
   templateUrl: './file-icons.component.html',
   styleUrls: ['./file-icons.component.scss']
 })
-export class FileIconsComponent implements OnInit {
+export class FileIconsComponent {
   private _fileType?: FileType;
   private _isActive = false;
   private _isTentative = false;
   private _isRenaming = false;
+  private _specialTabTypes = ['HINT', 'UNITY', 'PLOTLY'];
   
   public _tabType?: TabType;
   public fileTypeEnum = FileType;
   public fileTypeString = '';
   public fillColor = '';
 
-  @Input('data')
-  set data(data: any) {
-    if (data !== undefined) {
-      const extension = this.fsService.getExtension(data.path || '');
-      this._fileType = FileTypes.getType(extension); 
-      this.fileTypeString = this.fileType === FileType.JSON ? '{..}' : extension;
-      this.fillColor = FileTypes.getColorCode(extension);
-    } 
+  @Input('path')
+  set path(path: string ) {
+    const extension = this.fsService.getExtension(path);
+    this._fileType = FileTypes.getType(extension); 
+    this.fileTypeString = this._fileType === FileType.JSON ? '{..}' : extension;
+    this.fillColor = FileTypes.getColorCode(extension);
   }
 
   @Input('isTentative')
@@ -49,10 +48,6 @@ export class FileIconsComponent implements OnInit {
     this._isRenaming = isRenaming
   }
 
-  get fileType(): FileType | undefined {
-    return this._fileType;
-  }
-
   get isActive(): boolean {
     return this._isActive;
   }
@@ -67,34 +62,45 @@ export class FileIconsComponent implements OnInit {
 
   constructor(public fsService: FilesystemService) { }
 
-  ngOnInit(): void {
+  public hasIcon(): boolean {
+    if (this.isFolder() || this.isSpecialTab()) {
+      return true;
+    }
+
+    if (this.isRegularFile()) {
+      switch (this._fileType) {
+        case FileType.PROGRAMMING_LANGUAGE:
+        case FileType.MARKDOWN:
+        case FileType.JSON:
+             return false;
+        case FileType.IMAGE:
+        case FileType.DATA:
+        case FileType.PLAIN_TEXT:
+        case FileType.OTHER:
+                return true;
+      }
+    }
+
+    return false;
   }
 
-  public getImageIconPath(): string {
-    return FileTypes.imageIconPath; 
+  public isFolder(): boolean {
+    return this._fileType === undefined && this._tabType === undefined;
   }
 
-  public getCsvIconPath(): string {
-    return FileTypes.csvIconPath;
+  public isSpecialTab(): boolean {
+    return this._tabType !== undefined && this._specialTabTypes.includes(this._tabType)
   }
 
-  public getTableIconPath(): string {
-    return FileTypes.tableIconPath;
+  public isRegularFile(): boolean {
+    return this._fileType !== undefined;
   }
 
-  public getPlainTextIconPath(): string {
-    return FileTypes.plainTextPath;
+  public getTabIconPath(): string {
+    return FileTypes.getTabIconPath(this._tabType);
   }
 
-  public getUnknownFileTypeIconPath(): string {
-    return FileTypes.unknownFilePath;
-  }
-
-  public getUnityIconPath(): string {
-    return FileTypes.unityPath;
-  }
-
-  public getHintIconPath(): string {
-    return FileTypes.hintPath;
+  public getFileIconPath(): string {
+    return FileTypes.getFileIconPath(this._fileType)
   }
 }

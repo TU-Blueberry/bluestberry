@@ -5,50 +5,25 @@ import { EventEmitter, Injectable } from '@angular/core';
 })
 export class UiEventsService {
   onActiveElementChange: EventEmitter<string> = new EventEmitter();
-  onFiletreeToggle: EventEmitter<boolean> = new EventEmitter();
   onNewUserInputLocation: EventEmitter<string> = new EventEmitter();
-  onHintChange: EventEmitter<void> = new EventEmitter();
-  onToggleTerminal: EventEmitter<void> = new EventEmitter();
-  onStartTour: EventEmitter<void> = new EventEmitter();
   onCloseAllContextMenues: EventEmitter<void> = new EventEmitter();
   onClickOutsideOfFiltree: EventEmitter<{ev: MouseEvent, isGlossary: boolean}> = new EventEmitter();
-  onAboutToggle: EventEmitter<boolean> = new EventEmitter();
 
   constructor() { }
-
-  changeActiveElement(newActiveElement: string): void {
-    this.onActiveElementChange.emit(newActiveElement);
+  clickOutsideOfFiletree(ev: MouseEvent, isGlossary: boolean) {
+    this.onClickOutsideOfFiltree.emit({ev: ev, isGlossary: isGlossary});
   }
 
-  changeFiletree(visible: boolean): void {
-    this.onFiletreeToggle.emit(visible);
+  // could also use store with new state for the following three
+  changeActiveElement(newActiveElement: string): void {
+    this.onActiveElementChange.emit(newActiveElement);
   }
 
   changeUserInputLocation(path: string): void {
     this.onNewUserInputLocation.emit(path);
   }
 
-  changeHints(): void {
-    this.onHintChange.emit();
-  }
-
-  toggleTerminal(): void {
-    this.onToggleTerminal.emit();
-  }
-
-  startTour(): void {
-    this.onStartTour.emit();
-  }
-
   closeAllContextMenues(): void {
     this.onCloseAllContextMenues.emit();
-  }
-
-  clickOutsideOfFiletree(ev: MouseEvent, isGlossary: boolean) {
-    this.onClickOutsideOfFiltree.emit({ev: ev, isGlossary: isGlossary});
-  }
-
-  toggleAbout(visible: boolean) {
-    this.onAboutToggle.emit(visible);
   }
 }
