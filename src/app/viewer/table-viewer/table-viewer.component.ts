@@ -46,9 +46,16 @@ export class TableViewerComponent implements OnInit {
       .onTrigger( ev => this.decodedData$ )
       .create();
     
+    this.decodedData$.subscribe(() => {this.pblDatasource?.refresh();})
+
     this.pblDatasource.selection.changed.subscribe((selection: any) => {
       console.log(selection);
       this.syncSelection();
+    })
+
+    this.pblDatasource.sortChange.subscribe((chg: any) => {
+      // clear selection on sort because there is a bug with ngrid
+      this.pblDatasource.selection.clear();
     })
 
     this.fileTabDirective.dataChanges
@@ -91,6 +98,7 @@ export class TableViewerComponent implements OnInit {
   }
 
   onClickEvents(ev: PblNgridRowEvent<any>) {
+    console.log(this.pblDatasource);
     const rawEntry = this.pblDatasource.sortedData[ev.rowIndex]
     this.pblDatasource.selection.toggle(rawEntry);
     this.syncSelection(); 
@@ -98,8 +106,6 @@ export class TableViewerComponent implements OnInit {
   }
   
   syncSelection() {
-    if(this.pblDatasource.selection.selected.length == 0){return;}
-    console.log(this.pblDatasource.selection.selected);
     const currSelectionJson = this.pblDatasource.selection.selected.map( (obj: any) => JSON.stringify(obj));
     this.pblDatasource.hostGrid.rowsApi.dataRows().map( (row: any) => {
       const rowDataJson = JSON.stringify(this.pblDatasource.sortedData[row.rowIndex]);
@@ -115,15 +121,12 @@ export class TableViewerComponent implements OnInit {
   deleteSelected() {
     const currData = this.decodedData$.value;
     const dataToRemoveAsJson = this.pblDatasource.selection.selected.map( (obj: any) => JSON.stringify(obj));
-
-    this.decodedData$.next(
-      currData.filter( (data: any)=> !dataToRemoveAsJson.includes(JSON.stringify(data)))
-    );
+    console.log(currData);
+    const updatedData = currData.filter( (data: any)=> !dataToRemoveAsJson.includes(JSON.stringify(data)));
+    console.log(updatedData);
+    this.decodedData$.next(updatedData);
 
     this.pblDatasource.selection.clear();
-    this.pblDatasource.hostGrid.rowsApi.dataRows().map( (row: any) => {
-        row.element.classList.remove('row-selected');
-    })
   }
 
   discardChanges() {

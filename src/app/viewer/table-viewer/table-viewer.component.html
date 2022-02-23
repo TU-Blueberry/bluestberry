@@ -1,7 +1,7 @@
 <div class="root">
     <div class="actionsMenu">
         <button (click)="addEntry()">Add Entry</button>
-        <button [disabled]="null" (click)="deleteSelected()">Delete Selected</button> 
+        <button [disabled]="pblDatasource?.selection.selected.length == 0 ? 'disabled' : null" (click)="deleteSelected()">Delete Selected</button> 
         <button (click)="saveChanges()">Save Changes</button>
         <button (click)="discardChanges()">Discard Changes</button>
     </div>
