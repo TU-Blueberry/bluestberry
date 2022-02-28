@@ -1,9 +1,9 @@
 import {GuidedTour, TourStep, Orientation} from "ngx-guided-tour";
 
 const welcome: TourStep = {
-  title: "Willkommen!",
-  content: "Mit unserer Lernplattform kannst du anhand eines praktischen Beispiels erste Erfahrungen als Data Sciencist sammeln." +
-    "<br><br>Diese Tour bietet eine kurze Einführung zu den wichtigsten Komponenten.",
+  title: "Herzlich willkommen bei \"Project Blueberry\"",
+  content: "Das Ziel dieser Lernplattform ist es, eine praktische Einführung in das Thema Data Science zu geben." +
+    "<br><br>Es folgt eine kurze Vorstellung der angebotenen Features und wichtigsten Bedienelemente.",
   selector: "",
   highlightPadding: 0,
   orientation: undefined,
@@ -29,8 +29,8 @@ const terminal: TourStep = {
 
 const navigation: TourStep = {
   title: "Die Navigationsleiste",
-  content: "Mit der Navigationsleiste kann man das Datei- oder Hinweis-System öffnen, " +
-    "die Anzeige des Terminals (de-)aktivieren, oder diese Info-Tour starten.",
+  content: "Mit der Navigationsleiste können Sie u.a. das Dateisystem ein- und ausblenden oder das Hinweis-System öffnen. " +
+    "<br><br> Über das Fragezeichensymbol kann diese Info-Tour außerdem jederzeit wiederholt werden.",
   selector: "app-actionbar",
   highlightPadding: 0,
   orientation: Orientation.Right,
@@ -41,11 +41,12 @@ const navigation: TourStep = {
   closeAction(): void {},
 }
 
-const left: TourStep = {
+const editor: TourStep = {
   title: "Der Code-Editor",
-  content: "An dieser Stelle kannst du programmieren. Änderungen werden dabei automatisch abgespeichert." +
-    "<br><br>Die Symbole unten rechts dienen dazu Änderungen zu wiederholen / rückgängig zu machen und Python-Code auszuführen.",
-  selector: "#left",
+  content: "An dieser Stelle können Sie in Python programmieren und anderweitige Textdateien bearbeiten. " +
+    "<br><br>Python-Code kann via Pyodide client-seitig im Browser ausgeführt werden. " +
+    "<br><br>Änderungen an einer Datei werden automatisch gespeichert.",
+  selector: "#editor-area",
   highlightPadding: 0,
   orientation: Orientation.Right,
   scrollAdjustment: 0,
@@ -55,11 +56,26 @@ const left: TourStep = {
   closeAction(): void {},
 }
 
-const right: TourStep = {
+const actionbar: TourStep = {
+  title: "Der Code-Editor",
+  content: "Diese Symbole ermöglichen das Wiederholen / Rückgängig machen von Änderungen in einer Textdatei. " +
+    "<br><br>Im Falle einer Python-Datei kann hier die Codeausführung gestartet oder notfalls abgebrochen werden.",
+  selector: "#editor-area",
+  highlightPadding: 0,
+  orientation: Orientation.Right,
+  scrollAdjustment: 0,
+  skipStep: false,
+  useHighlightPadding: false,
+  action(): void {},
+  closeAction(): void {},
+}
+
+
+const visualisation: TourStep = {
   title: "Die Visualisierung",
-  content: "Auf der rechten Seite werden zum Beispiel Diagramme oder Bilder dargestellt " +
-    "— und natürlich unsere Blaubeer-Sortiermaschine.",
-  selector: "#right",
+  content: "Auf der rechten Seite können zum Beispiel Diagramme oder Bilder angezeigt werden " +
+    "— und natürlich die Simulation der Blaubeer-Sortiermaschine.",
+  selector: "#right-area",
   highlightPadding: 0,
   orientation: Orientation.Left,
   scrollAdjustment: 0,
@@ -84,9 +100,9 @@ const search: TourStep = {
 
 const fileSystem: TourStep = {
   title: "Das Dateisystem",
-  content: "Im Dateisystem finden sich unter anderem Trainingsdaten für die Klassifikation, " +
-    "Aufgabenstellungen und ein Glossar mit Definitionen und (hoffentlich) hilfreichen Tipps.",
-  selector: "app-filetree",
+  content: "Im Dateisystem enhalten sind u.a. Trainingsdaten, Aufgabenstellungen und ein Glossar mit Definitionen." +
+    "<br><br>Mittels Rechtsklick können Sie auf das dazugehörige Kontextmenü zugreifen, um zum Beispiel eigene Dateien zu erstellen.",
+  selector: "#fileTree-area",
   highlightPadding: 0,
   orientation: Orientation.Right,
   scrollAdjustment: 0,
@@ -115,9 +131,10 @@ const tourSteps = [
   navigation,
   fileSystem,
   search,
-  left,
+  editor,
+  actionbar,
   terminal,
-  right,
+  visualisation,
   // help,
 ]
 

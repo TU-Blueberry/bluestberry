@@ -172,6 +172,11 @@ body {
 }
 
 /** ngx-guided-tour */
+.back-button, .skip-button {
+  line-height: inherit !important;
+  vertical-align: inherit !important;
+}
+
 .tour-block {
   border-radius: 10px;
 }
