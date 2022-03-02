@@ -17,7 +17,7 @@ const welcome: TourStep = {
 const terminal: TourStep = {
   title: "Das Terminal",
   content: "Im Terminal wird die Ausgabe der Programmausführung anzeigt — inklusive etwaiger Fehlermeldungen.",
-  selector: ".terminal",
+  selector: "#terminal-area",
   highlightPadding: 0,
   orientation: Orientation.Top,
   scrollAdjustment: 0,
@@ -60,7 +60,7 @@ const actionbar: TourStep = {
   title: "Der Code-Editor",
   content: "Diese Symbole ermöglichen das Wiederholen / Rückgängig machen von Änderungen in einer Textdatei. " +
     "<br><br>Im Falle einer Python-Datei kann hier die Codeausführung gestartet oder notfalls abgebrochen werden.",
-  selector: "#editor-area",
+  selector: ".code-action-bar",
   highlightPadding: 0,
   orientation: Orientation.Right,
   scrollAdjustment: 0,
@@ -75,7 +75,7 @@ const visualisation: TourStep = {
   title: "Die Visualisierung",
   content: "Auf der rechten Seite können zum Beispiel Diagramme oder Bilder angezeigt werden " +
     "— und natürlich die Simulation der Blaubeer-Sortiermaschine.",
-  selector: "#right-area",
+  selector: "#visualisation-area",
   highlightPadding: 0,
   orientation: Orientation.Left,
   scrollAdjustment: 0,
@@ -102,7 +102,7 @@ const fileSystem: TourStep = {
   title: "Das Dateisystem",
   content: "Im Dateisystem enhalten sind u.a. Trainingsdaten, Aufgabenstellungen und ein Glossar mit Definitionen." +
     "<br><br>Mittels Rechtsklick können Sie auf das dazugehörige Kontextmenü zugreifen, um zum Beispiel eigene Dateien zu erstellen.",
-  selector: "#fileTree-area",
+  selector: "#file-tree-area",
   highlightPadding: 0,
   orientation: Orientation.Right,
   scrollAdjustment: 0,

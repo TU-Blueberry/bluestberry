@@ -1,10 +1,11 @@
 <as-split (dragEnd)="onDragEnd($event)" direction="horizontal"
   class="main-split" #parent [gutterSize]="3" [restrictMove]="true" [useTransition]="true">
   <as-split-area
+    id="file-tree-area"
     [visible]="viewSettings.filetree.visible"
     [size]="viewSettings.filetree.size"
     [minSize]="viewSettings.filetree.minSize"
-    [maxSize]="viewSettings.filetree.maxSize"  
+    [maxSize]="viewSettings.filetree.maxSize"
     [order]="viewSettings.filetree.order">
     <as-split direction="vertical" [gutterSize]="4" [unit]="'pixel'" [useTransition]="true" #sidebar>
       <as-split-area [order]="0" [minSize]="200" [size]="400" (contextmenu)="onRightClick($event, false)">
@@ -19,18 +20,20 @@
     [order]="viewSettings.left.order"
     [size]="viewSettings.left.size"
     [minSize]="viewSettings.left.minSize"
-    [maxSize]="viewSettings.left.maxSize"     
+    [maxSize]="viewSettings.left.maxSize"
     [visible]="viewSettings.left.visible">
     <as-split direction="vertical" [gutterSize]="4" (dragEnd)="onDragEndLeftGroup($event)" [restrictMove]="true" [useTransition]="true">
-      <as-split-area 
-        [order]="viewSettings.code.order" 
+      <as-split-area
+        id="editor-area"
+        [order]="viewSettings.code.order"
         [minSize]="viewSettings.code.minSize"
         [maxSize]="viewSettings.code.maxSize"
         [size]="viewSettings.code.size">
         <app-tab-group-facade id="left"></app-tab-group-facade>
       </as-split-area>
-      <as-split-area 
-        [order]="viewSettings.terminal.order" 
+      <as-split-area
+        id="terminal-area"
+        [order]="viewSettings.terminal.order"
         [minSize]="viewSettings.terminal.minSize"
         [maxSize]="viewSettings.terminal.maxSize"
         [size]="viewSettings.terminal.size"
@@ -39,18 +42,19 @@
       </as-split-area>
     </as-split>
   </as-split-area>
-  <as-split-area 
+  <as-split-area
+    id="visualisation-area"
     [order]="viewSettings.right.order"
     [size]="viewSettings.right.size"
     [minSize]="viewSettings.right.minSize"
-    [maxSize]="viewSettings.right.maxSize"  
+    [maxSize]="viewSettings.right.maxSize"
     [visible]="viewSettings.right.visible">
     <app-tab-group-facade id="right"></app-tab-group-facade>
   </as-split-area>
   <as-split-area
     [size]="viewSettings.emptyMessage.size"
     [minSize]="viewSettings.emptyMessage.minSize"
-    [maxSize]="viewSettings.emptyMessage.maxSize"  
+    [maxSize]="viewSettings.emptyMessage.maxSize"
     [visible]="viewSettings.emptyMessage.visible"
     [order]="viewSettings.emptyMessage.order">
       <app-empty-viewer></app-empty-viewer>
