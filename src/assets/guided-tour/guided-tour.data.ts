@@ -62,7 +62,7 @@ const actionbar: TourStep = {
     "<br><br>Im Falle einer Python-Datei kann hier die Codeausführung gestartet oder notfalls abgebrochen werden.",
   selector: ".code-action-bar",
   highlightPadding: 0,
-  orientation: Orientation.Right,
+  orientation: Orientation.Top,
   scrollAdjustment: 0,
   skipStep: false,
   useHighlightPadding: false,
