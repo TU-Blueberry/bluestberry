@@ -36,6 +36,8 @@ $icon-size: 24px;
   position: absolute;
   bottom: 0px;
   right: 0px;
+  float: right;
+  width: min-content;
   padding-top: 5px;
   padding-bottom: 5px;
   z-index: 1;
