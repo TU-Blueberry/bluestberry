@@ -6,7 +6,6 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core'
-import { UnityScenes } from '../shared/unity/unity.scenes.enum'
 import { UnityService } from './unity.service'
 
 @Component({
@@ -34,7 +33,7 @@ export class UnityComponent implements OnInit, OnChanges, OnDestroy, AfterViewIn
 
   // Initialize Unity with our standard Scene.
   ngOnInit(): void {
-    this.gameInstance = this.unityService.initUnity(UnityScenes.BerrySorter)
+    this.unityService.initUnity().subscribe(instance => this.gameInstance = instance)
   }
 
   ngOnDestroy(): void {

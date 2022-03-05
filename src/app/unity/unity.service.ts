@@ -1,32 +1,102 @@
 import { Injectable } from '@angular/core'
+import { Observable, of, throwError, zip } from 'rxjs'
+import { map, switchMap, take } from 'rxjs/operators'
+import { Config } from '../experience/model/config'
 import { FilesystemService } from '../filesystem/filesystem.service'
 import { PythonCallable } from '../python-callable/python-callable.decorator'
+import { ConfigService } from '../shared/config/config.service'
 import { UnityBerryDTO } from '../shared/unity/unity.berry.dto'
+
+interface UnityFiles {
+  dataUrl: string, 
+  wasmCodeUrl: string, 
+  wasmFrameworkUrl: string
+}
 
 @Injectable({
   providedIn: 'root',
 })
+
 export class UnityService {
-  constructor(private fsService: FilesystemService) {}
+  constructor(private fsService: FilesystemService, private conf: ConfigService) {}
   gameInstance: any
   progress = 0
   isReady = false
 
-  initUnity(path: string): any {
-    const loader = (window as any).UnityLoader
-    this.gameInstance = loader.instantiate('gameContainer', path, {
-      onProgress: (gameInstance: any, progress: number) => {
-        this.progress = progress
-        if (progress === 1) {
-          this.isReady = true
-          this.disableWebGLInput()
-          // this.initialPresentation()
-        }
-      },
-    });
+  initUnity(): Observable<any> {
+    return this.conf.getConfigOfCurrentExperience().pipe(
+      switchMap(conf => {
+        return !conf.unityEntryPoint 
+          ? throwError("Config contains no unity entry point")
+          : this.fsService.getFileAsBinary(`/${conf.uuid}/${conf.unityEntryPoint}`).pipe(
+              take(1),
+              switchMap(file => {
+                const unityJson = JSON.parse(new TextDecoder().decode(file));
+                const blob = new Blob([file.buffer]);
+                const uri = URL.createObjectURL(blob);
+        
+                const unityInfo: UnityFiles = {    
+                  "dataUrl": this.toFullPath(conf, unityJson.dataUrl),
+                  "wasmCodeUrl": this.toFullPath(conf, unityJson.wasmCodeUrl),
+                  "wasmFrameworkUrl": this.toFullPath(conf, unityJson.wasmFrameworkUrl),
+                }
 
-    return this.gameInstance
+                // convert all other necessary files to object uris
+                return this.getUnityFilesAsObjectUris(unityInfo).pipe(
+                  switchMap(uris => {
+                    const uriMap = {
+                      [unityJson.dataUrl]: uris[0],
+                      [unityJson.wasmCodeUrl]: uris[1],
+                      [unityJson.wasmFrameworkUrl]: uris[2]
+                    }
+
+                    const loader = (window as any).UnityLoader
+                    this.gameInstance = loader.instantiate('gameContainer', uri, uriMap, {
+                      onProgress: (gameInstance: any, progress: number) => {
+                        this.progress = progress
+                        if (progress === 1) {
+                          this.isReady = true
+                          this.disableWebGLInput()
+                          // this.initialPresentation()
+                        }
+                      },
+                    });
+                    
+                    return of(this.gameInstance)
+                  })
+                )
+              })
+        )})
+      )
   }
+
+  private getUnityFilesAsObjectUris(info: UnityFiles): Observable<string[]> {
+    return zip(
+      this.fsService.getFileAsBinary(info.dataUrl),
+      this.fsService.getFileAsBinary(info.wasmCodeUrl),
+      this.fsService.getFileAsBinary(info.wasmFrameworkUrl)
+    ).pipe(
+      map(files => {
+        return files.map(file => this.uint8ToBlob(file))
+      })
+    )
+  }
+
+  // we start with the json file which is located at /<uuid>/<unityEntryPoint>
+  // unityEntryPoint looks sth like 'unity/berrysort/Build/berrysort.json
+  // all the other necessary files (wasm etc) are in the same folder
+  // thus remove berrysort.json from the path to get the folder; add everything else to it
+  private toFullPath(conf: Config, value: string) {
+    return `/${conf.uuid}/${conf.unityEntryPoint?.split('/').slice(0, -1).join('/')}/${value}` 
+  }
+
+  private uint8ToBlob(file: Uint8Array): string {
+    const blob = new Blob([file.buffer]);
+    const uri = URL.createObjectURL(blob);
+
+    return uri;
+  }
+
   updateUnity(update: number) {}
 
   cleanUpUnity(): void {

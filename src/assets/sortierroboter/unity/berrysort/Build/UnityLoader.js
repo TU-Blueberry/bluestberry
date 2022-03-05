@@ -4541,7 +4541,7 @@ var UnityLoader = UnityLoader || {
           )
       })
   },
-  instantiate: function (e, t, r) {
+  instantiate: function (e, t, uriMap, r) {
     function n(e, n) {
       if ('string' == typeof e && !(e = document.getElementById(e))) return !1
       ;(e.innerHTML = ''),
@@ -4570,7 +4570,7 @@ var UnityLoader = UnityLoader || {
       return (
         n.compatibilityCheck(
           n,
-          function () {
+          function () {            
             var t = new XMLHttpRequest()
             t.open('GET', n.url, !0),
               (t.responseType = 'text'),
@@ -4677,7 +4677,7 @@ var UnityLoader = UnityLoader || {
         resolveBuildUrl: function (e) {
           return e.match(/(http|https|ftp|file):\/\//)
             ? e
-            : t.substring(0, t.lastIndexOf('/') + 1) + e
+           : uriMap[e]
         },
         streamingAssetsUrl: function () {
           return o(this.resolveBuildUrl('../StreamingAssets'))
