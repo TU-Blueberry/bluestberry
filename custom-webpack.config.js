@@ -37,9 +37,6 @@ const customZipPlugin = {
 };
 
 module.exports = {
-  plugins: [
-    customZipPlugin
-  ],
   module: {
     rules: [
       {
@@ -48,7 +45,7 @@ module.exports = {
       }
     ],
   },
-  plugins: [new NodePolyfillPlugin()],
+  plugins: [new NodePolyfillPlugin(), customZipPlugin],
   devServer: {
     headers: {
       'Cross-Origin-Opener-Policy': 'same-origin',
