@@ -1,5 +1,5 @@
-- item200:
-    question_id: 200
+- item1:
+    question_id: 1
     following_answer_id: 200000
     content: Ich brauche Hilfe bei der Visualisierung.
 
@@ -40,10 +40,11 @@
     answer_id: 200003
     question_options: [200004]
     content: |
-        Nutze dafür Plotly. Eine Idee welche Graphen mit Plotly visualisiert werden können findest du hier:
-        <https://plotly.com/python/>
+        Nutze dafür Plotly. Eine Idee welche Graphen mit Plotly visualisiert werden können findest du hier: 
+        link<https://plotly.com/python/>
         Falls du schon mit Dokumentationen umgehen kannst, kannst du auch den folgenden Link nutzen:
         link<https://plotly.com/python-api-reference/plotly.express.html/>
+        
 - item200008:
     question_id: 200004
     following_answer_id: 200005
@@ -71,7 +72,7 @@
             fig = px.line(df, x="year", y="lifeExp", title='Life expectancy in Canada')
             fig.show()
         />
-        img<--Bild vom Liniendiagramm--/>
+            img<easyLinePlot.png/>
 
 - item200012:
     question_id: 200008
@@ -171,7 +172,7 @@
 
         fig.show()
         /> 
-        img<--Bild vom Liniendiagramm--/>
+        img<moreLinesLinePlot.png/>
 
 
 - item200024:
@@ -201,7 +202,7 @@
         fig = px.bar(data_canada, x='year', y='pop')
         fig.show()
         /> 
-        img<--Bild vom Balkendiagramm--/>
+        img<easyBarPlot.png/>
 
 
 - item200029:
@@ -262,7 +263,7 @@
         fig.update_layout(barmode='group')
         fig.show()
         />
-        img<--Bild vom Balkendiagramm--/>
+        img<moreBarPlots.png/>
 
 
 
@@ -318,11 +319,11 @@
 
 - item200043:
     question_id: 200047
-    following_answer_id: 200048
+    following_answer_id: 200144
     content: Ich möchte etwas zu Plotly erfahren.
         
 - item200044:
-    answer_id: 200001 
+    answer_id: 200144
     question_options: [200006, 200023, 200050, 200057]
     content: |
         Was genau möchtest du wissen?
@@ -348,7 +349,7 @@
         fig = go.Figure(data=[go.Scatter3d(x=x, y=y, z=z,
                                     mode='markers')])
         />
-        img<--Bild vom Scanner Plot--/>
+        img<ScatterPlot.png/>
 
 
 - item200046:
@@ -2486,8 +2487,8 @@
         Das Problem liegt in der Zeile, in der das Modell evaluiert werden soll.
 
 - item400210:
-    answer_id: 400105
-    question_options: [400105]
+    answer_id: 400104
+    question_options: [400106]
     content: |
         Hier sollte wieder die Funktion predict verwendet werden.
 
@@ -2499,25 +2500,24 @@
 
 - item400212:
     answer_id: 400105
-    question_options: [400106]
+    question_options: [400107]
     content: |
         Der einzige Unterschied besteht darin, dass die Funktion nicht auf den Trainings-, sondern auf den Testdaten aufgerufen wird.
 
-# TODO wrong id
 - item400213:
-    question_id: 400106
+    question_id: 400107
     following_answer_id: 400106
     content: |
         Und wie sieht der Aufruf dann aus?
 
 - item400214:
     answer_id: 400106
-    question_options: [400107]
+    question_options: [400108]
     content: |
         Wichtig ist, dass die Vorhersage in einer Variablen gespeichert wird.
 
 - item400215:
-    question_id: 400107
+    question_id: 400108
     following_answer_id: 400107
     content: |
         Kannst du mir bitte vorgeben, wie das aussehen kann?
@@ -2528,8 +2528,3 @@
     content: |
         Das Speichern der Vorhersage kann wie folgt aussehen: codeinline<predictions = model.predict(X_test)/>.
         Auch hier können dann wieder die Metriken ausgegeben werden.
-
-
-
-
-
