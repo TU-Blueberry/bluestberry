@@ -103,7 +103,7 @@ export class ExperienceManagementService {
     return concat(
       this.fsService.mount(exp.uuid),
       this.fsService.sync(true),
-      defer(() => this.py.addToSysPath(exp.uuid)),
+      this.getAllLibsAndAddToSysPath(exp),
       this.fsService.changeWorkingDirectory(`/${exp.uuid}`),
       this.checkExperienceAfterMount(exp)
     )
@@ -112,7 +112,7 @@ export class ExperienceManagementService {
   // if delete flag is set, experience will be deleted before closing it
   public closeExperience(exp: Experience, deleteBeforeClose: boolean) {
     return concat(
-      defer(() => this.py.removeFromSysPath(exp.uuid)),
+      this.removeAllLibPaths(exp),
       this.fsService.changeWorkingDirectory('/'),
       this.fsService.unmount(exp.uuid),
       this.fsService.reset(),
@@ -142,6 +142,24 @@ export class ExperienceManagementService {
     )
   }
 
+  private getAllLibsAndAddToSysPath(exp: Experience): Observable<never> {
+    return this.configService.getAllLibPaths(exp).pipe(
+      switchMap(libs => {
+        this.py.addToSysPath(libs);
+        return EMPTY; 
+      })
+    )
+  }
+
+  private removeAllLibPaths(exp: Experience): Observable<never> {
+    return this.configService.getAllLibPaths(exp).pipe(
+      switchMap(libs => {
+        this.py.removeFromSysPath(libs);
+        return EMPTY; 
+      })
+    )
+  }
+
   /** Retrieves the lesson with the given name from the server */
   private loadLessonFromServer(name: string) {
     const url = this.location.prepareExternalUrl(`/assets/${name}.zip`);
@@ -162,7 +180,7 @@ export class ExperienceManagementService {
           this.fsService.storeExperience(zip, lesson.uuid),
           this.fsService.sync(false),
           this.fsService.changeWorkingDirectory(`/${lesson.uuid}`),
-          defer(() => this.py.addToSysPath(lesson.uuid)),
+          this.getAllLibsAndAddToSysPath(lesson),
           this.checkExperienceAfterMount(lesson)
         )
       )

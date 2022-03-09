@@ -54,6 +54,12 @@ export class ConfigService {
     )
   }
 
+  public getAllLibPaths(exp: Experience): Observable<string[]> {
+    return this.getConfigByExperience(exp).pipe(
+      switchMap(conf => of(conf.modules.map(module => `/${conf.uuid}/${module}`)))
+    )
+  }
+
   public getHintRoot(exp: Experience): Observable<string> {
     return this.getConfigByExperience(exp).pipe(
       switchMap(conf => of(`/${conf.uuid}/${conf.hintRoot}/root.yml`))

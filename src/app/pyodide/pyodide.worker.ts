@@ -156,22 +156,20 @@ function notifyLoadedPackage(lib: string) {
   loadedLib$.next(lib);
 }
 
+// os.chdir("${mountPoint}")
 function addToSysPath(): string {
   let glueCode = '';
 
   for (const module of _modulePaths) {
+    const path = module.startsWith('/') ? module : `/${module}`
     glueCode += `
 import sys
+import os
 
-if "${module}" not in sys.path:
-    sys.path.append("${module}")
+
+if "${path}" not in sys.path:
+    sys.path.append("${path}")
       `
   }
-
-  // Only for the purpose of not screwing ourselves over in the presentation.
-  glueCode += `
-if "sortierroboter/" not in sys.path:
-    sys.path.append("/sortierroboter")
-`
   return glueCode;
 }

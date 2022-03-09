@@ -215,11 +215,13 @@ export class PyodideService {
     );
   }
 
-  addToSysPath(path: string): void {
-    this.modulePaths = [...this._modulePaths, path];
+  addToSysPath(paths: string[]): void {
+    this.modulePaths = [...this._modulePaths, ...paths];
   }
 
-  removeFromSysPath(path: string) {
-    this.modulePaths = this._modulePaths.filter(p => p === path);
+  // TODO: Funktioniert noch nicht richtig
+  // Muss alle entfernen, die von mir sind (vom system drin lassen!)
+  removeFromSysPath(paths: string[]) {
+    // this.modulePaths = this._modulePaths.filter(p => !paths.includes(p));
   }
 }

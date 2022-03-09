@@ -258,8 +258,8 @@ export class UnityService {
     var good: number = 0
     var bad: number = 0
 
-    var baseGood = 'sortierroboter/BlueberryData/TestData/good_'
-    var baseBad = 'sortierroboter/BlueberryData/TestData/bad_'
+    var baseGood = '/BlueberryData/TestData/good_'
+    var baseBad = '/BlueberryData/TestData/bad_'
     var ending = '.JPG'
 
     for (var berry of berries) {
