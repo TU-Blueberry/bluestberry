@@ -1,4 +1,4 @@
-# Histogram
+# Histogramm
 
 Ein Histogramm stellt die Häufigkeitsverteilung von Daten dar, die in Bereiche (bins im Englischen) eingeteilt werden. Dies erlaubt die Identifikation von sehr häufig vorkommenden ähnlichen Werten.
 

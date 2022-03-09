@@ -11,7 +11,7 @@ export class CommonActionsComponent implements OnInit {
   DELETE_MSG: string = '';
   RENAME_MSG: string = '';
   CREATE_FOLDER_MSG: string = 'Neuen Ordner erstellen';
-  CREATE_FILE_MSG: string = 'Neuen Datei erstellen';
+  CREATE_FILE_MSG: string = 'Neue Datei erstellen';
   UPLOAD_MSG: string = "Dateien hochladen"
   READONLY_MSG = '';
 
@@ -35,8 +35,8 @@ export class CommonActionsComponent implements OnInit {
 
   private setMessages() {
     this.DELETE_MSG = `${this.isFile ? 'Datei' : 'Ordner'} löschen`;
-    this.RENAME_MSG = `${this.isFile ? 'Datei' : 'Ordner'} umbenennen`; 
-    this.READONLY_MSG = `${this.isFile ? 'Datei' : 'Ordner'} ist schreibgeschützt`; 
+    this.RENAME_MSG = `${this.isFile ? 'Datei' : 'Ordner'} umbenennen`;
+    this.READONLY_MSG = `${this.isFile ? 'Datei' : 'Ordner'} ist schreibgeschützt`;
   }
 
   ngOnInit(): void {
@@ -44,7 +44,7 @@ export class CommonActionsComponent implements OnInit {
 
     // see https://stackoverflow.com/questions/39729846/angular-2-click-event-callback-without-triggering-change-detection
     // listening to document.click inside the zone would trigger change detection on every component, even if detached
-    // running it outside of angulars zone should circumvent change detection (it still looks like it's doing some sort of 
+    // running it outside of angulars zone should circumvent change detection (it still looks like it's doing some sort of
     // change detection, but it's way faster at least)
     this.zone.runOutsideAngular(() => {
       fromEvent(document, 'click').pipe(
@@ -55,7 +55,7 @@ export class CommonActionsComponent implements OnInit {
       fromEvent(document, 'keydown').pipe(
         filter(ev => (ev as KeyboardEvent).key === 'Escape'),
         tap(ev => this.emit(ev))
-      ).subscribe(); 
+      ).subscribe();
     });
   }
 
@@ -114,14 +114,14 @@ export class CommonActionsComponent implements OnInit {
       // konnten und welche nicht (z.B. weil sie schon existieren)
       forkJoin(Array.from(fileList).map(file => this.createUint8ArrayFromFile(file)))
       .subscribe(
-        (arrs) => this.selectedFiles.emit(arrs), 
-        (err) => console.error(err))     
+        (arrs) => this.selectedFiles.emit(arrs),
+        (err) => console.error(err))
     } else {
       // TODO: Error
     }
 
     this.close.emit();
-  } 
+  }
 
   createUint8ArrayFromFile(file: File) {
    return from(file.arrayBuffer()).pipe(

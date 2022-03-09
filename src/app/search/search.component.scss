@@ -113,3 +113,8 @@ $search-text-color: #f0f0f0;
 .type-picture {
   background-color: forestgreen;
 }
+
+::placeholder {
+  color: white;
+  opacity: 0.5;
+}

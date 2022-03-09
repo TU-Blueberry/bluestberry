@@ -4,7 +4,7 @@
     display: flex;
     font-size: 1rem;
     padding-top: 5px;
-    padding-bottom: 5px; 
+    padding-bottom: 5px;
     align-items: center;
     justify-content: space-between;
 
@@ -25,7 +25,7 @@
 
 .root-folder {
     background-color: hsl(220 12% 20%);
-}       
+}
 
 .common-actions {
     display: none;
@@ -50,6 +50,7 @@
     margin-left: 5px;
     text-overflow: ellipsis;
     overflow: hidden;
+    align-self: end;
 }
 
 .root-text {

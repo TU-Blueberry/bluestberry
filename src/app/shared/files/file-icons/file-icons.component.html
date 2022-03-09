@@ -1,13 +1,13 @@
 <div *ngIf="hasIcon(); else text">
     <div *ngIf="isFolder(); else imgIcon"
-        class="icon folder-icon" 
+        class="icon folder-icon"
         [class.rename-margin]="isRenaming && !isTentative">
-        <svg class="actual-folder" 
-            [class.actual-folder-active]="isActive" 
-            xmlns="http://www.w3.org/2000/svg" 
-            viewBox="0 0 24 24" 
-            aria-labelledby="folderIconTitle" 
-            fill="currentColor"> 
+        <svg class="actual-folder"
+            [class.actual-folder-active]="isActive"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            aria-labelledby="folderIconTitle"
+            fill="currentColor">
                 <title id="folderIconTitle">Ordner</title>
                 <path d="M3 5h6l1 2h11v12H3z"/>
         </svg>
@@ -22,16 +22,16 @@
 </div>
 
 <ng-template #text>
-    <svg viewBox="0 0 100 100" 
-         xmlns="http://www.w3.org/2000/svg" 
-         style="width: 20px; height: 20px;" 
+    <svg viewBox="0 0 100 100"
+         xmlns="http://www.w3.org/2000/svg"
+         style="width: 25px; height: 20px; display: flex"
          [style.fill]="fillColor">
-        <text x="50%" 
-              y="65%" 
-              dominant-baseline="middle" 
-              text-anchor="middle" 
+        <text x="50%"
+              y="65%"
+              dominant-baseline="middle"
+              text-anchor="middle"
               class="icon-text">
               {{ fileTypeString }}
         </text>
-    </svg> 
+    </svg>
 </ng-template>

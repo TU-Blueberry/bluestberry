@@ -28,7 +28,7 @@ export class ActionbarComponent implements OnInit {
 
   actionBarState$: Observable<any>;
 
-  constructor(private store: Store) {   
+  constructor(private store: Store) {
     this.actionBarState$ = this.store.select(state => state.actionbar);
   }
 
@@ -37,7 +37,7 @@ export class ActionbarComponent implements OnInit {
       console.log("receive actionbar satet", v)
 
       this.settings = { ...v };
-    }); 
+    });
   }
 
   toggleFiles(): void {
@@ -46,7 +46,7 @@ export class ActionbarComponent implements OnInit {
 
   // clicking on openHints if hints are already open causes hint file to be loaded from fs again
   // because tab group component has no mechanism to refocus an existing tab
-  // same "problem" applies to every other element in the filetree 
+  // same "problem" applies to every other element in the filetree
   openHints(): void {
     this.store.dispatch(new Hints.Open());
   }

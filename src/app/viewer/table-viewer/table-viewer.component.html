@@ -1,20 +1,20 @@
 <div class="root">
     <div class="actionsMenu">
-        <button (click)="addEntry()">Add Entry</button>
-        <button [disabled]="pblDatasource?.selection.selected.length == 0 ? 'disabled' : null" (click)="deleteSelected()">Delete Selected</button> 
-        <button (click)="saveChanges()">Save Changes</button>
-        <button (click)="discardChanges()">Discard Changes</button>
+        <button (click)="addEntry()">Eintrag hinzufügen</button>
+        <button [disabled]="pblDatasource?.selection.selected.length == 0 ? 'disabled' : null" (click)="deleteSelected()">Ausgewählte löschen</button>
+        <button (click)="saveChanges()">Änderungen speichern</button>
+        <button (click)="discardChanges()">Änderungen verwerfen</button>
     </div>
-    <pbl-ngrid 
+    <pbl-ngrid
         #pblTbl
         matSort
-        [dataSource]="pblDatasource" 
+        [dataSource]="pblDatasource"
         [columns]="pblColumns"
         (rowClick)="onClickEvents($event)"
         class="pbl-ngrid-cell-ellipsis pbl-ngrid-header-cell-ellipsis">
-        
+
         <div *pblNgridHeaderCellDef="'*'; col as col">
-            <span 
+            <span
                 style="font-size: 22px; font-weight: bold">
                 {{col.label}}
             </span>
@@ -33,7 +33,7 @@
         <div *pblNgridCellEditorDef="'*'; let ctx">
             <input #input [value]="ctx.value" [pblCellEditAutoFocus]="ctx" (change)="ctx.value = input.value" (blur)="ctx.stopEdit()" />
         </div>
-        
+
     </pbl-ngrid>
-  
+
 </div>

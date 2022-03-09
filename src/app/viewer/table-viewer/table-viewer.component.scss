@@ -15,7 +15,7 @@ button[disabled] {
     border: 2px solid rgb(97, 97, 97);
 }
 
-.root { 
+.root {
     flex-direction: column;
     max-width: 100%;
 }
@@ -27,4 +27,12 @@ button[disabled] {
 .row-selected {
     transition: all 200ms ease;
     background-color: #2a253b;
+}
+
+.actionsMenu {
+  margin-bottom: 10px;
+
+  & > button {
+    padding: 5px;
+  }
 }
