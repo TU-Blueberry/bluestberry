@@ -1,0 +1,10 @@
+{
+  "key_ops": [
+    "decrypt",
+    "encrypt"
+  ],
+  "ext": true,
+  "kty": "oct",
+  "k": "8se6O7K1kUmmE4ipFURXig6GygErAnW1Yw75ypcZAso",
+  "alg": "A256GCM"
+}

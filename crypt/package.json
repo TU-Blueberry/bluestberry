@@ -1,0 +1,18 @@
+{
+  "name": "cryptoberry",
+  "version": "1.0.0",
+  "description": "Easy encrypting and decrypting for Blueberry related files",
+  "main": "crypt.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "PG643",
+  "license": "MIT",
+  "private": "true",
+  "dependencies": {
+    "yargs": "^17.3.1"
+  },
+  "devDependencies": {
+    "@types/yargs": "^17.0.8"
+  }
+}
