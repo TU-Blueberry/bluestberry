@@ -1,0 +1,24 @@
+{
+  "open": [
+    { "path": "exp2.py", "on": "left", "active": true }
+  ],
+  "uuid": "0233d36d-2ed6-4661-b0e2-387d2049e0ad",
+  "name": "experience2",
+  "type": "LESSON",
+  "splitSettings": {
+    "filetree": { "group": 0, "order": 0, "size": 20, "visible": true, "minSize": 10, "maxSize": 40 },
+    "left": { "group": 0, "order": 1, "size": 80, "visible": true, "minSize": 10, "maxSize": 100 },
+    "right": { "group": 0, "order": 2, "size": 0, "visible": true, "minSize": 10, "maxSize": 100 },
+    "emptyMessage": { "group": 0, "order": 3, "size": 0, "visible": false, "minSize": 10, "maxSize": 100 },
+    "code": { "group": 1, "order": 0, "size": 100, "visible": true, "minSize": 30, "maxSize": 100 },
+    "terminal": { "group": 1, "order": 1, "size": 20, "visible": false, "minSize": 10, "maxSize": 100 }
+  },
+  "unityEntryPoint":"",
+  "hidden": [],
+  "external": [],  
+  "readonly": [],
+  "modules": [],
+  "glossaryEntryPoint": "glossary",
+  "hintRoot": "",
+  "preloadPythonLibs": ["skimage", "plotly"]
+}
