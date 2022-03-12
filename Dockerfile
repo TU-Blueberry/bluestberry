@@ -1,4 +1,4 @@
-FROM node:14 AS build
+FROM node:16 AS build
 ARG PREFIX
 RUN apt update && apt install zip
 
@@ -7,6 +7,7 @@ WORKDIR /app
 COPY package.json .
 COPY yarn.lock .
 COPY postinstall.sh .
+COPY crypt .
 RUN yarn
 
 COPY . .
