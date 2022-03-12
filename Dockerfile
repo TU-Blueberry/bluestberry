@@ -6,8 +6,8 @@ WORKDIR /app
 COPY package.json .
 COPY yarn.lock .
 COPY postinstall.sh .
-COPY crypt .
-RUN yarn
+COPY crypt crypt
+RUN ls -ahl && pwd && yarn && ls -ahl && ls -l node_modules
 
 COPY . .
 RUN yarn build /$PREFIX/
