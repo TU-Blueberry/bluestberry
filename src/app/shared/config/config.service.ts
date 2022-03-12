@@ -144,12 +144,10 @@ export class ConfigService {
 
     Object.entries(tabs).forEach(([groupId, content]) => {
       content.tabs.forEach(tab => {
-        console.log("LOOKING AT ", tab)
-
         open.push(({
           on: groupId, 
           path: tab.path !== '' ? tab.path : tab.type,
-          active: this.checkIfActive(content, tab),
+          active: this.checkIfActive(content, tab)
         }))
       })
     })

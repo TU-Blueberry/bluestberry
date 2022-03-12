@@ -112,7 +112,6 @@ export class TabManagementService {
         this.filesystemService.createOrOverwriteFile(`${conf.tabinfo}/${path}`, htmlContent, false),
         defer(() => {
           const x = {groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, path: `/${conf.uuid}/${conf.tabinfo}/${path}`, data: htmlContent, active: true }
-          console.log("DIS PATCH", x)
           this._openTab.next(x);
         })
       ))

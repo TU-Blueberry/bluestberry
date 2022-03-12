@@ -1,3 +1,4 @@
+const { randomUUID } = require('crypto');
 const fs = require('fs')
 const yargs = require('yargs')
 const { subtle } = require('crypto').webcrypto;
@@ -5,9 +6,29 @@ const { hideBin } = require('yargs/helpers')
 
 const iv = new Uint8Array([ 138, 34, 38, 4, 144, 89, 15, 5, 155, 11, 244, 21])
 
+const ViewSizeDefaults = {
+  minSizeFiletree: 10,
+  maxSizeFiletree: 30,
+  minSizeTab: 10,
+  maxSizeTab: 100,
+  minSizeTerminal: 10,
+  maxSizeTerminal: 100,
+  minSizeTop: 30,
+  maxSizeTop: 100
+}
+
+const ViewDefaultSettings = {
+  'filetree': { group: 0, order: 0, size: 20, visible: true, minSize: ViewSizeDefaults.minSizeFiletree, maxSize: ViewSizeDefaults.maxSizeFiletree },
+  'left': { group: 0, order: 1, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
+  'right': { group: 0, order: 2, size: 0, visible: false, minSize: ViewSizeDefaults.minSizeTab, maxSize: ViewSizeDefaults.maxSizeTab },
+  'emptyMessage': { group: 0, order: 3, size: 80, visible: true, minSize: 0, maxSize: 100 },
+  'code': { group: 1, order: 0, size: 100, visible: false, minSize: ViewSizeDefaults.minSizeTop, maxSize: ViewSizeDefaults.maxSizeTop },
+  'terminal': { group: 1, order: 1, size: 20, visible: false, minSize: ViewSizeDefaults.minSizeTerminal, maxSize: ViewSizeDefaults.maxSizeTerminal }
+}
+
 yargs(hideBin(process.argv))
   .scriptName('cryptoberry')
-  .command('generate', 'Generate a key and store it in a file.', (yargs) => {
+  .command('key', 'Generate a key and store it in a file (overwrites existing files!)', (yargs) => {
     yargs.option('path', {
       alias: 'p',
       default: './key',
@@ -18,6 +39,29 @@ yargs(hideBin(process.argv))
     const path = args.path ? args.path : './key';
     generateKey(path);
   }))
+  .command('config', 'Generate config with a unique UUID and some default values', (yargs) => {
+    yargs.option('path', {
+      alias: 'p',
+      demandOption: false,
+      describe: 'Location of the generated config',
+      default: 'config.json',
+      type: 'string'
+    }),
+    yargs.option('type', {
+      alias: 't',
+      demandOption: true,
+      describe: 'Type of the generated config (LESSON or SANDBOX)',
+      type: 'string'
+    }),
+    yargs.option('name', {
+      alias: 'n',
+      demandOption: true,
+      describe: 'Name of the lesson/sandbox',
+      type: 'string'
+    })
+  }, args => {
+    generateConfig(args.path, args.type, args.name);
+  })
   .command('encrypt', 'Encrypt file', (yargs) => {
     yargs.option('key', {
       alias: 'k',
@@ -121,6 +165,38 @@ async function encryptForBuild(keypath, buffer) {
   }, key, buffer);
 
   return Buffer.from(text);
+}
+
+function generateConfig(outpath, type, name) {
+  const path = outpath.endsWith('.json') ? outpath : `${outpath}.json`;
+
+  if (name.trim().length === 0) {
+    throw new Error('Name is not allowed to be empty');
+  }
+
+  if (type !== 'LESSON' && type !== 'SANDBOX') {
+    throw new Error(`Invalid type ${type} supplied`);
+  }
+
+  const config = {
+    open: [],
+    uuid: randomUUID(),
+    name: name ,
+    type: type,
+    splitSettings: ViewDefaultSettings,
+    unityEntryPoint: '',
+    encrypted: [],
+    hidden: [],
+    external: [],
+    modules: [],
+    readonly: [],
+    glossaryEntryPoint: '',
+    hintRoot: '',
+    preloadPythonLibs: [],
+    tabinfo: '__tabinfo'
+  }
+
+  fs.writeFileSync(path, JSON.stringify(config, null, 2));  
 }
   
 exports.crypt = crypt;
