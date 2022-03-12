@@ -9,7 +9,7 @@ from sklearn.metrics import accuracy_score
 
 from berrysort import TestDataLoader
 
-path = "/BlueberryData/TrainingData/"
+path = "BlueberryData/TrainingData/"
 
 
 # Lade die Bilder und deren Klasse. Gute Beeren bekommen die Klasse 1, schlechte Beeren die Klasse 0.

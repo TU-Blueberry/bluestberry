@@ -7,7 +7,7 @@ from skimage import transform
 from sklearn import metrics
 from sklearn.ensemble import RandomForestClassifier
 
-path = "/BlueberryData/TrainingData/"
+path = "BlueberryData/TrainingData/"
 
 
 def load_images():

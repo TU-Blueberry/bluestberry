@@ -11,7 +11,7 @@ import berrytemplates as bt
 from berrysort import TestDataLoader
 
 # Der Pfad zu den Trainingsdaten
-path = "/BlueberryData/TrainingData/"
+path = "BlueberryData/TrainingData/"
 
 
 def load_images(path):

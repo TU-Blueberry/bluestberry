@@ -6,7 +6,7 @@ import numpy as np
 from skimage import io
 from sklearn import metrics
 
-path = "/BlueberryData/TestData/"
+path = "BlueberryData/TestData/"
 
 
 class TestDataLoader:
