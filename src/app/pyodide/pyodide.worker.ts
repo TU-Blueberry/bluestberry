@@ -166,7 +166,7 @@ function addToSysPath(): string {
 import sys
 import os
 
-
+os.chdir("${mountPoint}")
 if "${path}" not in sys.path:
     sys.path.append("${path}")
       `
