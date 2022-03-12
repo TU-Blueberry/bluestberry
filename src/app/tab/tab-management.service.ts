@@ -12,6 +12,7 @@ import { ConfigService } from '../shared/config/config.service';
 import { ExperienceState, ExperienceStateModel } from '../experience/experience.state';
 import { FromConfig } from '../viewer/actions/from-config.action';
 import { ImportAction } from '../actionbar/actions/import.action';
+import { v4 as uuidv4 } from 'uuid';
 
 @Injectable({
   providedIn: 'root'
@@ -53,7 +54,18 @@ export class TabManagementService {
               path: '',
               active: file.active
             });
-          }
+          } else if (file.path.toLowerCase().endsWith('plotly')){
+            return this.filesystemService.getFileAsBinary(file.path).pipe(
+              switchMap(plotlyContent => of({
+                groupId: file.on,
+                title: 'Plotly',
+                type: 'PLOTLY' as TabType,
+                path: `/${conf.uuid}/${file.path}`,
+                active: file.active,
+                data: plotlyContent
+              }))
+            )
+          } 
           return this.createOpenTabEvent(`/${conf.uuid}/${file.path}`, file.active).pipe(map(ote => ({...ote, groupId: file.on})))
         })
         ).pipe(
@@ -92,8 +104,19 @@ export class TabManagementService {
     );
   }
 
-  openPlotly(htmlContent: Uint8Array): void {
-    this._openTab.next({groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, path: '',data: htmlContent, active: true });
+  openPlotly(htmlContent: Uint8Array): Observable<never> {
+    const path = `${uuidv4()}.plotly`;
+
+    return this.conf.getConfigOfCurrentExperience().pipe(
+      switchMap(conf => concat(
+        this.filesystemService.createOrOverwriteFile(`${conf.tabinfo}/${path}`, htmlContent, false),
+        defer(() => {
+          const x = {groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, path: `/${conf.uuid}/${conf.tabinfo}/${path}`, data: htmlContent, active: true }
+          console.log("DIS PATCH", x)
+          this._openTab.next(x);
+        })
+      ))
+    )
   }
 
   createOpenTabEvent(path: string, active: boolean, type?: FileType, fileContent?: Uint8Array): Observable<OpenTabEvent> {

@@ -12,6 +12,6 @@ export class PlotlyService {
   @PythonCallable
   public sendPlotlyHtml(htmlString: string) {
     const encodedHtmlString = new TextEncoder().encode(htmlString)
-    this.tabManagementService.openPlotly(encodedHtmlString)
+    this.tabManagementService.openPlotly(encodedHtmlString).subscribe();
   }
 }

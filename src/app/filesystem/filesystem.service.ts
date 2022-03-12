@@ -21,6 +21,7 @@ export class FilesystemService {
   EXP_MODULE_PATHS = new Set<string>();
   EXP_HINT_ROOT_PATH = new Set<string>();
   EXP_GLOSSARY_PATH = new Set<string>();
+  EXP_TABINFO_PATH = new Set<string>();
 
   // Keep track of readonly folders as they need to be adjusted before and after syncing
   private READONLY_FOLDERS = new Set<string>();
@@ -78,6 +79,7 @@ export class FilesystemService {
       this.READONLY_FOLDERS = new Set();
       this.EXP_GLOSSARY_PATH = new Set();
       this.EXP_HINT_ROOT_PATH = new Set();
+      this.EXP_TABINFO_PATH = new Set();
     });
   }
 
@@ -162,6 +164,7 @@ export class FilesystemService {
     });
   }
 
+  // ...this.EXP_TABINFO_PATH
   public checkPermissionsForExperience(mountpoint: string): Observable<never> {
     const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, ...this.EXP_GLOSSARY_PATH, ...this.EXP_HINT_ROOT_PATH]); 
     return this.checkPermissions(mountpoint, mergedPaths);
@@ -227,6 +230,10 @@ export class FilesystemService {
 
   public isSystemDirectory(path: string): boolean {
     return this.abstractCheck(this.SYSTEM_FOLDERS, path);
+  }
+
+  public isTabInfoFolder(path: string): boolean {
+    return this.abstractCheck(this.EXP_TABINFO_PATH, path);
   }
 
   public isHiddenPath(path: string): boolean {
@@ -318,6 +325,7 @@ export class FilesystemService {
               && (scanAll || !this.isModulePath(path))
               && (scanAll || !this.isSystemDirectory(path)
               && (scanAll || !this.isHintPath(path)
+              && (scanAll || !this.isTabInfoFolder(path))
               && (scanAll || includeGlossary || !this.isGlossaryPath(path)))))
   }
 
@@ -462,13 +470,25 @@ export class FilesystemService {
     return withSync ? concat(writeObservable, this.sync(false)) : writeObservable;
   }
 
-  public overwriteFile(path: string, content: Uint8Array | string, mode?: number): Observable<never> {
-    return this.isSystemDirectory(path) ?
+  public overwriteFile(path: string, content: Uint8Array | string, mode?: number, withSync?: boolean): Observable<never> {
+    const overwriteObservable = this.isSystemDirectory(path) ?
       throwError("Can't write to system files") :
       defer(() => {
-        this.chmod(path, 0o777);
+        this.chmod(path, 0o777); // TODO: wieder zurückstezen?
         this.N_writeFile(path, content, mode);
+        console.log(`File ${path} was overwritten`, content)
       })
+
+    return (withSync && withSync === true) ? concat(overwriteObservable, this.sync(false)) : overwriteObservable;
+  }
+
+  public createOrOverwriteFile(path: string, content: Uint8Array | string,  withSync?: boolean, mode?: number): Observable<never> {
+    return this.exists(path).pipe(
+      switchMap(exists => !exists 
+        ? this.createFile(path, content, withSync || false, mode)
+        : this.overwriteFile(path, content, mode, withSync)
+      )
+    )
   }
 
   public createFile(path: string, content: Uint8Array | string, withSync: boolean, mode?: number): Observable<never> {

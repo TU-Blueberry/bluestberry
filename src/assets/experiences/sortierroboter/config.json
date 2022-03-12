@@ -28,5 +28,6 @@
   "modules": ["libs"],
   "glossaryEntryPoint": "glossary",
   "hintRoot": "hint_files",
-  "preloadPythonLibs": ["skimage", "plotly"]
+  "preloadPythonLibs": ["skimage", "plotly"],
+  "tabinfo": "__tabinfo"
 }

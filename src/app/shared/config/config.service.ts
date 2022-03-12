@@ -102,6 +102,12 @@ export class ConfigService {
     )
   }
 
+  public getTabInfoPathOfCurrentExperience(): Observable<string> {
+    return this.getConfigOfCurrentExperience().pipe(
+      switchMap(conf => of(`/${conf.uuid}/${conf.tabinfo}`))
+    )
+  }
+
   public decryptConfig(data: ArrayBuffer): Observable<ArrayBuffer> {
     return this.getKey().pipe(
       switchMap(key => {
@@ -138,10 +144,12 @@ export class ConfigService {
 
     Object.entries(tabs).forEach(([groupId, content]) => {
       content.tabs.forEach(tab => {
+        console.log("LOOKING AT ", tab)
+
         open.push(({
           on: groupId, 
           path: tab.path !== '' ? tab.path : tab.type,
-          active: this.checkIfActive(content, tab)
+          active: this.checkIfActive(content, tab),
         }))
       })
     })

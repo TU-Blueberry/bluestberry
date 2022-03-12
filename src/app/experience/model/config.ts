@@ -16,4 +16,5 @@ export interface Config {
     glossaryEntryPoint: string; // will be copied to global glossary scope (read only, recursive)
     hintRoot: string;
     preloadPythonLibs: string[];
+    tabinfo: string;
 }

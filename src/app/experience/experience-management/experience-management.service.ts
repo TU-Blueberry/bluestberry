@@ -71,11 +71,13 @@ export class ExperienceManagementService {
       readonly: [],
       glossaryEntryPoint: '',
       hintRoot: '',
-      preloadPythonLibs: []
+      preloadPythonLibs: [],
+      tabinfo: '__tabinfo'
     }
 
     return concat(
       this.fsService.mount(newConfig.uuid),
+      this.fsService.createFolder(`/${newConfig.uuid}/${newConfig.tabinfo}`, false),
       this.configService.storeConfig(newConfig),
       this.fsService.sync(false),
       this.fsService.unmount(newConfig.uuid),
@@ -203,6 +205,7 @@ export class ExperienceManagementService {
           this.fsService.EXP_EXTERNAL_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.external));
           this.fsService.EXP_GLOSSARY_PATH = new Set(this.filterEmptyConfigPaths(fullPath, [config.glossaryEntryPoint]));
           this.fsService.EXP_HINT_ROOT_PATH = new Set(this.filterEmptyConfigPaths(fullPath, [config.hintRoot]));
+          this.fsService.EXP_TABINFO_PATH = new Set(this.filterEmptyConfigPaths(fullPath, [config.tabinfo]));
 
           return concat(
             this.fsService.checkPermissionsForExperience(fullPath),
