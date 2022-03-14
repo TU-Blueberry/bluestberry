@@ -71,4 +71,4 @@ Mehr zu go.Scatter3d kannst du hier finden: https://plotly.com/python/reference/
 
 Mehr zu den Scatter Plots kannst du hier finden: https://plotly.com/python/3d-scatter-plots/
 
-[ScatterPlot]: ../img/ScatterPlot.png
+[ScatterPlot]: ../hint_files/img/ScatterPlot.png

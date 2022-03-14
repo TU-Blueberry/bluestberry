@@ -100,6 +100,6 @@ https://plotly.com/python/reference/bar/
 Mehr zu Liniendiagrammen findest du hier: <br>
 https://plotly.com/python/bar-charts/
 
-[easyBarPlot]: assets/sortierroboter/hint_files/img/easyBarPlot.png
-[twoBarPlot]: assets/sortierroboter/hint_files/img/twoBarPlot.png
-[moreBarPlots]: assets/sortierroboter/hint_files/img/moreBarPlots.png
+[easyBarPlot]: ../hint_files/img/easyBarPlot.png
+[twoBarPlot]: ../hint_files/img/twoBarPlot.png
+[moreBarPlots]: ../hint_files/img/moreBarPlots.png

@@ -32,4 +32,4 @@ tn, fp, fn, tp = confusion_matrix(y_true = ground_truth, y_pred = predicted_labe
 ```
 
 
-[confusion_matrix]: ../img/konfusionsmatrix.png
+[confusion_matrix]: ../hint_files/img/konfusionsmatrix.png

@@ -224,7 +224,7 @@ export class HintViewerComponent implements OnInit {
 
   // TODO: Differ between local and global glossary files
   openGlossary(glossaryFileName: string): void {
-    const path = `${this.glossaryEntryPoint}/${glossaryFileName}`;
+    const path = `${this.glossaryEntryPoint}/${glossaryFileName}.md`;
     console.log("opening glossary at " + path)
 
     this.fsService.getFileAsBinary(path).subscribe(node => {

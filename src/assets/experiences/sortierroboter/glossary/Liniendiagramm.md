@@ -96,6 +96,6 @@ Mehr zu Liniendiagrammen findest du hier: <br>
 https://plotly.com/python/line-charts/
 
 
-[easyLinePlot]: assets/sortierroboter/hint_files/img/easyLinePLot.png
-[moreLinesLinePlot]: assets/sortierroboter/hint_files/img/moreLinesLinePlot.png
+[easyLinePlot]: ../hint_files/img/easyLinePLot.png
+[moreLinesLinePlot]: ../hint_files/img/moreLinesLinePlot.png
 
