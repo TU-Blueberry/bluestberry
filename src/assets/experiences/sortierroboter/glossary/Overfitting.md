@@ -21,7 +21,7 @@ seiner Daten verwendet und ebenso viele Entscheidungsbäume wie
 Beobachtungen im Datensatz verwendet, ist die Gefahr der Überanpassung
 sehr hoch[^1].
 
-![Overfitting](overfitting.png){width="70%"}
+![big-image][Overfitting]
 
 Wie in der Abbildung zu erkennen ist, findet rechts ein Overfitting
 statt. Es sollen hier die rote und die blaue Klasse voneinander getrennt
@@ -32,3 +32,5 @@ einzelne Datenpunkte richtig zu klassifizieren.
 
 [^1]: vgl.
     https://databraineo.com/ask-the-doc/overfitting-in-machine-learning/
+
+[Overfitting]: assets/experiences/sortierroboter/hint_files/img/overfitting.png

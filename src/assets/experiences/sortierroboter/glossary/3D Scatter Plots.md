@@ -15,7 +15,7 @@ fig = px.scatter_3d(df, x='sepal_length', y='sepal_width', z=‚petal_width', co
 fig.show()
 ```
 
-![ScatterPlot]
+![big-image][ScatterPlot]
 
 Beispiel von https://plotly.com/python/3d-scatter-plots/
 
@@ -71,4 +71,4 @@ Mehr zu go.Scatter3d kannst du hier finden: https://plotly.com/python/reference/
 
 Mehr zu den Scatter Plots kannst du hier finden: https://plotly.com/python/3d-scatter-plots/
 
-[ScatterPlot]: ../hint_files/img/ScatterPlot.png
+[ScatterPlot]: assets/experiences/sortierroboter/hint_files/img/ScatterPlot.png

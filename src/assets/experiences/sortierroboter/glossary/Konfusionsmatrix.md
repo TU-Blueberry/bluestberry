@@ -13,7 +13,7 @@ Stimmen das vorhergesagte Label und das tatsächliche Label überein und das Lab
 ### False Negative
 Bei einem False Negative wird ein negatives Ergebnis vorhergesagt, obwohl das tatsächliche Ergebnis positiv ist. Die Label stimmen also nicht überein.
 
-![confusion_matrix]
+![big-image][confusion_matrix]
 ## Berechnung in Python
 Die Werte der Konfusionsmatrix können in Python entweder berechnet werden, indem über jedes klassifizierte Objekt iteriert wird und das vorhergesagte Label mit der Ground Truth verglichen wird, oder mit der Funktion `confusion_matrix()` aus dem metrics-Paket von sklearn. Sie gibt bei $n$ Klassen ein $n$-dimensionales Array zurück. Im binären Fall also die Konfusionsmatrix wie sie oben beschrieben ist. Um die Werte auf vier Variablen zu verteilen kann der Funktionsaufruf mit der `ravel` Funktion kombiniert werden.
 
@@ -32,4 +32,4 @@ tn, fp, fn, tp = confusion_matrix(y_true = ground_truth, y_pred = predicted_labe
 ```
 
 
-[confusion_matrix]: ../hint_files/img/konfusionsmatrix.png
+[confusion_matrix]: assets/experiences/sortierroboter/hint_files/img/konfusionsmatrix.png

@@ -11,7 +11,7 @@ fig = px.bar(df, x='year', y='pop')
 fig.show()
 ```
 
-![medium-image][easyBarPlot]
+![big-image][easyBarPlot]
 
 Beispiel von https://plotly.com/python/bar-charts/
 
@@ -59,7 +59,7 @@ fig = go.Figure(data=[
 fig.update_layout(barmode='group')
 fig.show()
 ```
-![medium-image][twoBarPlot]
+![big-image][twoBarPlot]
 
 Beispiel von https://plotly.com/python/bar-charts/
 
@@ -89,7 +89,7 @@ fig.add_trace(go.Bar(x=years, y=[300, 400, 700],
 fig.show()
 ```
 
-![medium-image][moreBarPlots]
+![big-image][moreBarPlots]
 
 Beispiel von https://plotly.com/python/bar-charts/
 
@@ -100,6 +100,6 @@ https://plotly.com/python/reference/bar/
 Mehr zu Liniendiagrammen findest du hier: <br>
 https://plotly.com/python/bar-charts/
 
-[easyBarPlot]: ../hint_files/img/easyBarPlot.png
-[twoBarPlot]: ../hint_files/img/twoBarPlot.png
-[moreBarPlots]: ../hint_files/img/moreBarPlots.png
+[easyBarPlot]: assets/experiences/sortierroboter/hint_files/img/easyBarPlot.png
+[twoBarPlot]: assets/experiences/sortierroboter/hint_files/img/twoBarPlot.png
+[moreBarPlots]: assets/experiences/sortierroboter/hint_files/img/moreBarPlots.png

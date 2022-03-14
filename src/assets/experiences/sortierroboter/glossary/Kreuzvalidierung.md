@@ -15,7 +15,10 @@ Iterationen ist in der $i$-ten Iteration für $i = 1,..., k$ die $i$-te
 Teilmenge die Testmenge, während alle übrigen Teilmengen die
 Trainingsdaten bilden.
 
-![Kreuzvalidierung](kreuzvalidierung.jpg){width="70%"}
+![big-image][Kreuzvalidierung]
 
 In der obigen Abbildung ist das Verfahren der Kreuzvalidierung mit vier
 Iterationen, auch Faltungen genannt, illustriert.
+
+
+[Kreuzvalidierung]: assets/experiences/sortierroboter/hint_files/img/kreuzvalidierung.jpg

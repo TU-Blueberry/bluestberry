@@ -159,10 +159,11 @@ function notifyLoadedPackage(lib: string) {
 // os.chdir("${mountPoint}")
 function addToSysPath(): string {
   let glueCode = '';
+  glueCode += `
+import os
+import sys`
   if (mountPoint != "") {
     glueCode += `
-import os
-import sys
 if "${mountPoint}" not in sys.path:
     sys.path.append("${mountPoint}")
 if os.getcwd() != "${mountPoint}":
