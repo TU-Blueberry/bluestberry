@@ -8,7 +8,7 @@ export class GlossaryPipe implements PipeTransform {
     transform(name: string): string {
         const str = name.split(".md");
         str.pop();
-        const converted = str.join("").toLowerCase();
+        const converted = str.join("");
         return converted.charAt(0).toUpperCase() + converted.slice(1);
     }
 }

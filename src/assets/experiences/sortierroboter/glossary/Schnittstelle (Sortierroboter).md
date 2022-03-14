@@ -8,19 +8,29 @@ Es definiert folgende Methoden:
 ### evaluate_metric(predict_func, metric=metrics.accuracy_score, **kwargs) ###
 
 "predict_func" stellt die Funktion dar, die auf die Bilddaten angewendet werden soll.
-Falls die Daten also noch vorverarbeitet werden sollen, Merkmale extrahiert werden, müssen
+Falls die Daten also noch vorverarbeitet werden sollen, z.B zum Extrahieren von Merkmalen, müssen
 diese Schritte auch in der "predict_func" übergeben werden.
 "metric" steuert die Metrik, die auf die vorhergesagten Klassen und tatsächlichen Klassen angewandt werden soll.
 Mittels "kwargs" können weitere Parameter an die Funktion übergeben werden.
 
-Die Rückgabe ist die Rückgabe der Metrik.
+Die Funktion predict_func muss eine Liste oder ein Numpy-Array mit
+der Größe der Eingabedaten zurückgeben. Die erlaubten Werte sind
+1 und 0 für gute bzw. schlechte Beeren. Der Datentyp wird
+automatisch in einen int umgewandelt.
+
+Die Rückgabe ist das Ergebnis der Metrik.
 
 
 ### send_to_unity(predict_func) ###
 
 "predict_func" stellt die Funktion dar, die auf die Bilddaten angewendet werden soll.
-Falls die Daten also noch vorverarbeitet werden sollen, Merkmale extrahiert werden, müssen
+Falls die Daten also noch vorverarbeitet werden sollen,  z.B zum Extrahieren von Merkmalen, müssen
 diese Schritte auch in der "predict_func" übergeben werden.
+
+Die Funktion predict_func muss eine Liste oder ein Numpy-Array mit
+der Größe der Eingabedaten zurückgeben. Die erlaubten Werte sind
+1 und 0 für gute bzw. schlechte Beeren. Der Datentyp wird
+automatisch in einen int umgewandelt.
 
 
 ## 2. berrytemplates ##
@@ -37,17 +47,20 @@ Die Rückgabe ist ein Tupel von Bilddaten und deren Klassen.
 
 ### extract_features(images, img_size=28) ###
 
-Bietet eine günstige Merkmalsextraktion an.
+Bietet eine mögliche Merkmalsextraktion an.
 "images" ist die Eingabe der Bilddaten.
 "img_size" beschränkt die Größe der Bilddaten, die genutzt wird.
 
+Die Eingabe sollte, wenn möglich, im gleichen Format wie
+die Rückgabe von load_images() sein.
 Die Rückgabe ist ein Pandas DataFrame mit den Merkmalen.
 
 
 ### classifier() ###
 
-Gibt einen Klassifizierer zurück, der gut auf den Daten von extract_features funktioniert.
-Dieser muss noch trainiert werden!
+Gibt einen Klassifizierer zurück, der gut auf den Daten von
+extract_features funktioniert.
+Dieser muss noch auf den Trainingsdaten trainiert werden!
 
 
 ### print_prediction_metrics(predict_funct, test_data_loader) ###
