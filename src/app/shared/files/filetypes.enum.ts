@@ -35,7 +35,7 @@ export class FileTypes {
         ["CSV", FileType.TABULAR],
         ["XLS", FileType.DATA],
         ["XLSX", FileType.DATA],
-        ["JSON", FileType.DATA],
+        ["JSON", FileType.JSON],
         ["TXT", FileType.PLAIN_TEXT]
     ])
 
