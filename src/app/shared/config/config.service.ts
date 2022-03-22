@@ -6,6 +6,7 @@ import { AppState, AppStateModel } from 'src/app/app.state';
 import { ExperienceState, ExperienceStateModel } from 'src/app/experience/experience.state';
 import { Config } from 'src/app/experience/model/config';
 import { Experience } from 'src/app/experience/model/experience';
+import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service';
 import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { Tab } from 'src/app/tab/model/tab.model';
 import { TabState, TabStateModel } from 'src/app/tab/tab.state';
@@ -13,12 +14,16 @@ import { ViewSettings } from 'src/app/viewer/model/view-settings';
 import { ViewSizeState } from 'src/app/viewer/sizes.state';
 import { environment } from 'src/environments/environment';
 
+interface TempConfig {
+  [key: string]: any
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class ConfigService {
 
-  constructor(private fs: FilesystemService, private store: Store) {
+  constructor(private fs: FilesystemService, private store: Store, private fsEv: FilesystemEventService) {
     const appState$ = this.store.select<AppStateModel>(AppState);
     appState$.subscribe();
 
@@ -27,6 +32,10 @@ export class ConfigService {
       filter(([_, appState]) => appState !== undefined && appState.status === 'READY'),
       debounceTime(1000),
       switchMap(() => this.saveStateOfCurrentExperience())
+    ).subscribe();
+
+    this.fsEv.onMovePath.pipe(
+      switchMap(info => this.updateAfterPathMove(info.oldPath, info.newPath))
     ).subscribe();
   }
 
@@ -128,6 +137,44 @@ export class ConfigService {
         switchMap(buffer => this.fs.overwriteFile(`/${config.uuid}/config.json`, new Uint8Array(buffer), 0o555))
       ),
       this.fs.sync(false)
+    )
+  }
+
+  public updateAfterPathMove(oldPath: string, newPath: string): Observable<never> {
+    // oldPath and newPath are absolute, config is working with relative paths
+    const oldPathRelative = oldPath.split('/').splice(2).join('/');
+    const newPathRelative = newPath.split('/').splice(2).join('/');
+
+    return this.getConfigOfCurrentExperience().pipe(
+      switchMap(conf => {
+        const tempConf: TempConfig = { ... conf }
+        const stringProps = ['tabinfo', 'hintRoot', 'glossaryEntryPoint', 'unityEntryPoint'];
+        const arrProps = ['encrypted', 'hidden', 'external', 'readonly', 'modules'];
+
+        stringProps.forEach(prop => {
+          if (tempConf[prop] && typeof tempConf[prop] === 'string' && tempConf[prop].startsWith(oldPathRelative)) {
+            tempConf[prop] = tempConf[prop].replace(oldPathRelative, newPathRelative);
+          }
+        })
+
+        arrProps.forEach(prop => {
+          if (tempConf[prop]) {
+            tempConf[prop] = tempConf[prop].map((entry: String) => entry.startsWith(oldPathRelative) 
+            ? entry.replace(oldPathRelative, newPathRelative)
+            : entry 
+          )
+          }
+        })
+      
+        if (tempConf['open']) {
+          tempConf['open'] = tempConf['open'].map((entry: any) => entry.path.startsWith(oldPathRelative) 
+          ? ({ path: entry.path.replace(oldPathRelative, newPathRelative), on: entry.on, active: entry.active })
+          : entry
+          )
+        }
+
+        return this.updateConfig((tempConf as Config));
+      })
     )
   }
 

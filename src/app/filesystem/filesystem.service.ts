@@ -83,8 +83,6 @@ export class FilesystemService {
     });
   }
 
-  // TODO: External: <uuid>_external als mountpoint, dann symlink!
-
   private _sync(fromPersistentToVirtual: boolean): Observable<never> {
     return new Observable(subscriber => {
       let r = (Math.random() + 1).toString(36).substring(7);
@@ -180,11 +178,6 @@ export class FilesystemService {
     return this.getNodeByPath(mountpoint).pipe(
       switchMap(node => this.testCurrentPath(node, mountpoint, paths))
     )
-  }
-
-  mountExternal(): void {
-    // TODO: Mount, call checkPermissions for extenral mountpoint
-    // TODO: read/write permissions?
   }
 
   /// TODO: mergeAll ist hässlich?
@@ -600,7 +593,12 @@ export class FilesystemService {
       switchMap(exists => { 
         if (!exists) {
           if (!this.isSystemDirectory(oldPath) && !this.isSystemDirectory(newPath)) {
-            return defer(() => this.N_rename(oldPath, newPath))
+            return concat(defer(() => {
+              // Need to adjust paths before renaming because renaming-event will reach TreeNode first
+              // TreeNode will then call fetchWithoutScanUser (which uses the updated paths)
+              this.adjustPathsBeforeRenaming(oldPath, newPath);
+              this.N_rename(oldPath, newPath);
+            }))
           } else {
             return throwError("Can't rename system directories")
           } 
@@ -610,6 +608,28 @@ export class FilesystemService {
       }));
 
     return concat(renameObservable, this.sync(false));
+  }
+
+  private adjustPathsBeforeRenaming(oldPath: string, newPath: string): void {
+    const sets = [
+      this.EXP_HIDDEN_PATHS,
+      this.EXP_EXTERNAL_PATHS,
+      this.EXP_READONLY_PATHS, 
+      this.EXP_MODULE_PATHS,
+      this.READONLY_FOLDERS,
+      this.EXP_GLOSSARY_PATH,
+      this.EXP_HINT_ROOT_PATH,
+      this.EXP_TABINFO_PATH
+    ];
+    
+    sets.forEach(set => {
+      set.forEach(path => {
+        if (path.startsWith(oldPath)) {
+          set.delete(path);
+          set.add(path.replace(oldPath, newPath));
+        }
+      })
+    })
   }
 
   // ---- Helper methods
