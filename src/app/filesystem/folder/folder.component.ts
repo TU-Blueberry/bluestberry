@@ -64,8 +64,13 @@ export class FolderComponent implements OnInit, OnDestroy {
 
     if (this._node.isTentativeNode) {
       this.isRenaming = true;
-      this.uiEv.changeUserInputLocation(this._node.parentPath + "/new")
+      this.uiEv.changeUserInputLocation(this._node.parentPath + `/${this.generateRandomName()}`)
     }
+  }
+
+  // see file component
+  private generateRandomName(): string {
+    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
   }
 
   private init(): void {
