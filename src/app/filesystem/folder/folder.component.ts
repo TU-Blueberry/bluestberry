@@ -94,6 +94,7 @@ export class FolderComponent implements OnInit, OnDestroy {
       if (this.tentativeNode && this.tentativeNodeIsFile !== undefined) {
         this.tentativeNodeDismissal(this.tentativeNodeIsFile);
       }
+      this.cd.detectChanges();
     });
     const closeContextMenuSubscription = this.uiEv.onCloseAllContextMenues.subscribe(() => {
       this.showContextMenu = false;
@@ -242,6 +243,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     if (element) {
       ref.remove(ref.indexOf(element.hostView));
       allElements.delete(name);
+      element.destroy();
     }
 
     this.cd.detectChanges();
