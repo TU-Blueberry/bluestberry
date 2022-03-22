@@ -16,6 +16,15 @@
     }
 }
 
+.disabled {
+    color: #81818166;
+
+    &:hover {
+        cursor: initial !important;
+        color: #81818166 !important;
+    }
+}
+
 .action-bar {
     display: flex;
     flex-direction: column;

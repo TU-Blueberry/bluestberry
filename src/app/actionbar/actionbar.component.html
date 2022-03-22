@@ -1,6 +1,6 @@
 <div class="action-bar" id="action-bar">
   <div class="action-bar-top">
-    <button class="action-bar-button" (click)="toggleFiles()">
+    <button class="action-bar-button" [class.disabled]="settings.filetree.disabled" (click)="toggleFiles()">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="fileIconTitle"
         stroke="currentColor"
         stroke-width="2"
@@ -13,12 +13,12 @@
         <path d="M13 3l6 6v12H5V3z" />
       </svg>
     </button>
-    <button class="action-bar-button" (click)="toggleTerminal()">
+    <button class="action-bar-button" [class.disabled]="settings.terminal.disabled" (click)="toggleTerminal()">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
            stroke="currentColor" stroke-width="2" stroke-linecap="square"
            stroke-linejoin="miter" fill="none"
            [class.active]="settings.terminal.active">
-        <title id="terminalIconTitle">Terminal anzeigen/verstecken</title>
+        <title id="terminalIconTitle" >Terminal anzeigen/verstecken</title>
         <rect width="18" height="18" x="3" y="3"></rect>
         <line stroke-linecap="round" x1="6" y1="6" x2="6" y2="6"></line>
         <line stroke-linecap="round" x1="9" y1="6" x2="9" y2="6"></line>
@@ -26,34 +26,37 @@
         <path d="M21,9 L3,9"></path>
       </svg>
     </button>
-    <button class="action-bar-button" (click)="openHints()">
+    <button class="action-bar-button" [class.disabled]="settings.hints.disabled" (click)="openHints()">
       <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="square" s
           troke-linejoin="miter" [class.active]="settings.hints.active">
         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-        <title id="extensionIconTitle">Hinweise</title>
+        <title id="extensionIconTitle" *ngIf="!settings.hints.disabled">Hinweise</title>
+        <title id="extensionIconTitle" *ngIf="settings.hints.disabled">Hinweise nicht verfügbar</title>
       </svg>
     </button>
-    <button class="action-bar-button" (click)="startTour()">
+    <button class="action-bar-button" [class.disabled]="settings.tour.disabled" (click)="startTour()">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
             stroke="currentColor" stroke-width="2" stroke-linecap="square"
             stroke-linejoin="miter" fill="none" [class.active]="settings.tour.active">
-        <title id="helpIconTitle">Info-Tour</title>
+        <title id="helpIconTitle" *ngIf="!settings.tour.disabled">Info-Tour</title>
+        <title id="helpIconTitle" *ngIf="settings.tour.disabled">Info-Tour nicht verfügbar</title>
         <path d="M12 14C12 12 13.576002 11.6652983 14.1186858 11.1239516 14.663127 10.5808518 15 9.82976635 15 9 15 7.34314575 13.6568542 6 12 6 11.1040834 6 10.2998929 6.39272604 9.75018919 7.01541737 9.49601109 7.30334431 9.29624369 7.64043912 9.16697781 8.01061095"></path>
         <line x1="12" y1="17" x2="12" y2="17"></line>
         <circle cx="12" cy="12" r="10"></circle>
       </svg>
     </button>
-    <button class="action-bar-button" (click)="startSimulation()">
+    <button class="action-bar-button" [class.disabled]="settings.simulation.disabled" (click)="startSimulation()">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 22 22" 
           fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" 
           stroke-linejoin="miter" [class.active]="settings.simulation.active">
         <path stroke-linecap="round" d="M16 10.087l5-1.578v7.997l-4.998-1.578"></path>
         <path d="M16 7H3v11h13z"></path>
-        <title>Starte Simulation</title>
+        <title *ngIf="!settings.simulation.disabled">Starte Simulation</title>
+        <title *ngIf="settings.simulation.disabled">Simulation nicht verfügbar</title>
       </svg>
     </button>
-    <button class="action-bar-button" (click)="openImport($event)">
+    <button class="action-bar-button" [class.disabled]="settings.import.disabled" (click)="openImport($event)">
       <svg class="svg-icon" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" 
             aria-labelledby="uploadIconTitle" stroke="currentColor" stroke-width="2" 
             stroke-linecap="square" stroke-linejoin="miter" fill="none" color="none"
@@ -67,7 +70,7 @@
     <app-import></app-import> 
   </div>
   <div class="action-bar-bottom">
-    <button class="action-bar-button" (click)="openAbout($event)">
+    <button class="action-bar-button" (click)="openAbout($event)" [class.disabled]="settings.about.disabled">
       <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="infoIconTitle"
         stroke="currentColor" 
         stroke-width="2" 

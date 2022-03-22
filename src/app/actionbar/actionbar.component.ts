@@ -17,13 +17,13 @@ import { Tour } from './actions/tour.action';
 })
 export class ActionbarComponent implements OnInit {
   settings: ActionbarModel = {
-    'filetree': { active: true },
-    'terminal': { active: false },
-    'hints': { active: false },
-    'tour': { active: false },
-    'about': { active: false },
-    'simulation': { active: false },
-    'import': { active: false }
+    'filetree': { active: true, disabled: false },
+    'terminal': { active: false, disabled: false },
+    'hints': { active: false, disabled: true },
+    'tour': { active: false, disabled: true },
+    'about': { active: false, disabled: false },
+    'simulation': { active: false , disabled: true},
+    'import': { active: false, disabled: false }
   }
 
   actionBarState$: Observable<any>;
@@ -34,8 +34,6 @@ export class ActionbarComponent implements OnInit {
 
   ngOnInit(): void {
     this.actionBarState$.subscribe(v => {
-      console.log("receive actionbar satet", v)
-
       this.settings = { ...v };
     });
   }
@@ -48,7 +46,9 @@ export class ActionbarComponent implements OnInit {
   // because tab group component has no mechanism to refocus an existing tab
   // same "problem" applies to every other element in the filetree
   openHints(): void {
-    this.store.dispatch(new Hints.Open());
+    if (!this.settings.hints.disabled) {
+      this.store.dispatch(new Hints.Open());
+    }
   }
 
   toggleTerminal(): void {
@@ -56,7 +56,9 @@ export class ActionbarComponent implements OnInit {
   }
 
   startTour(): void {
-    this.store.dispatch(new Tour.Start());
+    if (!this.settings.tour.disabled) {
+      this.store.dispatch(new Tour.Start());
+    }
   }
 
   openAbout(ev: Event): void {
@@ -70,6 +72,8 @@ export class ActionbarComponent implements OnInit {
   }
 
   startSimulation() {
-    this.store.dispatch(new Simulation.Open())
+    if (!this.settings.simulation.disabled) {
+      this.store.dispatch(new Simulation.Open())
+    }
   }
 }

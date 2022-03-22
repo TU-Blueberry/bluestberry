@@ -18,6 +18,7 @@ import { Simulation } from "./actions/simulation.action";
 export interface ActionbarModel {
     [itemId: string]: {
         active: boolean;
+        disabled: boolean;
         data?: any;
     }
 }
@@ -25,13 +26,13 @@ export interface ActionbarModel {
 @State<ActionbarModel>({
     name: 'actionbar',
     defaults: {
-        'filetree': { active: true },
-        'terminal': { active: false },
-        'hints': { active: false },
-        'tour': { active: false },
-        'about': { active: false },
-        'simulation': { active: false },
-        'import': { active: false }
+        'filetree': { active: true, disabled: false },
+        'terminal': { active: false, disabled: false },
+        'hints': { active: false, disabled: true },
+        'tour': { active: false , disabled: true },
+        'about': { active: false, disabled: false },
+        'simulation': { active: false, disabled: true },
+        'import': { active: false, disabled: true }
     }
 })
 
@@ -42,26 +43,27 @@ export class ActionbarState {
     @Action(Reset)
     onReset(ctx: StateContext<ActionbarModel>, action: Reset) {
         ctx.setState({  
-            'filetree': { active: false },
-            'terminal': { active: false },
-            'hints': { active: false },
-            'tour': { active: false },
-            'about': { active: false },
-            'simulation': { active: false },
-            'import': { active: false }
+            'filetree': { active: false, disabled: true },
+            'terminal': { active: false, disabled: true },
+            'hints': { active: false, disabled: true },
+            'tour': { active: false, disabled: true },
+            'about': { active: false, disabled: true },
+            'simulation': { active: false, disabled: true },
+            'import': { active: false, disabled: true }
         });
     }
 
     @Action(FromConfig)
     onFromConfig(ctx: StateContext<ActionbarModel>, action: FromConfig) {
+        // für den rest brauche ich info ob lesson oder sandbox
         ctx.setState({
-            'filetree': { active: action.splitSettings['filetree'].visible },
-            'terminal': { active: action.splitSettings['terminal'].visible },
-            'hints': { active: this.checkIfHintsAreOpen(action.openTabs) },
-            'tour': { active: false },
-            'about': { active: false },
-            'simulation': { active: this.checkIfSimulationIsOpen(action.openTabs) },
-            'import': { active: false }
+            'filetree': { active: action.splitSettings['filetree'].visible, disabled: false },
+            'terminal': { active: action.splitSettings['terminal'].visible, disabled: false },
+            'hints': { active: this.checkIfHintsAreOpen(action.openTabs), disabled: action.type !== 'LESSON' },
+            'tour': { active: false, disabled: action.type !== 'LESSON'},
+            'about': { active: false, disabled: false },
+            'simulation': { active: this.checkIfSimulationIsOpen(action.openTabs), disabled: action.type !== 'LESSON' },
+            'import': { active: false, disabled: false }
         });
     }
 
@@ -153,11 +155,11 @@ export class ActionbarState {
         this.updateActionbarStore(ctx, 'simulation', false);
     }
     
-    private updateActionbarStore(ctx: StateContext<ActionbarModel>, item: string, active: boolean, data?: any) {
+    private updateActionbarStore(ctx: StateContext<ActionbarModel>, item: string, active: boolean, data?: any, disabled = false) {
         const state = ctx.getState();
         ctx.setState({
             ...state,
-            [item]: { active: active, data: data }
+            [item]: { active: active, data: data, disabled: disabled }
         });
     }
 
