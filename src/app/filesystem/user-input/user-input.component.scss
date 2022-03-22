@@ -12,7 +12,7 @@
     }
 }
 
-input, input:focus-visible, input:focus {
+input, input:focus-visible, input:focus, input:active, input:focus-visible {
     background-color: #2e3138;
     border: 1px solid #1389fd;
     border-radius: 0px;
@@ -21,6 +21,7 @@ input, input:focus-visible, input:focus {
     text-overflow: ellipsis;
     font-size: 16px;
     margin-left: 5px;
+    outline: none;
 }
 
 button {
