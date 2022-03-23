@@ -1,13 +1,15 @@
-<h1 class="mt-0">Credits</h1>
-<div>
-    Ladeanimation: <a href="https://loading.io/css/">loading.io</a>
-</div>
-<div>
-    Icons (Suche und Aktionselemente): <a href="https://github.com/mikolajdobrucki/ikonate">Ikonate</a>
-</div>
+<h1 class="mt-0">Attributions</h1>
+
+<h2>Icons</h2>
 <div class="icon-grid"> 
     <a *ngFor="let icon of icons | keyvalue" class="entry" href='{{icon.value.href}}' title='{{icon.value.title}}' target="_blank">
         <img src='{{icon.value.path}}'>
         <div>{{icon.value.text}}</div>
     </a>
 </div>
+
+<h2 class="no-margin">Animationen</h2>
+Progress spinner: <a href="https://loading.io/css/">loading.io</a>
+
+<h2 class="no-margin">Sonstige</h2>
+Alle SVGs aus Actionbar, Terminal, Code-Editor, Hinweissystem und Suche stammen von <a href="https://github.com/mikolajdobrucki/ikonate">Ikonate</a>
