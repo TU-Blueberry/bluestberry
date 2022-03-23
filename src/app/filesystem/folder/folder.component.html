@@ -26,7 +26,7 @@
           {{node?.name}}
         </div>
       </ng-container>
-      <div *ngIf="isRenaming">
+      <div *ngIf="isRenaming" style="overflow: hidden;">
           <app-user-input [parentPath]="node.parentPath" [depth]="node.depth" [isFile]="false" [editMode]="true" 
           [currentName]="node?.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"></app-user-input>
       </div>

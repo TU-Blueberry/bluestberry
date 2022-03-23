@@ -7,7 +7,7 @@
             <span *ngIf="!node.isGlossary">{{ node.name }}</span>
             <span *ngIf="node.isGlossary">{{ node.name | toGlossaryName }}</span>
         </div> 
-        <div *ngIf="isRenaming">
+        <div *ngIf="isRenaming" style="overflow: hidden;">
             <app-user-input [parentPath]="node.parentPath" [depth]="node.depth" [isFile]="true" [editMode]="true" 
             [currentName]="node.name" (onSubmit)="changeName($event)" (dismiss)="dismissNameChange()"
             (currentValue)="updateTentativeName($event)"></app-user-input>
