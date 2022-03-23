@@ -45,7 +45,7 @@
         (createNewFromUI)="this.createNewFromUI($event)"
         (selectedFiles)="this.onNewFile($event)"></app-common-actions>
     </div>
-    <div *ngIf="!node.isRoot">
+    <div *ngIf="!node.isRoot" class="empty-folder" [style.padding-left.px]="10 * node.depth">
       Leerer Ordner
     </div>
   </div>
