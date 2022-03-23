@@ -27,8 +27,8 @@ def extract_features(images, img_size=28):
     bins = 24
     pre_images = []
     for i in range(len(images)):
-        image = images[i]
-        mod_image = transform.resize(image, [img_size, img_size], anti_aliasing=True)
+        image = images[i].astype("float64")
+        mod_image = transform.resize(image, (img_size, img_size), anti_aliasing=True)
         features = np.array(mod_image.flatten())
         for channel in range(image.shape[2]):
             histogram, _ = np.histogram(image[:, :, channel], bins=bins, range=(0, 256))

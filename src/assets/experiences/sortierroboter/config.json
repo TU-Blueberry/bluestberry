@@ -1,12 +1,12 @@
 {
   "open": [
-    { "path": "code.py", "on": "left", "active": true },
+    { "path": "welcome.py", "on": "left", "active": true },
     { "path": "unity", "on": "right", "active": true }
   ],
   "uuid": "89805231-9bd6-4171-ae4b-01e997d5dcfa",
   "name": "sortierroboter",
   "type": "LESSON",
-  "splitSettings": { 
+  "splitSettings": {
     "filetree": { "group": 0, "order": 0, "size": 20, "visible": true, "minSize": 10, "maxSize": 40 },
     "left": { "group": 0, "order": 1, "size": 40, "visible": true, "minSize": 10, "maxSize": 100 },
     "right": { "group": 0, "order": 2, "size": 40, "visible": true, "minSize": 10, "maxSize": 100 },

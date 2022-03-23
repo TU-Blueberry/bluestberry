@@ -37,6 +37,10 @@
 .hint-answer {
     background-color: #0068b3;
     margin-left: 10%;
+
+    & > img {
+        max-width: 100%;
+    }
 }
 
 #hint-history {

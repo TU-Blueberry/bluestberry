@@ -14,7 +14,7 @@ fig = px.line(df, x="year", y="lifeExp", title='Life expectancy in Canada')
 fig.show()
 ```
 
-![small-image][easyLinePlot]
+![big-image][easyLinePlot]
 
 Beispiel von https://plotly.com/python/line-charts/
 
@@ -78,7 +78,7 @@ fig.add_trace(go.Scatter(x=x, y=[18, 23, None, 15, 13, 3, 18, None, 27, 11, 14, 
 fig.show()
 ```
 
-![medium-image][moreLinesLinePlot]
+![big-image][moreLinesLinePlot]
 
 
 Beispiel von https://plotly.com/python/line-charts/ mit abgeänderten eigenen Werten.
@@ -96,6 +96,6 @@ Mehr zu Liniendiagrammen findest du hier: <br>
 https://plotly.com/python/line-charts/
 
 
-[easyLinePlot]: assets/sortierroboter/hint_files/img/easyLinePLot.png
-[moreLinesLinePlot]: assets/sortierroboter/hint_files/img/moreLinesLinePlot.png
+[easyLinePlot]: assets/experiences/sortierroboter/hint_files/img/easyLinePlot.png
+[moreLinesLinePlot]: assets/experiences/sortierroboter/hint_files/img/moreLinesLinePlot.png
 

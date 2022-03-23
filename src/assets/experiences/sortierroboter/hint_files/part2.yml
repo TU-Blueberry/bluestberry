@@ -184,7 +184,7 @@
     answer_id: 200022
     question_options: []
     content: |
-        Schau doch mal im Glossar unter link<--url--/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.line/> nach
+        Schau doch mal im Glossar unter glossary<Liniendiagramm/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.line/> nach
 
 - item200026:
     question_id: 200023
@@ -276,7 +276,7 @@
     answer_id: 200040
     question_options: []
     content: |
-        Schau doch mal im Glossar unter link<url/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.bar/> nach
+        Schau doch mal im Glossar unter glossary<Balkendiagramm/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.bar/> nach
 
 
 
@@ -378,7 +378,7 @@
     answer_id: 200056
     question_options: []
     content: |
-        Schau doch mal im Glossar unter link<url/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.scatter_3d/> nach.
+        Schau doch mal im Glossar unter glossary<3D Scatter Plots/> oder link<https://plotly.com/python-api-reference/generated/plotly.express.scatter_3d/> nach.
 
 - item200050:
     question_id: 200057
@@ -839,21 +839,9 @@
     following_answer_id: 300003
     content: |
       Was sind Beispiele für solche Merkmale für dieses Problem?
-- item300004:
-    question_id: 300004
-    following_answer_id: 300004
-    content: Was gibt es für einfache Methoden?
-- item300005:
-    question_id: 300005
-    following_answer_id: 300024
-    content: Was gibt es für fortgeschrittene Methoden?
-- item300006:
-    question_id: 300006
-    following_answer_id: 300025
-    content: Was gibt es für schwierige Methoden?
 - item300007:
     question_id: 300007
-    following_answer_id: 300007
+    following_answer_id: ""
     content: |
       Welche Merkmale sollte ich nutzen?
 - item300008:
@@ -861,6 +849,18 @@
     following_answer_id: 300008
     content: |
       Was sind Histogramme?
+- item3000084:
+    answer_id: 3000043
+    question_options: []
+    content:
+      Komplexe Zahlen bestehen aus einem reellem und imaginären Teil. Du kannst
+      sie dir als einen 2-dimensionalen Vektor vorstellen.
+- item3000084:
+    answer_id: 3000044
+    question_options: []
+    content:
+      Die PCA berechnet eine Hyperebene mit der gewünschten Dimensionalität.
+      Diese minimiert den euklidischen Abstand.
 - item300009:
     question_id: 300009
     following_answer_id: 300009
@@ -913,9 +913,10 @@
       Wie kann ich mir die Histogramme anzeigen lassen?
 - item300019:
     question_id: 300019
-    following_answer_id: 300999
-    content: |
-      Ich möchte mir selbst ein Histogramm aus einem Balkendiagramm zusammenbauen. (Hilfe)
+    following_answer_id: 200024
+    content:
+      Wie kann ich mir ein Histogramm mit einem Balkendiagramm zusammenbauen
+      lassen?
 - item300020:
     question_id: 300020
     following_answer_id: 300020
@@ -945,17 +946,13 @@
     answer_id: 300002
     question_options: []
     content: |
-      Oftmals wird dadurch der Datensatz kleiner, glossar<Overfitting/> wird reduziert und für klassische Klassifikatoren wird eine höhere Genauigkeit erreicht.
+      Oftmals wird dadurch der Datensatz kleiner, glossary<Overfitting/> wird reduziert und für klassische Klassifikatoren wird eine höhere Genauigkeit erreicht.
 - item300026:
     answer_id: 300003
-    question_options: []
-    content: |
-      Für das Problem der Blueberrys gibt es einige Methoden, die du testen könntest, wie z.B. Histogramme oder PCA. Wir haben die Methoden nach einfach, mittel und fortgeschritten aufgrund des Implementierungsaufwands und Schwierigkeit des Verständnis aufgeteilt.
-- item300027:
-    answer_id: 300004
-    question_options: [300008]
-    content: |
-      Zu den einfachen Methoden der Merkmalsextaktion gehören Histogramme und Patches.
+    question_options: [300008, 300024, 300027]
+    content:
+      Für das Problem der Blueberrys gibt es einige Methoden, die du testen
+      könntest, wie z.B. Histogramme, PCA oder die Fourier-Transformation.
 - item300028:
     answer_id: 300008
     question_options: [300009, 300012, 300011]
@@ -982,7 +979,7 @@
     answer_id: 300012
     question_options: []
     content: |
-      img<resources/feature_extraction/histogram_example.png/>
+      img<histogram_example.png/>
 - item300032:
     answer_id: 300013
     question_options: [300014, 300015, 300016, 300017]
@@ -1012,7 +1009,7 @@
     answer_id: 300018
     question_options: []
     content: |
-      Du findest sie unter: link<https://numpy.org/doc/stable/reference/generated/numpy.histogram.html>
+      Du findest sie unter: link<https://numpy.org/doc/stable/reference/generated/numpy.histogram.html/>
 - item300038:
     answer_id: 300010
     question_options: [300019, 300020]
@@ -1046,25 +1043,21 @@
     question_options: []
     content: |
       Histogramme bieten sich deswegen an, da nicht alle Pixel und alle Pixelwerte die gleiche Aussagekraft haben. Z.B. sind wir bei der Unterscheidung von Blut und Wasser an anderen Farbreichweiten interessiert.
-- item300043:
-    answer_id: 300024
-    question_options: [300024]
-    content: Zu den fortgeschrittenen Methoden zählt z.B. die PCA.
 - item300044:
     question_id: 300024
     following_answer_id: 300036
     content: Was ist eine PCA?
 - item300045:
     question_id: 300025
-    following_answer_id: ''
+    following_answer_id: 300037
     content: Wie nutze ich die PCA?
 - item300046:
     question_id: 300026
-    following_answer_id: ''
+    following_answer_id: 300036
     content: Was bringt mir dieses Verfahren?
 - item300047:
     question_id: 300027
-    following_answer_id: ''
+    following_answer_id: 300026
     content: Was ist die Fourier-Transformation?
 - item300048:
     question_id: 300028
@@ -1073,12 +1066,14 @@
 - item300049:
     answer_id: 300025
     question_options: [300030, 300031]
-    content: Du kannst dafür von scipy.fft fft2 für ein 2D-Bild bzw. fftn für ein
+    content:
+      Du kannst dafür von scipy.fft fft2 für ein 2D-Bild bzw. fftn für ein
       Bild mit Farbkanälen nutzen.
 - item300050:
     answer_id: 300026
     question_options: [300028]
-    content: Die Fourier-Transformation (FT) interpretiert die Eingabe als eine Summe
+    content:
+      Die Fourier-Transformation (FT) interpretiert die Eingabe als eine Summe
       von Wellen und überführt sie in ein Spektrum.
 - item300051:
     question_id: 300029
@@ -1087,12 +1082,9 @@
 - item300052:
     answer_id: 300027
     question_options: []
-    content: Mit der FT kannst du hohe Frequenzen aus dem Bild filtern, die z.B. Rauschen
+    content:
+      Mit der FT kannst du hohe Frequenzen aus dem Bild filtern, die z.B. Rauschen
       im Bild repräsentieren. Du kannst auch andere Filter auf das Bild anwenden.
-- item300053:
-    answer_id: 300028
-    question_options: [300027]
-    content: Zu den schwierigen Methoden zählt z.B. die Fourier-Transformation.
 - item300054:
     question_id: 300030
     following_answer_id: 300029
@@ -1103,54 +1095,58 @@
     content: Was ist die Ausgabe von fft, fft2 und fftn?
 - item300056:
     question_id: 300032
-    following_answer_id: ''
+    following_answer_id: 300033
     content: Was kann ich mit den komplexen Zahlen anfangen?
 - item300057:
     question_id: 300033
-    following_answer_id: ''
+    following_answer_id: 3000043
     content: Was sind komplexe Zahlen?
 - item300058:
     question_id: 300034
-    following_answer_id: ''
+    following_answer_id: 300032
     content: Wie kann ich sie mir geometrisch vorstellen?
 - item300059:
     answer_id: 300029
     question_options: [300035]
-    content: code<fft2(image[:,:,channel]).flatten()> oder code<fftn(image, axis=[0,1])>
+    content: code<fft2(image[:,:,channel]).flatten()/> oder code<fftn(image, axis=[0,1])/>
 - item300060:
     answer_id: 300030
     question_options: [300033, 300034]
     content: Die Ausgabe von fft2 bzw. fftn ist ein Array von komplexen Zahlen.
 - item300061:
     question_id: 300035
-    following_answer_id: ''
+    following_answer_id: ""
     content: Was macht der Parameter axis und wieso axis=[0,1]?
 - item300062:
     answer_id: 300031
     question_options: []
-    content: Der Parameter axis bestimmt, in welchen Dimensionen die Fourier-Transformation
+    content:
+      Der Parameter axis bestimmt, in welchen Dimensionen die Fourier-Transformation
       angewandt werden soll. Für alle drei Dimensionen (Höhe, Breite und RGB) nutze
       axis=[0,1,2].
 - item300063:
     answer_id: 300032
     question_options: []
-    content: (geometrische Darstellung von komplexen Zahlen)
+    content:
+      "Komplexe Zahlen werden normalerweise mit dem Einheitskreis dargestellt.
+      Siehe: link<https://de.wikipedia.org/wiki/Eulersche_Formel/>"
 - item300064:
     answer_id: 300033
     question_options: []
     content: In den meisten Fällen werden sie für den Betrag genutzt.
 - item300065:
     question_id: 300036
-    following_answer_id: ''
+    following_answer_id: 300034
     content: Wie berechne ich den Betrag der komplexen Zahlen?
 - item300066:
     answer_id: 300034
     question_options: []
-    content: Du kannst dafür code<np.abs(x)> vom numpy-Packet nutzen.
+    content: Du kannst dafür code<np.abs(x)/> vom numpy-Packet nutzen.
 - item300067:
     answer_id: 300035
     question_options: []
-    content: Mit der Fourier-Transformation können sowohl hohe und niedrige Frequenzen
+    content:
+      Mit der Fourier-Transformation können sowohl hohe und niedrige Frequenzen
       herausgefiltert werden, als auch das Frequenzspektrum analysiert werden. In
       diesem Fall kannst du die Ergebnisse auch als Merkmale nutzen.
 - item300068:
@@ -1159,21 +1155,21 @@
     content: Eine PCA zielt darauf ab, die Dimensionen der Eingabe zu reduzieren.
 - item300069:
     question_id: 300037
-    following_answer_id: ''
+    following_answer_id: 3000044
     content: Wie funktioniert die PCA genau?
 - item300070:
     question_id: 300038
-    following_answer_id: ''
+    following_answer_id: 300038
     content: Was nimmt die PCA als Parameter?
 - item300071:
     answer_id: 300037
-    question_options: []
+    question_options: [300038]
     content: |-
-      Du kannst PCA mit dem Packet code<sklearn.decomposition.PCA> nutzen. Rufe dafür folgenden Code auf:
-      code<from sklearn.decomposition import PCA>
+      Du kannst PCA mit dem Packet code<sklearn.decomposition.PCA/> nutzen. Rufe dafür folgenden Code auf:
+      code<from sklearn.decomposition import PCA/>
 - item300072:
     question_id: 300039
-    following_answer_id: ''
+    following_answer_id: 300037
     content: Wie transformiere ich die Daten mit der PCA?
 - item300073:
     answer_id: 300038
@@ -1181,51 +1177,55 @@
     content: Der wichtigste Parameter für die PCA ist n_components.
 - item300074:
     question_id: 300040
-    following_answer_id: ''
+    following_answer_id: 300039
     content: Welche Werte funktionieren gut mit der PCA?
 - item300075:
     answer_id: 300039
-    question_options: []
-    content: Es gibt verschiedene Ansätze dafür. Entweder probierst du verschiedene
+    question_options: [300042, 300043]
+    content:
+      Es gibt verschiedene Ansätze dafür. Entweder probierst du verschiedene
       Werte aus und wertest die Ergebnisse auf einem Validationsdatensatz aus, bestimmst
       die Anzahl an Dimensionen mithilfe der erklärten Varianz oder lässt sklearn
       eine Anazhl an Komponenten auswählen.
 - item300076:
     question_id: 300041
-    following_answer_id: ''
+    following_answer_id: ""
     content: Wie bestimme ich die Anzahl an Komponenten mithilfe der erklärten Varianz?
 - item300077:
     question_id: 300042
-    following_answer_id: ''
+    following_answer_id: 300040
     content: Was ist die erklärte Varianz?
 - item300078:
     question_id: 300043
-    following_answer_id: ''
+    following_answer_id: ""
     content: Wie lasse ich sklearn automatisch die Anzahl an Komponenten bestimmen?
 - item300079:
     answer_id: 300040
     question_options: []
-    content: Die erklärte Varianz beschreibt, wie viel Varianz durch die von der PCA
+    content:
+      Die erklärte Varianz beschreibt, wie viel Varianz durch die von der PCA
       erzeugten Komponenten beschrieben wird. Wird z.B. eine Eingabe mit 5 Dimensionen
       transformiert, dann könnten die ersten beiden Komponenten der PCA 90% der Varianz
       beschreiben.
 - item300080:
     answer_id: 300041
     question_options: []
-    content: Wenn du code<pca = PCA(...)> genutzt hast, dann kannst du die Varianz
+    content:
+      Wenn du code<pca = PCA(...)/> genutzt hast, dann kannst du die Varianz
       der einzelnen Komponenten mithilfe von pca.explained_variance_ratio_ erfahren.
 - item300081:
     question_id: 300044
-    following_answer_id: ''
+    following_answer_id: 300041
     content: Wie erfahre ich die Varianz der einzelnen Komponenten?
 - item300082:
     question_id: 300045
-    following_answer_id: ''
+    following_answer_id: 300042
     content: Und wie bestimme ich die Anzahl der Komponenten damit?
 - item300083:
     answer_id: 300042
     question_options: []
-    content: Normalerweise soll die PCA etwa 90-95% der Varianz abdecken. Dies kann
+    content:
+      Normalerweise soll die PCA etwa 90-95% der Varianz abdecken. Dies kann
       aber auch stark vom Problem und von der Klassifikationsmethode abhängen.
 
 - item400001:
@@ -1380,7 +1380,7 @@
     answer_id: 400012
     question_options: [400024, 400026, 400031, 400076]
     content: |
-        Overfitting bedeutet Überanpassung, es bedeutet hier also, dass das Modell im Fall von Overfitting die Testdaten auswendig lernt. Im glossar<Glossar/> kannst du mehr zu dem Thema lesen.
+        Overfitting bedeutet Überanpassung, es bedeutet hier also, dass das Modell im Fall von Overfitting die Testdaten auswendig lernt. Unter glossary<Overfitting/> kannst du mehr zu dem Thema lesen.
 
 - item400027:
     question_id: 400014
@@ -1428,7 +1428,7 @@
     answer_id: 400016
     question_options: [400018, 400026, 400076]
     content: |
-        Ein Split bezeichnet die Aufteilung eines Knotens. Im glossar<Glossar/> kannst du mehr drüber lesen.
+        Ein Split bezeichnet die Aufteilung eines Knotens. Unter glossary<Aufsplittungen (entscheidungsbaum)/> kannst du mehr drüber lesen.
 
 - item400035:
     question_id: 400018
@@ -1488,7 +1488,7 @@
     answer_id: 400021
     question_options: [400023, 400026, 400076]
     content: |
-        Bootstrapping ist eine Methode, um Trainings- und Testdaten auszuwählen. Dabei wird aus der Stichprobe aller Daten mit Zurücklegen gezogen. Im glossar<Glossar/> kannst du mehr drüber lesen.
+        Bootstrapping ist eine Methode, um Trainings- und Testdaten auszuwählen. Dabei wird aus der Stichprobe aller Daten mit Zurücklegen gezogen. Unter glossary<Bootstrapping/> kannst du mehr drüber lesen.
 
 - item400045:
     question_id: 400023
@@ -1536,7 +1536,7 @@
     answer_id: 400025
     question_options: [400027, 400031, 400076]
     content: |
-        Genutzt werden kann der Klassifizierer, um ein Modell zu erstellen: codeinline<model = RandomForestClassifier(random_state=RANDOM_STATE, n_estimators=300, min_samples_split=4, min_samples_leaf=1, max_depth=15)>.
+        Genutzt werden kann der Klassifizierer, um ein Modell zu erstellen: codeinline<model = RandomForestClassifier(random_state=RANDOM_STATE, n_estimators=300, min_samples_split=4, min_samples_leaf=1, max_depth=15)/>.
 
 - item400053:
     question_id: 400027
@@ -1729,7 +1729,7 @@
     answer_id: 400041
     question_options: [400042, 400044, 400046, 400048, 400050]
     content: |
-        RepeatedStratifiedKFold ist eine Form der Kreuzvalidierung. Wenn du mehr darüber erfahren möchtest, kannst du im glossar<Glossar/> nachlesen.
+        RepeatedStratifiedKFold ist eine Form der Kreuzvalidierung. Wenn du mehr darüber erfahren möchtest, kannst du unter glossary<Kreuzvalidierung/> nachlesen.
 
 - item400085:
     question_id: 400043
@@ -1741,7 +1741,7 @@
     answer_id: 400042
     question_options: [400044, 400046, 400048, 400050]
     content: |
-        link<https://de.mathworks.com/discovery/cross-validation.html/>. Oder lies im glossar<Glossar/> nach.
+        link<https://de.mathworks.com/discovery/cross-validation.html/>. Oder lies im Glossar unter glossary<Kreuzvalidierung/> nach.
 
 - item400087:
     question_id: 400044
@@ -1935,7 +1935,7 @@
     answer_id: 400058
     question_options: []
     content: |
-        Der f1_score bestimmt Gütemaße wie zum Beispiel Sensitivity und Precision. Um mehr darüber zu erfahren, lies im glossar<Glossar/> nach.
+        Der f1_score bestimmt Gütemaße wie zum Beispiel Sensitivity und Precision. Um mehr darüber zu erfahren, lies im Glossar unter glossary<Precision und Recall/> nach.
 
 - item400119:
     question_id: 400060

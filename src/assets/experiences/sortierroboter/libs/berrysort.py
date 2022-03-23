@@ -13,6 +13,9 @@ class TestDataLoader:
     _loaded_test_data = None
 
     def _load_images(self):
+        # TODO fix for later version
+        # if not os.path.isdir("BlueberryData/NoisyTestData/"):
+        #     os.makedirs("BlueberryData/NoisyTestData/")
         loaded_test_data = []
         gaussian_noise = None
         for file in os.listdir(path):
@@ -22,7 +25,7 @@ class TestDataLoader:
                 gaussian_noise = np.random.normal(0, 3, res.shape).astype("int8")
             res += gaussian_noise
             res = np.clip(res, 0, 255)
-            res = res.astype("uint8")
+            res = res.astype("int")
             if 'good' in file:
                 label = 1
             elif 'bad' in file:
@@ -31,9 +34,13 @@ class TestDataLoader:
                 # image with incorrect name format
                 continue
 
-            # mod_path = (path + file).replace("TestData", "NoisyTestData")
-            # io.imsave(mod_path, res)
-            loaded_test_data.append((res, label, path + file))
+            image_path = path + file
+            #mod_path = (path + file).replace("TestData", "NoisyTestData")
+            #io.imsave(mod_path, res)
+            loaded_test_data.append((res, label, image_path))
+            #print(loaded_test_data[len(loaded_test_data)-1])
+            #BlueberryData/TestData/good_91.JPG
+
             random.shuffle(loaded_test_data)
         self._loaded_test_data = loaded_test_data
 
@@ -54,5 +61,5 @@ class TestDataLoader:
         js.reset()
         
         for i in range(len(self._loaded_test_data)):
-            arg = "{},{},{}".format(self._loaded_test_data[i][1], y_pred[i], self._loaded_test_data[i][2])
+            arg = "{},{},{}".format(self._loaded_test_data[i][1], int(y_pred[i]), self._loaded_test_data[i][2])
             js.sendManualBerry(arg)
