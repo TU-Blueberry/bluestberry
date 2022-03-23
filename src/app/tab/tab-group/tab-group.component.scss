@@ -29,10 +29,6 @@
   text-align: left;
 }
 
-/* .tab-action {
-  padding-left: 1em;
-} */
-
 .close-button {
   display: flex;
   border: none;
@@ -48,5 +44,5 @@
 
 .tab-icon {
   padding-right: 0.2em;
-  align-self: normal;
+  transform: scale(0.8);
 }

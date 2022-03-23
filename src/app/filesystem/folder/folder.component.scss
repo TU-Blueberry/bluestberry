@@ -5,8 +5,6 @@
     font-size: 1rem;
     padding-top: 5px;
     padding-bottom: 5px;
-    align-items: center;
-    justify-content: space-between;
 
     &:hover{
         background-color: lighten(#262626, 5%);
@@ -25,6 +23,10 @@
 
 .root-folder {
     background-color: hsl(220 12% 20%);
+}
+
+.file-icons {
+    margin-right: 5px;
 }
 
 .common-actions {
@@ -47,10 +49,9 @@
 
 .folder-text {
     color: white;
-    margin-left: 5px;
     text-overflow: ellipsis;
     overflow: hidden;
-    align-self: end;
+    margin-top: 2px;
 }
 
 .root-text {
@@ -60,10 +61,14 @@
     overflow: hidden;
 }
 
-.folder-icon > .arrow{
-    width: 20px;
-    height: 20px;
-    color: #ffffff66;
+.folder-icon {
+    display: flex;
+    
+    > .arrow {
+        width: 20px;
+        height: 20px;
+        color: #ffffff66;
+    }
 }
 
 .options {

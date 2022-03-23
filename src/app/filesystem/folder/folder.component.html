@@ -20,9 +20,11 @@
           <polyline points="6 10 12 16 18 10"/> 
         </svg>
       </div>
-      <app-file-icons *ngIf="!node.isRoot" [isActive]="isActive" [isRenaming]="isRenaming" [isTentative]="node.isTentativeNode"></app-file-icons>
+      <app-file-icons class="file-icons" *ngIf="!node.isRoot" [isActive]="isActive" [isRenaming]="isRenaming" [isTentative]="node.isTentativeNode"></app-file-icons>
       <ng-container *ngIf="!isRenaming">
-        <div [class.folder-text]="!node.isRoot" [class.root-text]="node.isRoot">{{node?.name}}</div>
+        <div [class.folder-text]="!node.isRoot" [class.root-text]="node.isRoot">
+          {{node?.name}}
+        </div>
       </ng-container>
       <div *ngIf="isRenaming">
           <app-user-input [parentPath]="node.parentPath" [depth]="node.depth" [isFile]="false" [editMode]="true" 

@@ -22,16 +22,17 @@
 </div>
 
 <ng-template #text>
-    <svg viewBox="0 0 100 100"
-         xmlns="http://www.w3.org/2000/svg"
-         style="width: 25px; height: 20px; display: flex"
-         [style.fill]="fillColor">
-        <text x="50%"
-              y="65%"
-              dominant-baseline="middle"
-              text-anchor="middle"
-              class="icon-text">
-              {{ fileTypeString }}
-        </text>
-    </svg>
+    <div class="icon">
+        <svg viewBox="0 0 100 100"
+        xmlns="http://www.w3.org/2000/svg"
+        [style.fill]="fillColor">
+       <text x="50%"
+             y="55%"
+             dominant-baseline="middle"
+             text-anchor="middle"
+             class="icon-text">
+             {{ fileTypeString }}
+       </text>
+   </svg>
+    </div>
 </ng-template>
