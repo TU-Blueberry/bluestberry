@@ -72,12 +72,12 @@ export class FileIconsComponent {
         case FileType.PROGRAMMING_LANGUAGE:
         case FileType.MARKDOWN:
         case FileType.JSON:
-             return false;
+            return false;
         case FileType.IMAGE:
-        case FileType.DATA:
         case FileType.PLAIN_TEXT:
         case FileType.OTHER:
-                return true;
+        case FileType.TABULAR:
+            return true;
       }
     }
 

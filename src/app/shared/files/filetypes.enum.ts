@@ -2,7 +2,6 @@ import { TabType } from "src/app/tab/model/tab-type.model";
 
 export enum FileType {
     IMAGE,
-    DATA,
     PROGRAMMING_LANGUAGE,
     MARKDOWN,
     TEX,
@@ -33,8 +32,8 @@ export class FileTypes {
         ["PNG", FileType.IMAGE],
         ["TIFF", FileType.IMAGE],
         ["CSV", FileType.TABULAR],
-        ["XLS", FileType.DATA],
-        ["XLSX", FileType.DATA],
+        ["XLS", FileType.TABULAR],
+        ["XLSX", FileType.TABULAR],
         ["JSON", FileType.JSON],
         ["TXT", FileType.PLAIN_TEXT]
     ])
@@ -61,7 +60,7 @@ export class FileTypes {
     public static getFileIconPath(type: FileType | undefined): string {
         switch (type) {
             case FileType.IMAGE: return FileTypes.imageIconPath;
-            case FileType.DATA: return FileTypes.tableIconPath;
+            case FileType.TABULAR: return FileTypes.tableIconPath;
             case FileType.PLAIN_TEXT: return FileTypes.plainTextPath;
             case FileType.OTHER: return FileTypes.unknownFilePath;
             default: return FileTypes.unknownFilePath;

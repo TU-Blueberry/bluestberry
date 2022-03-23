@@ -153,8 +153,7 @@ export class TabManagementService {
       case FileType.PROGRAMMING_LANGUAGE:
       case FileType.JSON:
       case FileType.TEX:
-        case FileType.DATA:
-          return 'left';
+        return 'left';
       case FileType.TABULAR:
       case FileType.IMAGE:
       case FileType.MARKDOWN:
