@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import * as JSZip from 'jszip';
-import { Observable, concat, forkJoin, of, throwError, EMPTY, defer, from, zip, merge } from 'rxjs';
-import { ignoreElements, switchMap, filter, mergeAll, tap, shareReplay, finalize, take } from 'rxjs/operators';
+import { Observable, concat, forkJoin, of, throwError, EMPTY, defer, from, zip, merge, Subject } from 'rxjs';
+import { ignoreElements, switchMap, filter, mergeAll, tap, shareReplay, finalize } from 'rxjs/operators';
 import { PyodideService } from '../pyodide/pyodide.service';
 import { ReplaySubject } from 'rxjs';
 import { FileType, FileTypes } from '../shared/files/filetypes.enum';
@@ -26,12 +26,19 @@ export class FilesystemService {
   // Keep track of readonly folders as they need to be adjusted before and after syncing
   private READONLY_FOLDERS = new Set<string>();
 
+  public afterExecutionAndSync$ = new Subject<void>();
   public test = this.init();
   PyFS?: typeof FS & MissingInEmscripten;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
 
   constructor(private pyService: PyodideService) {
-    this.pyService.getAfterExecution().subscribe(() => this.sync(false)); // TODO: Funktioniert das?
+    // worker will execute code, sync fs to indexeddb and then send a message
+    // need to sync indexeddb with fs in main thread before treenodes can get new content
+    this.pyService.getAfterExecution().pipe(
+      switchMap(_ => this.sync(true).pipe(
+        finalize(() => this.afterExecutionAndSync$.next())
+      ))
+    ).subscribe();
   }
 
   getFS() {
@@ -94,7 +101,6 @@ export class FilesystemService {
 
       try {
         this.PyFS!.syncfs(fromPersistentToVirtual, err => {     
-          console.log("in callback")     
           err ? (console.log(err), subscriber.error("Couldn't complete sync")) : (console.log("Sync complete! " + r), subscriber.complete());
         });
       } catch (e) {
@@ -162,7 +168,7 @@ export class FilesystemService {
     });
   }
 
-  // ...this.EXP_TABINFO_PATH
+  // TODO: ...this.EXP_TABINFO_PATH
   public checkPermissionsForExperience(mountpoint: string): Observable<never> {
     const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, ...this.EXP_GLOSSARY_PATH, ...this.EXP_HINT_ROOT_PATH]); 
     return this.checkPermissions(mountpoint, mergedPaths);
@@ -180,7 +186,6 @@ export class FilesystemService {
     )
   }
 
-  /// TODO: mergeAll ist hässlich?
   private testElementsInCurrentFolder(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<never> {
     const obsv = Object.entries(node.contents)
         .map(([name, value]) => this.testCurrentPath(value, `${currentPath}/${name}`, mergedPaths))

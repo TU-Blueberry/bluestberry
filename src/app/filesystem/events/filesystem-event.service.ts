@@ -18,7 +18,6 @@ export class FilesystemEventService {
   onCloseFile: EventEmitter<string> = new EventEmitter();
   onMakeDirectory: EventEmitter<{path: string, mode: any}> = new EventEmitter();
   onMakeSymlink: EventEmitter<{oldPath: string, newPath: string}> = new EventEmitter();
-  afterCodeExecution: EventEmitter<void> = new EventEmitter();
   onNewNodeByUser: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
   onNewNodeByUserSynced: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
   onFailedCreationFromUi: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
@@ -40,8 +39,6 @@ export class FilesystemEventService {
         this.onWriteToFile.emit({path: _path, bytesWritten: _bytesWritten})
       }
     });
-
-    py.getAfterExecution().subscribe(() => this.afterCodeExecution.emit());
   }
 
   onPathMoved(oldPath: string, newPath: string): void {

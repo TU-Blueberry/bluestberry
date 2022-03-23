@@ -1,7 +1,7 @@
 /// <reference lib="webworker" />
 
 import {bindCallback, concat, defer, forkJoin, from, merge, Observable, ReplaySubject, Subject} from 'rxjs';
-import {map, shareReplay, switchMap, tap} from 'rxjs/operators';
+import {ignoreElements, map, shareReplay, switchMap, tap} from 'rxjs/operators';
 import initCode from '!raw-loader!./../../assets/util/init.py';
 import {
   ExecutionRequestData,
@@ -127,9 +127,12 @@ function runCode(code: string): Observable<any> {
     switchMap(pyodide => {
     pyodide.globals.set('editor_input', code);
     return defer(() => concat(
-      from(runPythonInternal(pyodide, addToSysPath())),
-      from(runPythonInternal(pyodide, 'await run_code()')))
-    ).pipe(tap(res => results$.next(res)), tap(() => afterExecution$.next()));
+      from(runPythonInternal(pyodide, addToSysPath())).pipe(ignoreElements()),
+      from(runPythonInternal(pyodide, 'await run_code()')).pipe(
+        switchMap(res => pyodideSyncFs(pyodide)(false)
+          .pipe(tap(_ => results$.next(res)), tap(() => afterExecution$.next())))
+      ))
+    )
   }));
 }
 

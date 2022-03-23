@@ -107,7 +107,7 @@ export class TreeNode {
     }
 
     public addAfterCodeExecutionListener() {
-        return this.ev.afterCodeExecution;
+        return this.fs.afterExecutionAndSync$.pipe(tap(() => console.log("is synced, tn may proceed")));
     }
 
     public pathMoveOldPath() {
