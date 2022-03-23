@@ -55,14 +55,13 @@ export class ActionbarState {
 
     @Action(FromConfig)
     onFromConfig(ctx: StateContext<ActionbarModel>, action: FromConfig) {
-        // für den rest brauche ich info ob lesson oder sandbox
         ctx.setState({
             'filetree': { active: action.splitSettings['filetree'].visible, disabled: false },
             'terminal': { active: action.splitSettings['terminal'].visible, disabled: false },
-            'hints': { active: this.checkIfHintsAreOpen(action.openTabs), disabled: action.type !== 'LESSON' },
+            'hints': { active: (!this.isEmpty(action.hintRoot) && this.checkIfHintsAreOpen(action.openTabs)), disabled: (action.type !== 'LESSON' || this.isEmpty(action.hintRoot))},
             'tour': { active: false, disabled: action.type !== 'LESSON'},
             'about': { active: false, disabled: false },
-            'simulation': { active: this.checkIfSimulationIsOpen(action.openTabs), disabled: action.type !== 'LESSON' },
+            'simulation': { active: (!this.isEmpty(action.unityEntryPoint) && this.checkIfSimulationIsOpen(action.openTabs)), disabled: (action.type !== 'LESSON' || this.isEmpty(action.unityEntryPoint)) },
             'import': { active: false, disabled: false }
         });
     }
@@ -169,5 +168,9 @@ export class ActionbarState {
 
     private checkIfSimulationIsOpen(tabs: { path: string, on: string, active: boolean }[]): boolean {
         return tabs.findIndex(tab => tab.path.toUpperCase() === 'UNITY' && tab.active) > -1;
+    }
+
+    private isEmpty(path?: string): boolean {
+        return !(path !== null && path !== undefined && path.trim().length > 0);
     }
  }

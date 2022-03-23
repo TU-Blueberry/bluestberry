@@ -69,7 +69,7 @@ export class TabManagementService {
           return this.createOpenTabEvent(`/${conf.uuid}/${file.path}`, file.active).pipe(map(ote => ({...ote, groupId: file.on})))
         })
         ).pipe(
-          finalize(() => this.store.dispatch(new FromConfig(conf.splitSettings, conf.open, conf.type)))
+          finalize(() => this.store.dispatch(new FromConfig(conf.splitSettings, conf.open, conf.type, conf.unityEntryPoint, conf.hintRoot)))
         )
       })
     )
