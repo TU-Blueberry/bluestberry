@@ -19,6 +19,7 @@ export class FileComponent implements OnInit, OnDestroy {
   offsetX = 0;
   offsetY = 0;
   closeContextMenuSubscription: Subscription;
+  newUserInputLocationSubscription?: Subscription;
   activeElementChangeSubscription?: Subscription;
   
   private _node: TreeNode;
@@ -36,7 +37,7 @@ export class FileComponent implements OnInit, OnDestroy {
       this.cd.detectChanges();
     });
 
-    this._node.onNewUserInputLocation().subscribe(() => {
+    this.newUserInputLocationSubscription = this._node.onNewUserInputLocation().subscribe(() => {
       this.isRenaming = false;
       
       if (this._node.isTentativeNode) {
@@ -70,6 +71,7 @@ export class FileComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.closeContextMenuSubscription.unsubscribe();
     this.activeElementChangeSubscription?.unsubscribe();
+    this.newUserInputLocationSubscription?.unsubscribe();
   }
 
   deleteFile(ev: Event) {
