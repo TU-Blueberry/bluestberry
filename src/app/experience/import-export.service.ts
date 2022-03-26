@@ -51,25 +51,24 @@ export class ImportExportService {
         if (overwrite) {
           if (isCurrent) {
             importObsv = concat(
-              this.fs.getNodeByPath(`/${conf.uuid}`).pipe(
-                switchMap(node => this.fs.deleteEntriesInFolder(node, `/${conf.uuid}`, [`/${conf.uuid}/config.json`]))
-              ),
+              this.fs.deleteFolder(`/${conf.uuid}`, false, false,[`/${conf.uuid}/config.json`]),
               this.fs.storeExperience(zipFile, conf.uuid, true),
               this.fs.sync(false)
             ).pipe(finalize(() => this.store.dispatch([
                 new ImportAction.OverwriteCurrent(exp),
                 new ExperienceAction.UpdateExperience(exp), 
                 new ExperienceAction.ChangeCurrent(exp),
+                new AppAction.Change("READY")
               ])))
           } else {
             importObsv = concat(
               this.fs.mount(conf.uuid),
               expAvailbleOffline ? this.fs.sync(true) : EMPTY,
-              expAvailbleOffline ? this.fs.deleteFolder(`/${conf.uuid}`, false) : EMPTY,
+              expAvailbleOffline ? this.fs.deleteFolder(`/${conf.uuid}`, false, false, []) : EMPTY,
               this.fs.storeExperience(zipFile, conf.uuid),
               this.fs.sync(false),
               this.fs.unmount(`/${conf.uuid}`)
-            ).pipe(finalize(() => this.store.dispatch(new ExperienceAction.UpdateExperience(exp))))
+            ).pipe(finalize(() => this.store.dispatch([new ExperienceAction.UpdateExperience(exp), new AppAction.Change("READY")])))
   
           }
         } else {
@@ -87,12 +86,12 @@ export class ImportExportService {
                 // import of lesson which wasn't yet downloaded
                 this.store.dispatch(new ExperienceAction.UpdateExperience(exp))
               }
+
+              this.store.dispatch(new AppAction.Change("READY"));
           }))
         }
 
-        return importObsv.pipe(finalize(() => {      
-          this.store.dispatch(new AppAction.Change("READY"));
-        }));
+        return importObsv;
       })
     ) 
   }

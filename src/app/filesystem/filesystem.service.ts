@@ -534,7 +534,7 @@ export class FilesystemService {
     return withSync ? concat(createFolderObservable, this.sync(false)) : createFolderObservable;
   }
 
-  public deleteFolder(path: string, withSync: boolean, excludedPaths?: string[]): Observable<never> {
+  public deleteFolder(path: string, withSync: boolean, deleteRootFolder = true, excludedPaths?: string[]): Observable<never> {
     const deleteFolderObservable = this.isDirectory(path).pipe(
       filter(_ => !excludedPaths?.includes(path)),
       switchMap(isDir => isDir ? this.isEmpty(path) : throwError("Path is not a directory"))).pipe(
@@ -546,7 +546,7 @@ export class FilesystemService {
               this.getNodeByPath(path).pipe(
                 switchMap(node => this.deleteEntriesInFolder(node, path, excludedPaths))  // else: recursive delete
               ), 
-              defer(() => this.rmdir(path))) // finally, delete root
+              deleteRootFolder ? defer(() => this.rmdir(path)) : EMPTY ) // finally, delete root if requested
           }
     }))
 
@@ -554,7 +554,7 @@ export class FilesystemService {
   }
 
   // for each subnode of current node, check if it is a file and map to corresponding delete observable
-  public deleteEntriesInFolder(node: FSNode, path: string, excludedPaths?: string[]): Observable<never> {
+  private deleteEntriesInFolder(node: FSNode, path: string, excludedPaths?: string[]): Observable<never> {
     return this.getEntriesOfFolder(node, path).pipe(
       switchMap(entries =>
         entries.filter(entry => !excludedPaths?.includes(entry))
