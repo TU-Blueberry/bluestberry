@@ -32,4 +32,4 @@ tn, fp, fn, tp = confusion_matrix(y_true = ground_truth, y_pred = predicted_labe
 ```
 
 
-[confusion_matrix]: assets/experiences/sortierroboter/hint_files/img/konfusionsmatrix.png
+[confusion_matrix]: /89805231-9bd6-4171-ae4b-01e997d5dcfa/hint_files/img/konfusionsmatrix.png

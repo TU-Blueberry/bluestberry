@@ -18,4 +18,4 @@ Beobachtungen mehrfach auftauchen. Alle nicht gezogenen Beobachtungen
 bilden jeweils die Testmenge.
 
 
-[Bootstrapping]: assets/experiences/sortierroboter/hint_files/img/bootstrapconcept.png
+[Bootstrapping]: /89805231-9bd6-4171-ae4b-01e997d5dcfa/hint_files/img/bootstrapconcept.png

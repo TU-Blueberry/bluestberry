@@ -21,4 +21,4 @@ In der obigen Abbildung ist das Verfahren der Kreuzvalidierung mit vier
 Iterationen, auch Faltungen genannt, illustriert.
 
 
-[Kreuzvalidierung]: assets/experiences/sortierroboter/hint_files/img/kreuzvalidierung.jpg
+[Kreuzvalidierung]: /89805231-9bd6-4171-ae4b-01e997d5dcfa/hint_files/img/kreuzvalidierung.jpg

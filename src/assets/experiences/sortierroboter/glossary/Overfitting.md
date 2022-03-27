@@ -33,4 +33,4 @@ einzelne Datenpunkte richtig zu klassifizieren.
 [^1]: vgl.
     https://databraineo.com/ask-the-doc/overfitting-in-machine-learning/
 
-[Overfitting]: assets/experiences/sortierroboter/hint_files/img/overfitting.png
+[Overfitting]: /89805231-9bd6-4171-ae4b-01e997d5dcfa/hint_files/img/overfitting.png

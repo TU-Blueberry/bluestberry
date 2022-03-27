@@ -71,4 +71,4 @@ Mehr zu go.Scatter3d kannst du hier finden: https://plotly.com/python/reference/
 
 Mehr zu den Scatter Plots kannst du hier finden: https://plotly.com/python/3d-scatter-plots/
 
-[ScatterPlot]: assets/experiences/sortierroboter/hint_files/img/ScatterPlot.png
+[ScatterPlot]: /89805231-9bd6-4171-ae4b-01e997d5dcfa/hint_files/img/ScatterPlot.png
