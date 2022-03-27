@@ -1,6 +1,8 @@
 import {Component, OnInit} from '@angular/core';
 import {KatexOptions, MarkdownService} from "ngx-markdown";
+import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import {FileTabDirective} from "../../tab/file-tab.directive";
+import { fromByteArray } from "base64-js"
 
 @Component({
   selector: 'app-markdown-viewer',
@@ -18,6 +20,7 @@ export class MarkdownViewerComponent implements OnInit {
   constructor(
     private markdownService: MarkdownService,
     private fileTabDirective: FileTabDirective,
+    private fs: FilesystemService,
   ) {}
 
   ngOnInit(): void {
@@ -33,16 +36,29 @@ export class MarkdownViewerComponent implements OnInit {
         return '<p style="color: #cc0000">Kein href-Argument übergeben!</p>';
       }
 
-      let out = '<img src="' + href + '" alt="Hier sollte eigentlich ein Bild sein!"';
+      let out = '';
 
-      if (text) {
-        out += ' class="' + text + '"'
+      if (href.startsWith('http')) {
+        out = '<img src="' + href + '" alt="Hier sollte eigentlich ein Bild sein!"';
+      } else {
+        try {
+          const file = this.fs.getFileAsBinarySync(href);
+          const extension = href.split('.').pop() || 'png';
+          const image = `data:image/${extension};base64,${fromByteArray(file)}`;
+  
+          out = '<img src="' + image + '" alt="Hier sollte eigentlich ein Bild sein!"';
+  
+          if (text) {
+            out += ' class="' + text + '"'
+          }
+          if (title) {
+            out += ' title="' + title + '"';
+          }
+          out += '>'
+        } catch (err) {
+          out = '<p style="color: #cc0000">Fehler beim Laden des Bildes!</p>';
+        }
       }
-      if (title) {
-        out += ' title="' + title + '"';
-      }
-      out += '>'
-
       return out;
     }
 

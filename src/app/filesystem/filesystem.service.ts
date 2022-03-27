@@ -592,6 +592,10 @@ export class FilesystemService {
     ));
   }
 
+  public getFileAsBinarySync(path: string): Uint8Array {
+    return this.N_readFileAsBinary(path);    
+  }
+
   /** Renaming and moving (works for both files and folders) */
   public rename(oldPath: string, newPath: string): Observable<never> {
     const renameObservable = this.exists(newPath).pipe(

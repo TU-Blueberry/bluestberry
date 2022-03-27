@@ -60,13 +60,7 @@ export function markedOptionsFactory(): MarkedOptions {
     HttpClientModule,
     GuidedTourModule,
     NgIconsModule.withIcons({ HeroDocumentText, HeroDocument, HeroX, HeroPhotograph, HeroChip, HeroLightningBolt, HeroBookOpen }),
-    MarkdownModule.forRoot({
-      loader: HttpClient, // Optional, only needed if we use [src] attribute
-      markedOptions: {
-        provide: MarkedOptions,
-        useFactory: markedOptionsFactory,
-      },
-    }),
+    MarkdownModule.forRoot(),
     ExperienceModule,
     NgxsModule.forRoot([ViewSizeState, TabState, ActionbarState, ExperienceState, AppState], {
       developmentMode: !environment.production
