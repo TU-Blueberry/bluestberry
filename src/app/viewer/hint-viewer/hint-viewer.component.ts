@@ -6,9 +6,8 @@ import { FilesystemService } from 'src/app/filesystem/filesystem.service';
 import { FilesystemEventService } from 'src/app/filesystem/events/filesystem-event.service';
 import { FileType } from 'src/app/shared/files/filetypes.enum';
 import { ConfigService } from 'src/app/shared/config/config.service';
-import { defer, Observable, of } from 'rxjs';
-import { filter, map, mergeAll, switchMap } from 'rxjs/operators';
-import { ExperienceStateModel, ExperienceState } from 'src/app/experience/experience.state';
+import { defer, Observable } from 'rxjs';
+import { catchError, map, mergeAll, switchMap } from 'rxjs/operators';
 import { Store } from '@ngxs/store';
 
 @Component({
@@ -222,13 +221,19 @@ export class HintViewerComponent implements OnInit {
     )
   }
 
-  // TODO: Differ between local and global glossary files
+  // we differ between global glossary entries and local glossary entries
+  // global glossary entries are always available regardless of the selected experience. they are stored in a seperate mountpoint /glossary
+  // local glossary entries are part of a lesson and therefore lesson specific. they are stored in the glossaryEntryPoint of the selected lesson
+  // if a hint answer contains a reference to a glossary file we first check the local glossary entries. if no match (based on the name)
+  // is found we continue to check the global glossary entries.
   openGlossary(glossaryFileName: string): void {
-    const path = `${this.glossaryEntryPoint}/${glossaryFileName}.md`;
-    console.log("opening glossary at " + path)
+    const localPath = `${this.glossaryEntryPoint}/${glossaryFileName}.md`;
+    const globalPath = `/glossary/${glossaryFileName}.md`;
 
-    this.fsService.getFileAsBinary(path).subscribe(node => {
-      this.fsEventService.onOpenFile.emit({path: path, byUser: true, fileContent: node, type: FileType.MARKDOWN});
+    this.fsService.getFileAsBinary(localPath).pipe(
+      catchError(err => this.fsService.getFileAsBinary(globalPath))
+    ).subscribe(node => {
+      this.fsEventService.onOpenFile.emit({path: localPath, byUser: true, fileContent: node, type: FileType.MARKDOWN});
     });
   }
 
