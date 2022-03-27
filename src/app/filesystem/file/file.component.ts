@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { Subscription } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ConfigService } from 'src/app/shared/config/config.service';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
@@ -19,6 +20,7 @@ export class FileComponent implements OnInit, OnDestroy {
   offsetX = 0;
   offsetY = 0;
   closeContextMenuSubscription: Subscription;
+  cancelRenamingSubscription: Subscription;
   newUserInputLocationSubscription?: Subscription;
   activeElementChangeSubscription?: Subscription;
   
@@ -57,6 +59,13 @@ export class FileComponent implements OnInit, OnDestroy {
       this.showContextMenu = false;
       this.cd.detectChanges();
     });
+
+    this.cancelRenamingSubscription = this.uiEv.onCancelAllRenamingOperations.pipe(
+      filter(() => this.isRenaming)
+    ).subscribe(() => {
+      this.dismissNameChange();
+      this.cd.detectChanges();
+    });
   }
 
   // copied from some random gist. only purpose is to create some random new name to stop renaming in any other component
@@ -70,6 +79,7 @@ export class FileComponent implements OnInit, OnDestroy {
   
   ngOnDestroy(): void {
     this.closeContextMenuSubscription.unsubscribe();
+    this.cancelRenamingSubscription.unsubscribe();
     this.activeElementChangeSubscription?.unsubscribe();
     this.newUserInputLocationSubscription?.unsubscribe();
   }
@@ -142,12 +152,11 @@ export class FileComponent implements OnInit, OnDestroy {
     this.offsetX = ev.clientX;
     this.offsetY = ev.clientY;
 
-    if (!this.isRenaming) {
-      if (!this.showContextMenu) {
-        this.uiEv.closeAllContextMenues();
-      }
-
-      this.showContextMenu = !this.showContextMenu;
+    if (this.showContextMenu) {
+      this.showContextMenu = false;
+    } else {
+      this.uiEv.closeAllContextMenues();
+      this.showContextMenu = true;
     }
 
     this.cd.detectChanges();

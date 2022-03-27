@@ -8,10 +8,15 @@ export class UiEventsService {
   onNewUserInputLocation: EventEmitter<string> = new EventEmitter();
   onCloseAllContextMenues: EventEmitter<void> = new EventEmitter();
   onClickOutsideOfFiltree: EventEmitter<{ev: MouseEvent, isGlossary: boolean}> = new EventEmitter();
+  onCancelAllRenamingOperations: EventEmitter<void> = new EventEmitter();
 
   constructor() { }
   clickOutsideOfFiletree(ev: MouseEvent, isGlossary: boolean) {
     this.onClickOutsideOfFiltree.emit({ev: ev, isGlossary: isGlossary});
+  }
+
+  cancelRenamingGlobally(): void {
+    this.onCancelAllRenamingOperations.emit();
   }
 
   // could also use store with new state for the following three

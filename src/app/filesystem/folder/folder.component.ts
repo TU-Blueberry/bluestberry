@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, ComponentFactory, ComponentFactoryResolver, ComponentRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewContainerRef } from '@angular/core';
 import { forkJoin, of, Subscription } from 'rxjs';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, filter, switchMap } from 'rxjs/operators';
 import { ConfigService } from 'src/app/shared/config/config.service';
 import { UiEventsService } from 'src/app/ui-events.service';
 import { FilesystemEventService } from '../events/filesystem-event.service';
@@ -106,9 +106,16 @@ export class FolderComponent implements OnInit, OnDestroy {
       this.cd.detectChanges();
     });
 
+    const cancelRenamingSubscription = this.uiEv.onCancelAllRenamingOperations.pipe(
+      filter(() => this.isRenaming)
+    ).subscribe(() => {
+      this.dismissNameChange();
+      this.cd.detectChanges();
+    })
+
     this.subscriptions = [deleteSubscription, newFileSubscription, afterCodeSubscription, moveOldPathSubscription, pathMoveSubscription,
     newNodeByUserSubscription, newNodeByUserSyncedSubscription, failedChildSubscription, newUserInputSubscription, closeContextMenuSubscription,
-    activeElementChangeSubscription];
+    activeElementChangeSubscription, cancelRenamingSubscription];
   }
 
   // sadly, emscripten only uses its "onMakeDirectory" callback if it was compiled in debug mode (which pyodide isn't)
@@ -282,13 +289,8 @@ export class FolderComponent implements OnInit, OnDestroy {
       this.onExpandToggle.emit(this.showSubfolders);
     }
 
-    if (!this.isRenaming) {
-      if (!this.showContextMenu) {
-        this.uiEv.closeAllContextMenues();
-      }
-
-      this.showContextMenu =  !this.showContextMenu;
-    }
+    this.uiEv.closeAllContextMenues();
+    this.uiEv.cancelRenamingGlobally();
   }
 
   setActive(): void {
@@ -365,14 +367,14 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.offsetX = ev.clientX;
     this.offsetY = ev.clientY;
 
-    if (!this.isRenaming) {
-      if (!this.showContextMenu) {
-        this.uiEv.closeAllContextMenues();
-      }
-
-      this.showContextMenu =  !this.showContextMenu;
+    if (this.showContextMenu) {
+      this.showContextMenu = false;
+    } else {
+      this.uiEv.closeAllContextMenues();
+      this.showContextMenu = true;
     }
 
+    this.uiEv.cancelRenamingGlobally();
     this.cd.detectChanges();
   }
 
