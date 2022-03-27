@@ -632,12 +632,16 @@ export class FilesystemService {
     ];
     
     sets.forEach(set => {
-      set.forEach(path => {
-        if (path.startsWith(oldPath)) {
-          set.delete(path);
-          set.add(path.replace(oldPath, newPath));
-        }
+      // only iterate once by using array (instead of set.remove + set.add as this causes inifinte loop [e.g. path -> path1, path1 -> path11 etc.])
+      const arr = [...set];
+      const updatedPaths = arr.map(path => {
+        return path.startsWith(oldPath)
+          ? path.replace(oldPath, newPath)
+          : path
       })
+  
+      set.clear();
+      updatedPaths.forEach(path => set.add(path));
     })
   }
 
