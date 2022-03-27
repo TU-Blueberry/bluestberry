@@ -9,25 +9,25 @@ const experiences = ['sortierroboter', 'experience2'];
 function createZip(assets, name) {
   const zip = new admZip();
   const dirs = new Set();
-  
+
   // folders are not created automatically, although some zip viewers may think they were
   // create folders manually, else emscripten won't write the files
   assets.forEach(asset => {
     const fileName = asset.sourceFilename.replace(`src/assets/experiences/${name}/`, '');
     const parentPath = fileName.substr(0, fileName.lastIndexOf('/'));
-    
-    if ('' !== parentPath) {    
+
+    if ('' !== parentPath) {
       const parts = parentPath.split('/');
 
       // create folders for all subpaths
       for (let i = 1; i <= parts.length; i++) {
         const path = parts.slice(0, i).reduce((a, b) => `${a}/${b}`) + '/'
-       
+
         if (!dirs.has(path)) {
           dirs.add(path)
           zip.addFile(path, new Buffer.from([]))
         }
-      } 
+      }
     }
     zip.addFile(fileName, asset.data);
   })
@@ -44,15 +44,15 @@ function createPatternsForExperiences() {
         from: `src/assets/experiences/${exp}`,
         to: `assets/${exp}.zip`,
         transform: {
-          transformer(content, absolutePath) { 
-            const regex = new RegExp('.*\/' + exp + '\/config\.json')
+          transformer(content, absolutePath) {
+            const regex = new RegExp('.*[\\\\\/]' + exp + '[\\\\\/]config\.json');
 
             return regex.test(absolutePath)
               ? cryptoberry.encryptForBuild('crypt/key', content)
               : Promise.resolve(content);
           }
         },
-        transformAll(assets) { 
+        transformAll(assets) {
           return createZip(assets, exp);
         }
       }
