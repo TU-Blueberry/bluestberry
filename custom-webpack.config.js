@@ -11,7 +11,7 @@ function createZip(assets, name) {
   const dirs = new Set();
 
   // folders are not created automatically, although some zip viewers may think they were
-  // create folders manually, else emscripten won't write the files
+  // therefore create folders manually, else emscripten won't write the files
   assets.forEach(asset => {
     const fileName = asset.sourceFilename.replace(`src/assets/experiences/${name}/`, '');
     const parentPath = fileName.substr(0, fileName.lastIndexOf('/'));
@@ -89,7 +89,7 @@ function createPatternsForExperiences() {
         from: "src/assets",
         to: "assets",
         filter: async (path) => {
-          return !path.startsWith('src/assets/experiences');
+          return !path.includes('src/assets/experiences');
         }
       },
       ...createPatternsForExperiences()]
