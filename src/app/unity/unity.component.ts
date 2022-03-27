@@ -6,6 +6,7 @@ import {
   OnDestroy,
   OnInit,
 } from '@angular/core'
+import { BerrySort } from './experiences/unity.berrysort'
 import { UnityService } from './unity.service'
 
 @Component({
@@ -13,16 +14,15 @@ import { UnityService } from './unity.service'
   templateUrl: './unity.component.html',
   styleUrls: ['./unity.component.scss'],
 })
-export class UnityComponent implements OnInit, OnChanges, OnDestroy, AfterViewInit {
+export class UnityComponent
+  implements OnInit, OnChanges, OnDestroy, AfterViewInit
+{
   gameInstance: any
   progress = 0
   isReady = 0
   isEnabled = false
   @Input() updateMessage = 0
 
-  /**
-   * In case we want to update Unity with a binding I have included an example.
-   */
   ngOnChanges(): void {
     console.log(this.updateMessage)
     this.unityService.updateUnity(this.updateMessage)
@@ -33,11 +33,13 @@ export class UnityComponent implements OnInit, OnChanges, OnDestroy, AfterViewIn
 
   // Initialize Unity with our standard Scene.
   ngOnInit(): void {
-    this.unityService.initUnity().subscribe(instance => this.gameInstance = instance)
+    this.unityService
+      .initUnity()
+      .subscribe((instance) => (this.gameInstance = instance))
   }
 
   ngOnDestroy(): void {
-    this.unityService.cleanUpUnity();
+    this.unityService.cleanUpUnity()
   }
 
   startUnity() {
