@@ -18,6 +18,7 @@ export class TreeNode {
     private _rootName = '';
     private _tempName = '';
     private _isGlossary = false;
+    private _isParentOfReadonlyNode = false;
 
     constructor(private uiEv: UiEventsService, private fs: FilesystemService, private ev: FilesystemEventService, private conf: ConfigService) { }
 
@@ -72,6 +73,7 @@ export class TreeNode {
         }
         
         treeNode.updateEmptyStatus();
+        treeNode.checkIfHasReadonlyChild();
         return treeNode;
     }
 
@@ -105,13 +107,21 @@ export class TreeNode {
         return this.fs.isSystemDirectory(path) || this.fs.isHiddenPath(path) || this.fs.isModulePath(path)
                 || this.fs.isHintPath(path) || this.fs.isGlossaryPath(path) || (this._depth === 0 && name === 'config.json');
     }
+    
+    private checkIfHasReadonlyChild() {
+        this._isParentOfReadonlyNode = Array.from(this.fs.EXP_READONLY_PATHS)
+            .filter(entry => entry.startsWith(this._path)).length > 0;
+    }
 
     public addAfterCodeExecutionListener() {
         return this.fs.afterExecutionAndSync$.pipe(tap(() => console.log("is synced, tn may proceed")));
     }
 
     public pathMoveOldPath() {
-        return this.ev.onMovePath.pipe(filter(params => this.isDirectChild(params.oldPath), tap(() => this.updateEmptyStatus)));
+        return this.ev.onMovePath.pipe(
+            filter(params => this.isDirectChild(params.oldPath), 
+            tap(() => this.updateEmptyStatus))
+        );
     }
 
     public pathMoveNewPath() {
@@ -120,7 +130,8 @@ export class TreeNode {
             switchMap(params => forkJoin([this.fs.getNodeByPath(params.newPath), this.fs.isFile(params.newPath)]).pipe(
                 filter(([node, isFile]) => node !== undefined),
                 map(([node, isFile]) => ({ node: node, isFile: isFile, newPath: params.newPath}),
-                tap(() => this.updateEmptyStatus()))
+                tap(() => this.updateEmptyStatus())),
+                tap(() => this.checkIfHasReadonlyChild())
             )),
         );
     }
@@ -247,5 +258,9 @@ export class TreeNode {
 
     public set isGlossary(isGlossary: boolean) {
         this._isGlossary = isGlossary;
+    }
+
+    public get isParentOfReadonlyNode(): boolean {
+        return this._isParentOfReadonlyNode;
     }
 }

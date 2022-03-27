@@ -3,7 +3,7 @@
     {{ READONLY_MSG }}
   </div>
 
-  <div class="ctx-entry" *ngIf="!isRoot && !isReadonly && !isInlineMenu" (click)="this.emitDelete($event)">
+  <div class="ctx-entry" *ngIf="!isRoot && !isReadonly && !isInlineMenu && !hasReadonlyChild" (click)="this.emitDelete($event)">
     {{ DELETE_MSG }}
   </div>
 

@@ -32,7 +32,7 @@
       </div>
     </div>
     <div *ngIf="!isRenaming" class="common-actions" [class.show]="showContextMenu" [style.top.px]="offsetY - 20" [style.left.px]="offsetX">
-      <app-common-actions [isRoot]="node.isRoot" [isFile]="false" [mode]="node?.mode || -1" (close)="closeContextMenu()"
+      <app-common-actions [isRoot]="node.isRoot" [isFile]="false" [mode]="node?.mode || -1" [hasReadonlyChild]="node?.isParentOfReadonlyNode" (close)="closeContextMenu()"
       (createNewFromUI)="this.createNewFromUI($event)" (delete)="this.deleteFolder($event)" 
       (startRenaming)="this.startRenaming($event)" (selectedFiles)="this.onNewFile($event)" [isVisible]="showContextMenu"></app-common-actions>
     </div>

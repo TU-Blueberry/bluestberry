@@ -21,6 +21,7 @@ export class CommonActionsComponent implements OnInit {
   @Input() isVisible: boolean = false;
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
+  @Input() hasReadonlyChild?: boolean = false;
   @Input() set mode(mode: number) {
       this.isReadonly = mode === 33133 || mode === 16749;
       this.setMessages();
