@@ -4570,7 +4570,7 @@ var UnityLoader = UnityLoader || {
       return (
         n.compatibilityCheck(
           n,
-          function () {            
+          function () {
             var t = new XMLHttpRequest()
             t.open('GET', n.url, !0),
               (t.responseType = 'text'),
@@ -4675,9 +4675,7 @@ var UnityLoader = UnityLoader || {
         Jobs: {},
         buildDownloadProgress: {},
         resolveBuildUrl: function (e) {
-          return e.match(/(http|https|ftp|file):\/\//)
-            ? e
-           : uriMap[e]
+          return e.match(/(http|https|ftp|file):\/\//) ? e : uriMap[e]
         },
         streamingAssetsUrl: function () {
           return o(this.resolveBuildUrl('../StreamingAssets'))
