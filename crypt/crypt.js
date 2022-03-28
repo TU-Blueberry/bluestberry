@@ -124,7 +124,7 @@ async function generateKey(path) {
     length: 256
   }, true, ["decrypt", "encrypt"])
 
-  const ex = await exportKey(key);
+  const ex = await subtle.exportKey("jwk", key);
   fs.writeFileSync(path, JSON.stringify(ex, null, 2));
 
   return key;
