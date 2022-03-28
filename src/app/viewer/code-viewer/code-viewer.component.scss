@@ -12,3 +12,13 @@
 .editor {
   height: 100%;
 }
+
+.disabled {
+  cursor: auto;
+  background-color: #62252a;
+}
+
+.disabled:hover {
+  cursor: auto;
+  color: #ffffff66;
+}

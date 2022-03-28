@@ -20,6 +20,7 @@ const stdErr$ = new ReplaySubject<string>(1000);
 const afterExecution$ = new Subject<void>();
 const pythonCallable$ = new Subject<PythonCallableData>();
 const loadedLib$ = new Subject<string>();
+const preloadComplete$ = new Subject<void>();
 const terminated$ = new Subject<void>();
 let _modulePaths: string[] = [];
 let interruptBuffer: Uint8Array;
@@ -28,6 +29,9 @@ let mountPoint = '';
 let pythonRunningPromise = Promise.resolve();
 const messageMapper = (type: MessageType) => map(data => ({ type, data }));
 
+// This just fixes console logging. No idea why it broke...
+console = self.console;
+
 merge(
   results$.pipe(messageMapper(MessageType.RESULT)),
   stdOut$.pipe(messageMapper(MessageType.STD_OUT)),
@@ -35,6 +39,7 @@ merge(
   afterExecution$.pipe(messageMapper(MessageType.AFTER_EXECUTION)),
   pythonCallable$.pipe(messageMapper(MessageType.PYTHON_CALLABLE)),
   loadedLib$.pipe(messageMapper(MessageType.LOADED_LIB)),
+  preloadComplete$.pipe(messageMapper(MessageType.PRELOAD_COMPLETE)),
   terminated$.pipe(messageMapper(MessageType.TERMINATED)),
 ).subscribe(message => {
   console.log('posting message to main thread: ', message);
@@ -72,7 +77,7 @@ addEventListener('message', ({ data }: { data: PyodideWorkerMessage }) => {
       break;
     case MessageType.MOUNT:
       pyodide.pipe(
-        switchMap(pyodide => pythonRunningPromise.then(() => pyodide))
+        switchMap(pyodide => {console.log(pythonRunningPromise); return pythonRunningPromise.then(() => pyodide)})
       ).subscribe(pyodide => {
         // we only ever have one path mounted.
         if (mountPoint) {
@@ -80,7 +85,9 @@ addEventListener('message', ({ data }: { data: PyodideWorkerMessage }) => {
           pyodide.FS.rmdir(mountPoint)
         }
         const path = `/${data.data}`;
-        pyodide.FS.mkdir(path);
+        if (!pyodide.FS.analyzePath(path, false).exists) {
+          pyodide.FS.mkdir(path);
+        }
         pyodide.FS.mount(pyodide.FS.filesystems.IDBFS, {}, path);
         mountPoint = path;
       });
@@ -140,7 +147,11 @@ function preloadLibs(libs: string[]) {
   const libString = `["${libs.join('","')}"]`;
   pyodide.pipe(
     switchMap(pyodide => runPythonInternal(pyodide, `await load_libs(${libString})`))
-  ).subscribe();
+  ).subscribe(() => {
+    preloadComplete$.next();
+  }, () => {
+    preloadComplete$.next();
+  });
 }
 
 function runPythonInternal(pyodide: Pyodide, code: string): Promise<any> {

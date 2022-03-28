@@ -31,7 +31,8 @@ export class CodeViewerComponent implements OnInit {
       enabled: false,
     },
   }
-  
+
+  runEnabled = false;
   code = ""
   isExecutableCode = false;
   languageId = "python";
@@ -71,7 +72,11 @@ export class CodeViewerComponent implements OnInit {
       )
       .subscribe(() => {
         console.log('saved file')
-      })
+      });
+
+    this.pyodideService.preloadComplete().subscribe(value => {
+      this.runEnabled = value;
+    });
   }
 
   terminateCode() {
@@ -79,6 +84,9 @@ export class CodeViewerComponent implements OnInit {
   }
 
   executeCode(): void {
+    if (!this.runEnabled) {
+      return;
+    }
     forkJoin([
       this.filesystemService.sync(false),
       this.pyodideService.runCode(this.code)
@@ -97,7 +105,7 @@ export class CodeViewerComponent implements OnInit {
       webSocket,
       onConnection: (connection: MessageConnection) => {
         // create and start the language client
-        
+
         const languageClient = this.createLanguageClient(connection);
         const disposable = languageClient.start();
         connection.onClose(() => disposable.dispose());
@@ -108,7 +116,7 @@ export class CodeViewerComponent implements OnInit {
   public createUrl(): string {
     return 'ws://localhost:3000/python';
   }
-  
+
 
   public createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
     return new MonacoLanguageClient({
@@ -140,7 +148,7 @@ export class CodeViewerComponent implements OnInit {
       maxRetries: Infinity,
       debug: false
     };
-    return new ReconnectingWebSocket(socketUrl, [], socketOptions);    
+    return new ReconnectingWebSocket(socketUrl, [], socketOptions);
   }
 
   undo(): void {

@@ -1,6 +1,6 @@
 import {Injectable} from '@angular/core';
 import {Location} from '@angular/common';
-import {defer, Observable, of, race, Subject, timer} from 'rxjs';
+import {BehaviorSubject, defer, Observable, of, race, Subject, timer} from 'rxjs';
 import {filter, map, mapTo, shareReplay, tap} from 'rxjs/operators';
 import {MessageType, PyodideWorkerMessage, PythonCallableData} from 'src/app/pyodide/pyodide.types';
 import {Actions, ofActionSuccessful} from '@ngxs/store';
@@ -16,6 +16,7 @@ export class PyodideService {
   private worker!: Worker;
 
   onMessageListener$ = new Subject<PyodideWorkerMessage>();
+  preloadComplete$ = new BehaviorSubject(false);
 
   private interruptBuffer = new Uint8Array(new SharedArrayBuffer(1));
   private loadedLibs: Set<string> = new Set<string>();
@@ -29,18 +30,23 @@ export class PyodideService {
 
   constructor(private location: Location,
               private action$: Actions) {
+    this.onMessageListener$.pipe(
+      filter(message => message.type === MessageType.PRELOAD_COMPLETE)
+    ).subscribe(() => this.preloadComplete$.next(true));
+
     this.action$.pipe(
       ofActionSuccessful(ExperienceAction.ChangeCurrent)
     ).subscribe((action: ExperienceAction.ChangeCurrent) => {
 
       if (action.exp.preloadedPythonLibs) {
-        action.exp.preloadedPythonLibs?.forEach(lib => this.loadedLibs.add(lib));  
+        action.exp.preloadedPythonLibs?.forEach(lib => this.loadedLibs.add(lib));
         this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: Array.from(this.loadedLibs) });
-  
+        this.preloadComplete$.next(false);
+
         this.mountPoint = action.exp.uuid;
         this.worker.postMessage({ type: MessageType.MOUNT, data: this.mountPoint });
-      } 
-    }) 
+      }
+    })
 
     this.initWorker();
   }
@@ -108,6 +114,7 @@ export class PyodideService {
       }
       if (this.loadedLibs.size > 0) {
         this.worker.postMessage({ type: MessageType.PRELOAD_LIBS, data: [...this.loadedLibs] });
+        this.preloadComplete$.next(false);
       }
     } else {
       console.error('WebWorkers not supported by this Environment...');
@@ -217,6 +224,10 @@ export class PyodideService {
 
   addToSysPath(paths: string[]): void {
     this.modulePaths = [...this._modulePaths, ...paths];
+  }
+
+  preloadComplete(): Observable<boolean> {
+    return this.preloadComplete$.asObservable();
   }
 
   // TODO: Funktioniert noch nicht richtig
