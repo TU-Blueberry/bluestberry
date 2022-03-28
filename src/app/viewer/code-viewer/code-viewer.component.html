@@ -2,7 +2,7 @@
   <ngx-monaco-editor class="editor" [options]="editorOptions" [(ngModel)]="code" (ngModelChange)="save()" (onInit)="editorInit($event)" (keyup.alt.enter)="executeCode()"></ngx-monaco-editor>
   <div class="code-action-bar">
     <ng-container *ngIf="isExecutableCode">
-      <div class="action-bar-icon" (click)="executeCode()" [ngClass]="{disabled: !runEnabled}">
+      <div class="action-bar-icon" (click)="executeCode()" [ngClass]="{disabled: !runEnabled, running: isRunning}">
         <svg class="svg-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" aria-labelledby="playIconTitle"
              stroke="currentColor" stroke-width="2" stroke-linecap="square" stroke-linejoin="miter" fill="none">
           <title id="playIconTitle">Code ausführen (Alt+Enter)</title>

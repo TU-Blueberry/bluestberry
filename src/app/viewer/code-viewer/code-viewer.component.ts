@@ -35,6 +35,7 @@ export class CodeViewerComponent implements OnInit {
   runEnabled = false;
   code = ""
   isExecutableCode = false;
+  isRunning = false;
   languageId = "python";
 
   saveSubject = new Subject<void>()
@@ -48,6 +49,8 @@ export class CodeViewerComponent implements OnInit {
       extensions: ['.py', '.pyc', '.jupyter'],
       aliases: ['Python', 'PYTHON', 'PyLang']
     });
+
+    pyodideService.getAfterExecution().subscribe(() => this.isRunning = false)
   }
 
   ngOnInit(): void {
@@ -63,16 +66,13 @@ export class CodeViewerComponent implements OnInit {
     this.saveSubject
       .pipe(
         debounceTime(1000),
-        tap(() => console.log('save file observable')),
         concatMap(() =>
           this.fileTabDirective.saveCurrentFile(
             new TextEncoder().encode(this.code)
           )
         )
       )
-      .subscribe(() => {
-        console.log('saved file')
-      });
+      .subscribe(() => {});
 
     this.pyodideService.preloadComplete().subscribe(value => {
       this.runEnabled = value;
@@ -80,17 +80,18 @@ export class CodeViewerComponent implements OnInit {
   }
 
   terminateCode() {
-    this.pyodideService.terminateCode(5000).subscribe();
+    this.pyodideService.terminateCode(5000).subscribe(() => this.isRunning = false);
   }
 
   executeCode(): void {
     if (!this.runEnabled) {
       return;
     }
+    this.isRunning = true;
     forkJoin([
       this.filesystemService.sync(false),
       this.pyodideService.runCode(this.code)
-    ]).subscribe();
+    ]).subscribe(() => {}, () => this.isRunning = false);
   }
 
   editorInit(editor: any) {
