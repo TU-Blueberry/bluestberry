@@ -3,7 +3,7 @@ const cryptoberry = require("cryptoberry");
 const CopyPlugin = require("copy-webpack-plugin");
 const admZip = require("adm-zip");
 
-const experiences = ['sortierroboter', 'experience2'];
+const experiences = ['sortierroboter', 'frequent-itemset-mining'];
 
 // adm-zip appears to be the only library which can create zips synchronously (required by transformAll)
 function createZip(assets, name) {
