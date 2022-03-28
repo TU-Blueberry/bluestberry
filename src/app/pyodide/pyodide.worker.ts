@@ -81,8 +81,8 @@ addEventListener('message', ({ data }: { data: PyodideWorkerMessage }) => {
       ).subscribe(pyodide => {
         // we only ever have one path mounted.
         if (mountPoint) {
-          pyodide.FS.unmount(mountPoint);
-          pyodide.FS.rmdir(mountPoint)
+         deleteFolder(pyodide, mountPoint, true);
+         pyodide.FS.unmount(mountPoint);
         }
         const path = `/${data.data}`;
         if (!pyodide.FS.analyzePath(path, false).exists) {
@@ -108,6 +108,25 @@ addEventListener('message', ({ data }: { data: PyodideWorkerMessage }) => {
   }
 });
 
+// delete folders recursively (need to unlink files first before folder can be deleted)
+function deleteFolder(py: Pyodide, path: string, isRoot: boolean) {
+  const node = py.FS.analyzePath(path, false);
+  if (node.exists) {
+    if (py.FS.isFile(node.object.mode)) {
+      py.FS.unlink(path);
+    } else {
+      const entries = Object.entries(node.object.contents);
+      if (entries.length === 0) {
+        return;
+      } else {
+        entries.forEach(([entry, ]) => deleteFolder(py, `${path}/${entry}`, false))
+        if (!isRoot) {
+          py.FS.rmdir(path);
+        }
+      }
+    }
+  }
+}
 
 function initPyodide(pyodideLocation: string): Observable<Pyodide> {
   return from(loadPyodide({
