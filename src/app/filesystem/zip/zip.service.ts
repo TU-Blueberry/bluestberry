@@ -30,8 +30,6 @@ export class ZipService {
 
   getFileFromZip(path: string, unzipped: JSZip): Observable<JSZipObject> {
     return new Observable(subscriber => {
-      console.log(unzipped)
-
       const file = unzipped.file(path);
 
       if (!file) {
@@ -43,7 +41,7 @@ export class ZipService {
     });
   }
 
-  // TODO: Wenn jemals "external" umgesetzt: mounten und Dateien in Zip packen
+  // if "external" is ever implemented we would need to add those files to the zip before exporting
   export(exp: Experience): Observable<JSZip> {
     return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
       switchMap(state => {

@@ -27,7 +27,7 @@ export class FilesystemService {
   private READONLY_FOLDERS = new Set<string>();
 
   public afterExecutionAndSync$ = new Subject<void>();
-  public test = this.init();
+  public initFs = this.init();
   PyFS?: typeof FS & MissingInEmscripten;
   fsSubject = new ReplaySubject<typeof FS & MissingInEmscripten>(1);
 
@@ -49,7 +49,7 @@ export class FilesystemService {
     return concat(
       this.pyService.pyodide.pipe(tap(py => {
         this.PyFS = py.FS;
-        console.log("FS: ", this.PyFS)
+        // console.log("FS: ", this.PyFS)
         this.fsSubject.next(this.PyFS);
       }), ignoreElements()),
       this.mount("glossary"),
@@ -92,8 +92,9 @@ export class FilesystemService {
 
   private _sync(fromPersistentToVirtual: boolean): Observable<never> {
     return new Observable(subscriber => {
-      let r = (Math.random() + 1).toString(36).substring(7);
-      console.log("Sync start! " + r + `(${fromPersistentToVirtual ? 'persistent':'virtual'}---->${fromPersistentToVirtual ? 'virtual':'persistent'})`)
+      // helpful to know which sync started and finished if multiple syncs occur concurrently/shortly after each other
+      // let r = (Math.random() + 1).toString(36).substring(7);
+      // console.log("Sync start! " + r + `(${fromPersistentToVirtual ? 'persistent':'virtual'}---->${fromPersistentToVirtual ? 'virtual':'persistent'})`)
 
       if (!this.PyFS) {
         subscriber.error("FS error");
@@ -101,7 +102,9 @@ export class FilesystemService {
 
       try {
         this.PyFS!.syncfs(fromPersistentToVirtual, err => {     
-          err ? (console.log(err), subscriber.error("Couldn't complete sync")) : (console.log("Sync complete! " + r), subscriber.complete());
+          err ? (console.log(err), subscriber.error("Couldn't complete sync")) : (
+            // console.log("Sync complete! " + r), 
+            subscriber.complete());
         });
       } catch (e) {
         subscriber.error("Error while syncing the filesystem");
@@ -168,7 +171,6 @@ export class FilesystemService {
     });
   }
 
-  // TODO: ...this.EXP_TABINFO_PATH
   public checkPermissionsForExperience(mountpoint: string): Observable<never> {
     const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, ...this.EXP_GLOSSARY_PATH, ...this.EXP_HINT_ROOT_PATH]); 
     return this.checkPermissions(mountpoint, mergedPaths);
@@ -401,12 +403,8 @@ export class FilesystemService {
     );
   }
 
-  // TODO: Könnte ich das mit dem neuen "needsToExist" param der factory nicht auch lösen?
+  // could probably also be solved using the factory?
   public exists(path: string) {
-    /* return this.basicFactory<FSNode>(path, "Error",
-      (node) => { return node }
-    ).pipe(catchError(val => of(`I caught: ${val}`)));  */
-
     return new Observable<boolean>(subscriber => {
       try {
         const analyzeObject = this.N_analyzePath(path);
@@ -474,7 +472,6 @@ export class FilesystemService {
       defer(() => {
         this.chmod(path, 0o777); // TODO: wieder zurückstezen?
         this.N_writeFile(path, content, mode);
-        console.log(`File ${path} was overwritten`, content)
       })
 
     return (withSync && withSync === true) ? concat(overwriteObservable, this.sync(false)) : overwriteObservable;
@@ -506,7 +503,7 @@ export class FilesystemService {
   public deleteFile(path: string, withSync: boolean): Observable<never> {
     const deleteFileObservable =  this.basicFactory<never>(path, 
       "Error removing file",
-      (node) => { this.unlink(path); console.log("DELETE", path)},
+      (node) => { this.unlink(path)},
       true
     );
 
@@ -718,7 +715,6 @@ export class FilesystemService {
   }
 
   private N_mount(path: string) {
-    console.log("MOUNT ", path)
     this.checkFilesystem();
     this.PyFS?.mount(this.PyFS?.filesystems.IDBFS, {}, path);
   }
@@ -729,7 +725,6 @@ export class FilesystemService {
   }
 
   private N_unmount(path: string) {
-    console.log("UNMOUNT ", path)
     this.checkFilesystem();
     this.PyFS?.unmount(path);
   }
@@ -749,7 +744,6 @@ export class FilesystemService {
     return this.PyFS!.isDir(mode);
   }
 
-  // TODO: Additional checks?
   private N_createSymlink(oldPath: string, newPath: string) {
     this.checkFilesystem();
     this.PyFS!.symlink(oldPath, newPath);
@@ -758,7 +752,6 @@ export class FilesystemService {
   private N_unlinkPath(path: string) {
     this.checkFilesystem();
     this.PyFS!.unlink(path);
-    console.log("unlinked " + path)
   }
 
   private N_changeWorkingDirectory(path: string) {
@@ -772,14 +765,7 @@ export class FilesystemService {
     }
   }
 
-  // -------------------------- TODO
-
-  // TODO: Fetch from server (browser cache), unzip and replace specified file
-  // Sync afterwards
-  resetFile(): void {
-
-  }
-
+  // idea: Fetch from server (browser cache), unzip, delete everything in mountpoint, store everything from zip, sync
   resetLesson(): void {
 
   }

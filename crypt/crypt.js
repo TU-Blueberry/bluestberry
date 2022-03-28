@@ -110,7 +110,6 @@ yargs(hideBin(process.argv))
 
 async function importKey(path) {
   try {
-    console.log
     const file = fs.readFileSync(path);
     const key = await subtle.importKey("jwk", JSON.parse(file), { name: "AES-GCM" }, false, ["encrypt", "decrypt"]);
     return key;

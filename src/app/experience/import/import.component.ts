@@ -37,7 +37,7 @@ export class ImportComponent implements OnDestroy {
     this.store.select<ActionbarModel>(ActionbarState).subscribe(state => this.showImportWindow = state.import.active);
   }
 
-  // TODO: errors
+  // improvement: display errors
   importRegular(): void {
     if (this.tempZip) {
       this.importExport.importRegular(this.tempZip).subscribe();
@@ -108,7 +108,6 @@ export class ImportComponent implements OnDestroy {
     this.hasError = false;  
     
     if (this.fileInput) {
-      console.log("clear selection")
       this.fileInput.nativeElement.value = "";
     }
   }
@@ -146,7 +145,7 @@ export class ImportComponent implements OnDestroy {
     if (fileList?.[0]) {
       this.check(fileList[0]);
     } else {
-      // TODO: Error
+      // should give some feedback to user
     }
   }
 

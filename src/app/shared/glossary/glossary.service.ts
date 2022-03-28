@@ -55,12 +55,7 @@ export class GlossaryService {
     ).subscribe();
   }
 
-  // TODO: Http errors in this method should not cause application load to fail!
-  // TODO: if modified since serverseitig + testen
-
-  // TODO: Wechsel zwischen lektion/lektion, lektion/sandbox und sandbox/lektion testen
-  // TODO: Prüfen, ob glossary ordner (2x) trotzdem readonly sind!
-
+  // Improvement: Http errors in this method should not cause application load to fail!
   // global entries are stored in /glossary, lesson-specific ones stay inside the lesson
   public loadGlobalGlossaryEntries() {
     const url = this.location.prepareExternalUrl('/assets/glossary.json');
@@ -96,27 +91,20 @@ export class GlossaryService {
     return forkJoin(toDelete.map(entry => this.fs.deleteFile(`/glossary/${entry.name}`, false)));
   }
 
-  // TODO: Von wann ist der timestamp? Hoffentlich der, wann erstmalig written
   // Check all remaining entries for updates and update local file if necessary
   private checkRemaining(remaining: FSNode[]) {
     return forkJoin(
       remaining.map(
         entry => this.http.get(
           this.location.prepareExternalUrl(`/assets/glossary/${entry.name}`), 
-          { headers: { 'if-modified-since': `${entry.timestamp}`}, observe: 'response', responseType: 'text'}
+          { observe: 'response', responseType: 'text'} // should use some sort of caching (e.g. etag, if-modified-since header)
         ).pipe(
           filter(resp => resp.status !== 304),
-          tap(resp => console.log(resp)),
           mergeMap(content => {
-            // TODO: Auf 0o555 klappt hier noch nicht
-            // Vermutlich irgendwas damit zu tun, dass der /glossary Ordner dann schon/dann noch nicht
-            // in READONLY_FOLDERS im fs ist?
-            // TODO: Fix in service atm wieder rausgenommen
-            console.log("overwrite!")
             return this.fs.overwriteFile(`/glossary/${entry.name}`, content.body || ''); 
           })
         )
       )
-    ).pipe(tap((res) => console.log(res)));
+    );
   }
 }

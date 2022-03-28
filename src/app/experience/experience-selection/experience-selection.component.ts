@@ -30,7 +30,6 @@ export class ExperienceSelectionComponent implements OnInit {
   sandboxToDelete?: Experience;
 
   constructor(private zip: ZipService, private action$: Actions, private store: Store, private ref: ElementRef, private zone: NgZone) {
-    // TODO: errors
     action$.pipe(
       ofActionSuccessful(ExperienceAction.Remove)
     ).subscribe(() => {
@@ -76,7 +75,8 @@ export class ExperienceSelectionComponent implements OnInit {
       saveAs(blob, exp.name);
       this.exporting = undefined;
       this.showOptions = false;
-    }, err => { // TODO: display errors
+    }, err => { 
+      // improvement: display errors
       this.exporting = undefined;
       this.showOptions = false;
     }); 

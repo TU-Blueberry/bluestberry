@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Location } from '@angular/common';
-import { concat, defer, EMPTY, Observable, of, throwError } from 'rxjs';
+import { concat, EMPTY, Observable, of, throwError } from 'rxjs';
 import { switchMap, take, tap } from 'rxjs/operators';
 import { FilesystemService } from '../../filesystem/filesystem.service';
 import { ZipService } from '../../filesystem/zip/zip.service';
@@ -25,10 +25,11 @@ export class ExperienceManagementService {
     private location: Location, private py: PyodideService, private gs: GlossaryService, 
     private expService: ExperienceService, private configService: ConfigService, private store: Store) {
 
+      // could use some error handling
       concat(
-        this.fsService.test,
-        this.gs.loadGlobalGlossaryEntries() , // TODO: error catchen?
-        this.getAllOptions() // TODO: error catchen?
+        this.fsService.initFs,
+        this.gs.loadGlobalGlossaryEntries(),
+        this.getAllOptions()
       ).subscribe(() => {}, err => console.error(err), () => {
         this.store.dispatch([
           new AppAction.Change("READY"),
@@ -42,7 +43,6 @@ export class ExperienceManagementService {
    * If no, the lesson with the given name will be requested from the server and stored afterwards */
   public openLesson(lesson: Experience): Observable<never> {
     return this.expService.available(lesson.uuid).pipe(
-      tap((existsAlready) => console.log(`%cexistsAlready? ${existsAlready}`, "color: red")),
       take(1),
       switchMap(existsAlready => {
         return existsAlready ? this.openExistingExperience(lesson) : this.loadAndStoreLesson(lesson);        
@@ -189,16 +189,13 @@ export class ExperienceManagementService {
     )  
   }
 
-  // TODO: Kann sein, dass readonly permissions hier zu spät gesetzt werden?
-  // Wird ja immer erst nach dem Sync aufgerufen
-  // sollte aber kein problem sein wenn das nach jedem mount so gesetzt wird
   private checkExperienceAfterMount(exp: Experience): Observable<never> {
     const fullPath = `/${exp.uuid}`;
 
     return this.configService.getConfigByExperience(exp).pipe(
       switchMap(config => {
         if (config) {
-          console.log("%c Config found!", "color: green", config)
+          // console.log("%c Config found!", "color: green", config)
           this.fsService.EXP_HIDDEN_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.hidden));
           this.fsService.EXP_MODULE_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.modules));
           this.fsService.EXP_READONLY_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.readonly));

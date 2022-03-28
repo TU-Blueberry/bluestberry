@@ -153,7 +153,8 @@ export class ExperienceState {
                     })
 
                     if (!newCurrentElement) {
-                        // TODO: check if lessons actually contains something, else take random sandbox or dummy
+                        // we currently assume there always exists at least one lesson.
+                        // Improvement: check if at least on lesson actually exists, else take random sandbox (if exists) or create dummy sandbox
                         ctx.dispatch(new ExperienceAction.Open(state.lessons[0]));
                     }
                 }
@@ -199,8 +200,8 @@ export class ExperienceState {
             } else if (state.sandboxes.length > 0) {
                 ctx.dispatch(new ExperienceAction.Open(state.sandboxes[0]));
             } else {
-                console.log("TODO case");
-                // TODO: Dummy lesson?
+                // like before, we currently assume that at least one lesson always exists
+                // improvement: if neither lesson nor sandbox exists we should create a sandbox and switch to it
             }
         } else {
             ctx.dispatch(new ExperienceAction.Open(state.current, true));

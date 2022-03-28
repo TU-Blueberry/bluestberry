@@ -49,7 +49,7 @@ export class TableViewerComponent implements OnInit {
     this.decodedData$.subscribe(() => {this.pblDatasource?.refresh();})
 
     this.pblDatasource.selection.changed.subscribe((selection: any) => {
-      console.log(selection);
+      // console.log(selection);
       this.syncSelection();
     })
 
@@ -92,13 +92,13 @@ export class TableViewerComponent implements OnInit {
       const entries = data.map( entry => { return ([... keys].map(k => entry[k])).join(this.VALUE_DELIMITER) })
 
       this.fileTabDirective.saveCurrentFile(new TextEncoder().encode([header, ...entries].join(this.ENTRY_DELIMITER)))
-        .subscribe( res => console.log('File saved'));
+        .subscribe(res => {});
     }
   
   }
 
   onClickEvents(ev: PblNgridRowEvent<any>) {
-    console.log(this.pblDatasource);
+    // console.log(this.pblDatasource);
     const rawEntry = this.pblDatasource.sortedData[ev.rowIndex]
     this.pblDatasource.selection.toggle(rawEntry);
     this.syncSelection(); 
@@ -121,9 +121,9 @@ export class TableViewerComponent implements OnInit {
   deleteSelected() {
     const currData = this.decodedData$.value;
     const dataToRemoveAsJson = this.pblDatasource.selection.selected.map( (obj: any) => JSON.stringify(obj));
-    console.log(currData);
+    // console.log(currData);
     const updatedData = currData.filter( (data: any)=> !dataToRemoveAsJson.includes(JSON.stringify(data)));
-    console.log(updatedData);
+    //console.log(updatedData);
     this.decodedData$.next(updatedData);
 
     this.pblDatasource.selection.clear();

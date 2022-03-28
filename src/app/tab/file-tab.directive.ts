@@ -44,9 +44,6 @@ export class FileTabDirective implements OnInit {
       .pipe(filter((event) => this.tab?.path?.startsWith(event.oldPath) || false))
       .subscribe((event) => {
         this.tab!.path = this._tab!.path.replace(event.oldPath, event.newPath);
-
-        console.log("onMovePath", event)
-
         this.tab!.title = this.tab!.path.split('/').pop() || event.newPath;
         this.propertyChanges.next({ title: this._tab!.title, path: this._tab!.path, type: this._tab!.type });
       })
@@ -71,7 +68,6 @@ export class FileTabDirective implements OnInit {
       return EMPTY
     }
 
-    console.log("save current file", this.tab)
     return this.filesystemService.writeToFile(this.tab?.path, content, true)
   }
 }

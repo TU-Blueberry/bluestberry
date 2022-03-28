@@ -24,7 +24,6 @@ export class UnityComponent
   @Input() updateMessage = 0
 
   ngOnChanges(): void {
-    console.log(this.updateMessage)
     this.unityService.updateUnity(this.updateMessage)
   }
 

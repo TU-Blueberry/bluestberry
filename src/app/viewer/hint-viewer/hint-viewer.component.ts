@@ -47,7 +47,7 @@ export class HintViewerComponent implements OnInit {
             this.glossaryEntryPoint = paths.glossaryEntryPoint;
             this.base_path = paths.hintRoot.split("/").slice(0,-1).join("/");
             var rootFileString = new TextDecoder().decode(data);
-            console.log("Hints file " + paths.hintRoot + " loaded");
+            // console.log("Hints file " + paths.hintRoot + " loaded");
             this.loadFile(rootFileString);
 
             return this.generateSafeUrls();
@@ -71,7 +71,7 @@ export class HintViewerComponent implements OnInit {
           const subfilePath = [this.base_path, subfileName].join("/");
 
           this.fsService.getFileAsString(subfilePath).subscribe(subfileContent => {
-            console.log("Hints subfile " + subfilePath + " loaded");
+            // console.log("Hints subfile " + subfilePath + " loaded");
             this.loadFile(subfileContent);
           });
         }

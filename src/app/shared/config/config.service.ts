@@ -53,7 +53,8 @@ export class ConfigService {
   }
 
   public parseDecryptedConfig(buff: ArrayBuffer): Observable<Config> {
-    console.log("decrypted", <Config>JSON.parse(new TextDecoder().decode(buff)));
+    // uncomment this to log the config every time it is decrypted
+    // console.log("decrypted", <Config>JSON.parse(new TextDecoder().decode(buff)));
     return of(<Config>JSON.parse(new TextDecoder().decode(buff)))
   }
 

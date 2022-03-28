@@ -59,8 +59,8 @@
                         <app-progress-spinner class="scaled-animation" *ngIf="exporting !== undefined && exporting.uuid === lesson.uuid"></app-progress-spinner>
                         <div class="link" *ngIf="lesson.availableOffline && (exporting === undefined || exporting.uuid !== lesson.uuid)" title="Exportiere deinen Fortschritt"
                             (click)="export(lesson, $event)">Export</div>
-                        <div class="link disabled" *ngIf="lesson.availableOffline" title="Fortschritt zurücksetzen">Zurücksetzen (bald)</div>
-                        <div class="ml" *ngIf="!lesson.availableOffline" title="Nicht verfügbar zurücksetzen">Noch nicht heruntergeladen</div>
+                        <!-- <div class="link disabled" *ngIf="lesson.availableOffline" title="Fortschritt zurücksetzen">Zurücksetzen (bald)</div> -->
+                        <div class="ml" *ngIf="!lesson.availableOffline" title="Nicht verfügbar">Noch nicht heruntergeladen</div>
                     </div>
                 </div>
                 <svg class="arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"

@@ -15,9 +15,7 @@ export class ExperienceService {
   private readonly reservedNames = ['UnityCache', 'glossary', 'idbfs', 'idbfs-test']
 
   constructor(private store: Store, private fs: FilesystemService, private conf: ConfigService) { }
-
-  // TODO: Types
-  // TODO: Firefox compatibiliy?
+  // poor compatibility of idb with firefox currently
   // https://developer.mozilla.org/en-US/docs/Web/API/IDBFactory/databases
   private getAllExperiencesFromIDB(): Observable<Experience[]> {
     return from((window.indexedDB as any).databases()).pipe(

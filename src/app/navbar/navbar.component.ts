@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component } from '@angular/core';
+import { Component } from '@angular/core';
 
 @Component({
   selector: 'app-navbar',
@@ -8,18 +8,14 @@ import { ChangeDetectorRef, Component } from '@angular/core';
 export class NavbarComponent {
   showImport = false;
 
-  constructor(private cd: ChangeDetectorRef) { }
+  constructor() { }
 
   openImport(ev: Event): void {
     ev.stopPropagation();
     this.showImport = true;
-    console.log("set showimport to", this.showImport)
-   // this.cd.detectChanges();
   }
 
   closeImport(): void {
     this.showImport = false;
-    console.log("set showimport to", this.showImport)
-    // this.cd.detectChanges();
   }
 }

@@ -111,14 +111,13 @@ export class CommonActionsComponent implements OnInit {
     const fileList = (ev.target as HTMLInputElement)?.files;
 
     if (fileList) {
-      // TODO: Vielleicht kann man die errors irgendwie aggregieren, sodass man nach dem import eine anzeige kriegt, welche Dateien erfolgreich importiert werden
-      // konnten und welche nicht (z.B. weil sie schon existieren)
+      // could use some proper error handling (maybe it's possible to aggregate errors and show a list of failed failes afterwards)
       forkJoin(Array.from(fileList).map(file => this.createUint8ArrayFromFile(file)))
       .subscribe(
         (arrs) => this.selectedFiles.emit(arrs),
         (err) => console.error(err))
     } else {
-      // TODO: Error
+      // should display errors to user
     }
 
     this.close.emit();

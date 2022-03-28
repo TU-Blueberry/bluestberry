@@ -89,14 +89,14 @@ export class BerrySort {
     var berryParts: string[] = berry.split(',')
     var imagePath = berryParts[2]
     var berryImage = this.fsService.getFileAsBinary(imagePath)
-    console.log(imagePath)
+    // console.log(imagePath)
 
     if (!berryImage) {
       return
     }
 
     berryImage.subscribe((result) => {
-      console.log(berryImage)
+      // console.log(berryImage)
       if (result instanceof Uint8Array) {
         var blob = new Blob([result], { type: 'image/png' })
 
