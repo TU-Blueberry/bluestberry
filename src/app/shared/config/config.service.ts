@@ -180,7 +180,8 @@ export class ConfigService {
   }
 
   private getCurrentExperience(): Observable<Experience> {
-    return this.store.select<ExperienceStateModel>(ExperienceState).pipe(
+    return this.store.select<ExperienceStateModel>(ExperienceState).pipe(  
+      take(1),
       switchMap(state => {
         return !state.current ? throwError("No current experience") : of(state.current);
       }       
