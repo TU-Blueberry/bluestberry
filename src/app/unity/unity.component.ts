@@ -28,7 +28,10 @@ export class UnityComponent
     this.unityService.updateUnity(this.updateMessage)
   }
 
-  constructor(private unityService: UnityService) {}
+  constructor(
+    private unityService: UnityService,
+    private berrySort: BerrySort
+  ) {}
   ngAfterViewInit(): void {}
 
   // Initialize Unity with our standard Scene.

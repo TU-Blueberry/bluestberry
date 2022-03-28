@@ -174,34 +174,4 @@ export class UnityService {
   public start() {
     this.gameInstance.SendMessage('AngularCommunicator', 'stop')
   }
-
-  /**
-   * Returns the image as a base64 Image to the Unity Instance
-   * @param imagePath
-   * @returns  an empty string if no Image is found.
-   */
-  public async provideImage(imagePath: string): Promise<string> {
-    var image = this.fsService.getFileAsBinary(imagePath)
-    var result = ''
-
-    if (!image) {
-      return result
-    }
-
-    image.subscribe((result: any) => {
-      //console.log(berryImage)
-      if (result instanceof Uint8Array) {
-        var blob = new Blob([result], { type: 'image/png' })
-        var reader = new FileReader()
-        reader.readAsDataURL(blob)
-        reader.onloadend = () => {
-          var base64data = reader.result
-          if (base64data) {
-            result = base64data.toString()
-          }
-        }
-      }
-    })
-    return result
-  }
 }

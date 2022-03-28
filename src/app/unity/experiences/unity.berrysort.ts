@@ -19,7 +19,10 @@ interface UnityFiles {
 })
 export class BerrySort {
   unityService: UnityService
-  constructor(unityService: UnityService) {
+  constructor(
+    unityService: UnityService,
+    private fsService: FilesystemService
+  ) {
     this.unityService = unityService
   }
 
@@ -57,16 +60,6 @@ export class BerrySort {
   }
 
   @PythonCallable
-  public toggleWebGLInput() {
-    this.unityService.sendMessage('AngularCommunicator', 'toggleWebGLInput')
-  }
-
-  @PythonCallable
-  public disableWebGLInput() {
-    this.unityService.sendMessage('AngularCommunicator', 'disableWebGLInput')
-  }
-
-  @PythonCallable
   public sendManualBerries(berries: UnityBerryDTO[]) {
     for (var berry of berries) {
       this.sendManualBerry(
@@ -75,21 +68,7 @@ export class BerrySort {
     }
   }
 
-  // Send a Berry delimited by commata: trait,classification,imagePath
-  @PythonCallable
-  public async sendManualBerry(berry: string) {
-    var berryParts: string[] = berry.split(',')
-    var imagePath = berryParts[2]
-    var berryImage = await this.unityService.provideImage(imagePath)
-    this.unityService.sendMessageWithParam(
-      'AngularCommunicator',
-      'queueBerryWithImage',
-      berry + ',' + berryImage.split(',')[1]
-    )
-  }
-
   // And then send an Image. As soon as the Image has been created and Rendered the berry will be produced.
-  // But not before.
   @PythonCallable
   public sendImage(image: string) {
     this.unityService.sendMessageWithParam(
@@ -102,5 +81,38 @@ export class BerrySort {
   @PythonCallable
   public reset() {
     this.unityService.sendMessage('AngularCommunicator', 'reset')
+  }
+
+  // Send a complete Berry delimited by commata: trait,classification,imagePath
+  @PythonCallable
+  public sendManualBerry(berry: string) {
+    var berryParts: string[] = berry.split(',')
+    var imagePath = berryParts[2]
+    var berryImage = this.fsService.getFileAsBinary(imagePath)
+    console.log(imagePath)
+
+    if (!berryImage) {
+      return
+    }
+
+    berryImage.subscribe((result) => {
+      console.log(berryImage)
+      if (result instanceof Uint8Array) {
+        var blob = new Blob([result], { type: 'image/png' })
+
+        var reader = new FileReader()
+        reader.readAsDataURL(blob)
+        reader.onloadend = () => {
+          var base64data = reader.result
+          if (base64data) {
+            this.unityService.sendMessageWithParam(
+              'AngularCommunicator',
+              'queueBerryWithImage',
+              berry + ',' + base64data.toString().split(',')[1]
+            )
+          }
+        }
+      }
+    })
   }
 }

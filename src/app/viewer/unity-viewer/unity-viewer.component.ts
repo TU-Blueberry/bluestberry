@@ -1,5 +1,4 @@
 import { Component, NgModule, OnInit, Renderer2 } from '@angular/core'
-import { UnityService } from 'src/app/unity/unity.service'
 
 @Component({
   selector: 'app-unity-viewer',
