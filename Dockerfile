@@ -10,7 +10,7 @@ COPY crypt crypt
 RUN yarn
 
 COPY . .
-RUN yarn build /$PREFIX/
+RUN yarn build /$PREFIX
 
 FROM nginxinc/nginx-unprivileged:alpine
 

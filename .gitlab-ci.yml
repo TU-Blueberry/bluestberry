@@ -27,7 +27,7 @@ publish:
     - blueberry
   script:
     - docker login -u $REGISTRY_USER -p $REGISTRY_TOKEN $REGISTRY_ADDRESS
-    - docker build -t $REGISTRY_ADDRESS/pg643/frontend:latest --build-arg PREFIX=$VERSION .
+    - docker build -t $REGISTRY_ADDRESS/pg643/frontend:latest --build-arg PREFIX=${VERSION}/ .
     - docker push $REGISTRY_ADDRESS/pg643/frontend:latest
 
 deploy:
