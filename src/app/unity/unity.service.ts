@@ -68,7 +68,7 @@ export class UnityService {
                             this.progress = progress
                             if (progress === 1) {
                               this.isReady = true
-                              this.enableWebGLInput()
+                              this.disableWebGLInput()
                             }
                           },
                         }
