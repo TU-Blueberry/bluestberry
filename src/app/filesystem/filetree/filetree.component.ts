@@ -91,7 +91,7 @@ export class FiletreeComponent implements OnDestroy{
         folderComp.createSubcomponent(true, entry.path, entry.node)
       )
 
-      if (additionalGlossaryEntries && additionalGlossaryEntries.length === 0 && this.ref.length === 1) {
+      if (additionalGlossaryEntries && additionalGlossaryEntries.length === 0 && folderComp.node.isEmptyNode) {
         this.noGlossaryEntries = true;
       } else {
         this.noGlossaryEntries = false;
