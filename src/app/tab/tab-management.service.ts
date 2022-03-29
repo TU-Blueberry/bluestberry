@@ -107,13 +107,15 @@ export class TabManagementService {
   openPlotly(htmlContent: Uint8Array): Observable<never> {
     const path = `${uuidv4()}.plotly`;
 
-    return this.conf.getConfigOfCurrentExperience().pipe(
-      switchMap(conf => concat(
-        this.filesystemService.createOrOverwriteFile(`${conf.tabinfo}/${path}`, htmlContent, false),
-        defer(() => {
-          const x = {groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, path: `/${conf.uuid}/${conf.tabinfo}/${path}`, data: htmlContent, active: true }
-          this._openTab.next(x);
-        })
+    return this.filesystemService.afterExecutionAndSync$.pipe(
+      switchMap(() => this.conf.getConfigOfCurrentExperience().pipe(
+        switchMap(conf => concat(
+          this.filesystemService.createOrOverwriteFile(`${conf.tabinfo}/${path}`, htmlContent, false),
+          defer(() => {
+            const x = {groupId: 'right', title: 'Plotly', type: 'PLOTLY' as TabType, path: `/${conf.uuid}/${conf.tabinfo}/${path}`, data: htmlContent, active: true }
+            this._openTab.next(x);
+          })
+        ))
       ))
     )
   }
