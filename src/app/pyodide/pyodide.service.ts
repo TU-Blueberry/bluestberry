@@ -230,9 +230,9 @@ export class PyodideService {
     return this.preloadComplete$.asObservable();
   }
 
-  // TODO: Funktioniert noch nicht richtig
-  // Muss alle entfernen, die von mir sind (vom system drin lassen!)
+  // is called if experience is changed
+  // doesn't work yet, would need an additional call to worker to remove those that didn't pass the filter from sys.path
   removeFromSysPath(paths: string[]) {
-    // this.modulePaths = this._modulePaths.filter(p => !paths.includes(p));
+    this._modulePaths = this._modulePaths.filter(p => !paths.includes(p));
   }
 }

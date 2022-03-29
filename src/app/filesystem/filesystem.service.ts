@@ -470,7 +470,7 @@ export class FilesystemService {
     const overwriteObservable = this.isSystemDirectory(path) ?
       throwError("Can't write to system files") :
       defer(() => {
-        this.chmod(path, 0o777); // TODO: wieder zurückstezen?
+        this.chmod(path, 0o777); // should probably set to old mode again?
         this.N_writeFile(path, content, mode);
       })
 
