@@ -25,6 +25,7 @@ export class FiletreeComponent implements OnDestroy{
   _isGlossary = false;
   toggleSubscription?: Subscription;
   outsideClickSubscription?: Subscription;
+  noGlossaryEntries = false;
 
   @Input() set isGlossary(isGlossary: boolean) {
     this._isGlossary = isGlossary;
@@ -89,6 +90,12 @@ export class FiletreeComponent implements OnDestroy{
       additionalGlossaryEntries?.forEach(entry => 
         folderComp.createSubcomponent(true, entry.path, entry.node)
       )
+
+      if (additionalGlossaryEntries && additionalGlossaryEntries.length === 0 && this.ref.length === 1) {
+        this.noGlossaryEntries = true;
+      } else {
+        this.noGlossaryEntries = false;
+      }
 
       this.cd.markForCheck();
     }); 

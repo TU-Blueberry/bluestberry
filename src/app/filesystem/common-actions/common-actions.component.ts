@@ -22,6 +22,7 @@ export class CommonActionsComponent implements OnInit {
   @Input() isFile?: boolean = false;
   @Input() isRoot?: boolean = false;
   @Input() hasReadonlyChild?: boolean = false;
+  @Input() isGlossary?: boolean = false;
   @Input() set mode(mode: number) {
       this.isReadonly = mode === 33133 || mode === 16749;
       this.setMessages();

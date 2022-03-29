@@ -1,4 +1,4 @@
-<div class="common-actions" [ngClass]="{'ctx-menu': !isInlineMenu, 'inline-menu': isInlineMenu}">
+<div class="common-actions" [ngClass]="{'ctx-menu': !isInlineMenu, 'inline-menu': isInlineMenu}" *ngIf="!isGlossary">
   <div class="ctx-entry" *ngIf="isReadonly">
     {{ READONLY_MSG }}
   </div>
