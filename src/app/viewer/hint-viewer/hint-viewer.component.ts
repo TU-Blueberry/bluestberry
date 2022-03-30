@@ -253,6 +253,7 @@ export class HintViewerComponent implements OnInit {
     return (name.toLowerCase().endsWith("png") || name.toLowerCase().endsWith("jpeg") || name.toLowerCase().endsWith("jpg"));
   }
 
+  // load images from filesystem, convert to object url
   private loadFileAndCreateSafeUrl(path: string, name: string) {
     return this.fsService.getFileAsBinary(`${path}/${name}`).pipe(
       switchMap(binary => defer(() => {

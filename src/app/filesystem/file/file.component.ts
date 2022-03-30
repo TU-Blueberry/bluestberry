@@ -12,6 +12,12 @@ import { TreeNode } from '../model/tree-node';
   templateUrl: './file.component.html',
   styleUrls: ['./file.component.scss'],
 })
+
+// renders information about a single file in the filetree
+// we are given a TreeNode object which is 
+// a) either connected to a single node in filesystem (files only in this case) OR 
+// b) just a placeholder with no corresponding filesystem entry (in case user is creating a new file via the UI)
+// in any case, every instance of FileComponent is responsible solely for its TreeNode
 export class FileComponent implements OnInit, OnDestroy {
   isRenaming = false;
   isActive = false;
@@ -30,6 +36,7 @@ export class FileComponent implements OnInit, OnDestroy {
     this._node = node;
     this.isRenaming = this._node.isTentativeNode;
 
+    // if we are responsible to renaming/creating a new file (= tentative), emit event so everyone else can cancel their renaming, contextmenus etc.
     if (this._node.isTentativeNode) {
       this.uiEv.changeUserInputLocation(this._node.parentPath + `/${this.generateRandomName()}`)
     }
@@ -42,6 +49,7 @@ export class FileComponent implements OnInit, OnDestroy {
     this.newUserInputLocationSubscription = this._node.onNewUserInputLocation().subscribe(() => {
       this.isRenaming = false;
       
+      // cancel name change if user clicked somewhere else
       if (this._node.isTentativeNode) {
         this.dismissNameChange();
       }
@@ -110,12 +118,15 @@ export class FileComponent implements OnInit, OnDestroy {
     this.tentativeName = '';
   }
 
+  // user pressed enter after entering a new name in the input field
   changeName(params: {newName: string, isFile: boolean}): void {
     this.isRenaming = false;
 
+    // check whether it's just renaming of an existing node or creation of a new node
     if (!this._node?.isTentativeNode) {
       this.fsService.rename(`${this._node.parentPath}/${this._node.name}`, `${this._node.parentPath}/${params.newName}`).subscribe();
     } else {
+      // create 
       const newPath = `${this._node.parentPath}/${params.newName}`;
       this.ev.createNewNodeByUser(newPath, params.isFile);
       this._node.name = params.newName;

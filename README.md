@@ -79,7 +79,7 @@ Entwickelt im Rahmen der Projektgruppe 643:
 		- Wichtig: `uuid` in der Kopie anpassen (UUIDv4)
 6. *Optional*: Konfigurationsdatei anpassen (welche Elemente versteckt sind etc.) 
 7. `src/assets/lessons.json` mit Namen und UUID der neuen Lerneinheit erweitern
-8. In `custom-webpack.config.ts` den Namen aus Schritt in das `experiences`-Array (Zeile 6) einfügen
+8. In `custom-webpack.config.ts` den Namen aus Schritt in das `experiences`-Array (Zeile 7) einfügen
 9. Projekt neu bauen und ausliefern  
 
 

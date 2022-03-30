@@ -52,6 +52,7 @@ export class ExperienceSelectionComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // run outside zone to avoid change detection
     this.zone.runOutsideAngular(() => {
       fromEvent(document, 'click').pipe(
         filter(event => !this.ref.nativeElement.contains(event.target) && this.showOptions),
@@ -65,6 +66,7 @@ export class ExperienceSelectionComponent implements OnInit {
     })
   }
 
+  // zip current experience and show download window
   export(exp: Experience, ev: Event): void {
     ev.stopPropagation();
     this.exporting = exp;

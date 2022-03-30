@@ -37,6 +37,7 @@ export class ImportComponent implements OnDestroy {
     this.store.select<ActionbarModel>(ActionbarState).subscribe(state => this.showImportWindow = state.import.active);
   }
 
+  // uuid not in use
   // improvement: display errors
   importRegular(): void {
     if (this.tempZip) {
@@ -44,18 +45,23 @@ export class ImportComponent implements OnDestroy {
     } 
   }
 
+  // uuid in use but user chose to overwrite existing experience
   importOverwrite(): void {
     if (this.tempZip) {
       this.importExport.importWithOverwrite(this.tempZip).subscribe();
     }
   }
 
+  // uuid in use but user chose to import the selected experience alongside the existing one
+  // assigns new uuid to the imported experience
   importGenerateNewUuid(): void {
     if (this.tempZip) {
       this.importExport.importGenerateUuid(this.tempZip).subscribe();
     }
   }
 
+  // needs to be a valid zip with a valid config
+  // checks whether uuid is already in use or not
   checkArchive(file: File) {
     this.checkInProgress = true;
     return from(file.arrayBuffer()).pipe(
@@ -75,6 +81,7 @@ export class ImportComponent implements OnDestroy {
         ))) 
   }
 
+  // drop zone
   dropFile(ev: DragEvent): void {
     ev.preventDefault();
     this.selectedFile = undefined;

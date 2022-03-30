@@ -27,6 +27,7 @@ export class ConfigService {
     const appState$ = this.store.select<AppStateModel>(AppState);
     appState$.subscribe();
 
+    // save current UI state every time it was changed
     merge(this.store.select<ViewSettings>(ViewSizeState), this.store.select<TabStateModel>(TabState)).pipe(
       withLatestFrom(appState$),
       filter(([_, appState]) => appState !== undefined && appState.status === 'READY'),
@@ -118,6 +119,7 @@ export class ConfigService {
     )
   }
 
+  // inverse operation to what is happening during build process on the server
   public decryptConfig(data: ArrayBuffer): Observable<ArrayBuffer> {
     return this.getKey().pipe(
       switchMap(key => {
@@ -141,6 +143,8 @@ export class ConfigService {
     )
   }
 
+  // user may for example rename a folder which has a readonly file
+  // need to updated all affected paths in config so everything works properly on next load, after export etc.
   public updateAfterPathMove(oldPath: string, newPath: string): Observable<never> {
     // oldPath and newPath are absolute, config is working with relative paths
     const oldPathRelative = oldPath.split('/').splice(2).join('/');
@@ -188,6 +192,7 @@ export class ConfigService {
     ))
   }
 
+  // convert info about open tabs from Store to the format used in config files
   private convertTabStateModel(tabs: TabStateModel): Array<{path: string, on: string, active: boolean}> {
     const open: Array<{ path: string, on: string, active: boolean }> = [];
 
@@ -212,6 +217,7 @@ export class ConfigService {
     }
   }
 
+  // get aes key from environment
   private getKey(): Observable<CryptoKey> {
     const key = window.crypto.subtle.importKey("jwk", environment.aesKey, { name: "AES-GCM" }, false, ["encrypt", "decrypt"])
     return from(key);

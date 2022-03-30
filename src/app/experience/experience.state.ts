@@ -62,6 +62,8 @@ export class ExperienceState {
 
         ctx.dispatch(new AppAction.Change('SWITCHING'));
 
+        // if no experience is currently open we may open the new experience straight away
+        // otherwise we need to close the other experience first
         if (state.current !== undefined && !action.isFirst) {
             obsv = concat(
                 state.current.uuid !== '' ? 
@@ -87,9 +89,9 @@ export class ExperienceState {
                             preloadedLibs = conf.preloadPythonLibs;
                         }))
                     )
-            
             ).pipe(
                 finalize(() => {
+                    // store some basic, non-sensitive information about exp in store
                     const exp: Experience = {
                         name: action.exp.name,
                         uuid: action.exp.uuid, 
@@ -134,6 +136,7 @@ export class ExperienceState {
         const index = elements.findIndex(e => e.uuid === action.exp.uuid);
         const isMounted = (state.current !== undefined && (state.current.uuid === action.exp.uuid));
 
+        // only sandboxes can be deleted
         return this.expMgmt.deleteSandbox(isMounted, action.exp).pipe(
             finalize(() => {
                 let newCurrentElement = undefined;
@@ -194,6 +197,8 @@ export class ExperienceState {
         const state = ctx.getState();
         ctx.dispatch(new AppAction.Change("LOADING"));
 
+        // on application startup, check which experience was last opened before page was closed
+        // if none was open, try to use first available lesson (or if that fails, use first sandbox)
         if (state.current === undefined) {
             if (state.lessons.length > 0) {
                 ctx.dispatch(new ExperienceAction.Open(state.lessons[0]))

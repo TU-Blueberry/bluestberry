@@ -51,6 +51,8 @@ export class PyodideService {
     this.initWorker();
   }
 
+  // init pyodide in main thread, mostly because we need the filesystem from it
+  // execution of python is done in the worker
   private initPyodide(): Observable<Pyodide> {
     return defer(() => {
       // unset define as pyodide is a little POS
@@ -67,6 +69,7 @@ export class PyodideService {
       });
     }).pipe(
       map(pyodide => {
+        // log fs methods to console if flag is set
         if (PyodideService.FILESYSTEM_DEBUG) {
           const interceptMethodCalls = (obj: any, fn: any) => {
             return new Proxy(obj, {

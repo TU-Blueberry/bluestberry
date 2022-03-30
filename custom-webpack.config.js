@@ -3,6 +3,7 @@ const cryptoberry = require("cryptoberry");
 const CopyPlugin = require("copy-webpack-plugin");
 const admZip = require("adm-zip");
 
+// add names of the folders located at src/assets/experiences here
 const experiences = ['sortierroboter', 'frequent-itemset-mining'];
 
 // adm-zip appears to be the only library which can create zips synchronously (required by transformAll)
@@ -47,6 +48,7 @@ function createPatternsForExperiences() {
           transformer(content, absolutePath) {
             const regex = new RegExp('.*[\\\\\/]' + exp + '[\\\\\/]config\.json');
 
+            // encrypt config
             return regex.test(absolutePath)
               ? cryptoberry.encryptForBuild('crypt/key', content)
               : Promise.resolve(content);
@@ -89,6 +91,7 @@ function createPatternsForExperiences() {
         from: "src/assets",
         to: "assets",
         filter: async (path) => {
+          // copy everything from assets except exeperiences folder as we provide a zipped version 
           return !path.includes('src/assets/experiences');
         }
       },

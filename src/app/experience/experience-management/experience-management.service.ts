@@ -26,6 +26,7 @@ export class ExperienceManagementService {
     private expService: ExperienceService, private configService: ConfigService, private store: Store) {
 
       // could use some error handling
+      // fs, glossary entries and list of available lessons/sandboxes need to be initialized/fetched before app is ready for user interaction
       concat(
         this.fsService.initFs,
         this.gs.loadGlobalGlossaryEntries(),
@@ -50,10 +51,12 @@ export class ExperienceManagementService {
     )
   }
 
+  // sandboxes are always local, no need to download anything
   public openSandbox(sandbox: Experience): Observable<never> {
     return this.openExistingExperience(sandbox);
   }
  
+  // create a new sandbox with default values
   public createAndStoreSandbox(name: string): Observable<Experience> {
     const uuid = uuidv4();
 
@@ -72,7 +75,7 @@ export class ExperienceManagementService {
       glossaryEntryPoint: '',
       hintRoot: '',
       preloadPythonLibs: [],
-      tabinfo: '__tabinfo'
+      tabinfo: '__tabinfo'  // folder to save content of special tabs, e.g. plotly, to restore on next load
     }
 
     return concat(
@@ -133,6 +136,7 @@ export class ExperienceManagementService {
     )
   }
 
+  // get content of lessons.json
   private getAndStoreAllLessons(): Observable<never> {
     return this.getLessonList().pipe(
       switchMap(lessons => {
@@ -144,6 +148,7 @@ export class ExperienceManagementService {
     )
   }
 
+  // get all custom libs for this exp, add them to sys.path so they can be resolved during python execution
   private getAllLibsAndAddToSysPath(exp: Experience): Observable<never> {
     return this.configService.getAllLibPaths(exp).pipe(
       switchMap(libs => {
@@ -189,13 +194,13 @@ export class ExperienceManagementService {
     )  
   }
 
+  // after experience is mounted, update fsService with info from config and check permissions
   private checkExperienceAfterMount(exp: Experience): Observable<never> {
     const fullPath = `/${exp.uuid}`;
 
     return this.configService.getConfigByExperience(exp).pipe(
       switchMap(config => {
         if (config) {
-          // console.log("%c Config found!", "color: green", config)
           this.fsService.EXP_HIDDEN_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.hidden));
           this.fsService.EXP_MODULE_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.modules));
           this.fsService.EXP_READONLY_PATHS = new Set(this.filterEmptyConfigPaths(fullPath, config.readonly));
@@ -204,6 +209,7 @@ export class ExperienceManagementService {
           this.fsService.EXP_HINT_ROOT_PATH = new Set(this.filterEmptyConfigPaths(fullPath, [config.hintRoot]));
           this.fsService.EXP_TABINFO_PATH = new Set(this.filterEmptyConfigPaths(fullPath, [config.tabinfo]));
 
+          // set rx permissions for experience where necessary and global glossary scope
           return concat(
             this.fsService.checkPermissionsForExperience(fullPath),
             this.fsService.checkPermissionsForGlobalGlossary(),
@@ -214,6 +220,7 @@ export class ExperienceManagementService {
     }));
   }
 
+  // remove empty paths from config, map everything else to full absolute path
   private filterEmptyConfigPaths(parentPath: string, paths: string[]): string[] {
     return paths.filter(path => path.trim() !== "" && path.trim() !== "/")
                 .map(path => `${parentPath}/${path}`);

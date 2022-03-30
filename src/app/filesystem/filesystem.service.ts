@@ -90,6 +90,7 @@ export class FilesystemService {
     });
   }
 
+  // sync fs content to idb or vice versa, depending on the  boolean
   private _sync(fromPersistentToVirtual: boolean): Observable<never> {
     return new Observable(subscriber => {
       // helpful to know which sync started and finished if multiple syncs occur concurrently/shortly after each other
@@ -112,7 +113,7 @@ export class FilesystemService {
     });
   }
 
-  // workaround to fix sync issue for folders with no write permissions
+  // workaround to fix sync issue for folders with no write permissions: remove all permissions before sync, sync, restore permissions
   public sync(fromPersistentToVirtual: boolean): Observable<never> {
     return concat(
       this.chmodFolders(true),
@@ -121,6 +122,7 @@ export class FilesystemService {
     )
   }
 
+  // remove or add write permissions to all readonly folders
   private chmodFolders(addWritePermission: boolean): Observable<never> {
     return defer(() => {
       const mode = addWritePermission ? 0o777 : 0o555;
@@ -130,6 +132,7 @@ export class FilesystemService {
     })
   }
 
+  // mount /<uuid> and sync it
   public mount(uuid: string): Observable<never> {
     const fullPath = uuid.startsWith("/") ? uuid : `/${uuid}`;
 
@@ -145,6 +148,7 @@ export class FilesystemService {
     )
   }
 
+  // delete experience (currently only sandboxes)
   // emscripten provides no real way of permanently deleting IDBs, see https://github.com/emscripten-core/emscripten/issues/4952
   public deleteIDB(name: string): Observable<never> {
     return new Observable<never>(subscriber => {
@@ -171,16 +175,19 @@ export class FilesystemService {
     });
   }
 
+  // after first sync of a new experience, all elements will have write permissions (see l.115, emscripten can't sync readonly folders to indexeddb)
+  // therefore, loop over whole fs and remove write permissions where necessary
   public checkPermissionsForExperience(mountpoint: string): Observable<never> {
     const mergedPaths = new Set([...this.EXP_READONLY_PATHS, ...this.EXP_MODULE_PATHS, ...this.EXP_GLOSSARY_PATH, ...this.EXP_HINT_ROOT_PATH]); 
     return this.checkPermissions(mountpoint, mergedPaths);
   }
 
+  // same for global glossary: loop over it, remove write permissions
   public checkPermissionsForGlobalGlossary(): Observable<never> {
     return this.checkPermissions('/glossary', new Set(['/glossary']));
   }
 
-  // loops over whole mountpoint and verifies that all modules and readonly paths have readonly permissions
+  // loop over whole mountpoint and verify that all modules and readonly paths have readonly permissions
   // would probably need to be revisited if "external" is implemented
   private checkPermissions(mountpoint: string, paths: Set<string>): Observable<never> {  
     return this.getNodeByPath(mountpoint).pipe(
@@ -188,12 +195,14 @@ export class FilesystemService {
     )
   }
 
+  // check permissions for all subnodes of a node concurrently 
   private testElementsInCurrentFolder(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<never> {
     const obsv = Object.entries(node.contents)
         .map(([name, value]) => this.testCurrentPath(value, `${currentPath}/${name}`, mergedPaths))
     return forkJoin(obsv).pipe(mergeAll());
   }
 
+  // check permissions for current node, continue recursion if current node is a folder
   private testCurrentPath(node: FSNode, currentPath: string, mergedPaths: Set<string>): Observable<never> {  
     return of(Object.keys(node.contents || {}).length).pipe(
       filter(length => length > 0),
@@ -208,6 +217,7 @@ export class FilesystemService {
     );
   }
 
+  // set permissions for current node to rx if it is included in the merged list of readonly paths
   private setPermissionsReadExecute(currentPath: string, mergedPaths: Set<string>, isFile: boolean): void {
     if (this.abstractCheck(mergedPaths, currentPath)) {
       if (isFile) {
@@ -219,6 +229,7 @@ export class FilesystemService {
     }
   }
 
+  // checks whether given path is contained in the set or at least one of the elements starts with the given path
   private abstractCheck(paths: Set<string>, path: string): boolean {
     for (const forbiddenPath of paths) {
       if (path.startsWith(forbiddenPath)) {
@@ -292,6 +303,8 @@ export class FilesystemService {
     return this.scanWithOutFetch(node, path, depth, includeFiles, false, false);
   }
 
+  // don't need to fetch anything from fs if we already have the node (e.g. when a TreeNode is calling this method)
+  // we can just move along the references in the js object
   private scanWithOutFetch(node: FSNode, path: string, depth: number, includeFiles: boolean, scanAll: boolean, includeGlossary: boolean) {
     const subfolders: FSNode[] = [];
     const filesInFolder: FSNode[] = [];
@@ -336,6 +349,7 @@ export class FilesystemService {
     }))
   }
 
+  // store all files from the given unzipped experience
   public storeExperience(unzippedExp: JSZip, uuid: string, overwriteConfig: boolean = false): Observable<never> {
     const folders: string[] = [];
     const files: string[] = [];
@@ -466,6 +480,8 @@ export class FilesystemService {
     return withSync ? concat(writeObservable, this.sync(false)) : writeObservable;
   }
 
+  // emscripten doesn't care whether file exists or not
+  // we expose different methods for creating, overwriting or createOrOverwrite a file
   public overwriteFile(path: string, content: Uint8Array | string, mode?: number, withSync?: boolean): Observable<never> {
     const overwriteObservable = this.isSystemDirectory(path) ?
       throwError("Can't write to system files") :
@@ -589,6 +605,8 @@ export class FilesystemService {
     ));
   }
 
+  // just calling the original emscripten fs function, no wrapping in observable
+  // necessary for custom markdown rendering as it doesn't support async stuff
   public getFileAsBinarySync(path: string): Uint8Array {
     return this.N_readFileAsBinary(path);    
   }
@@ -616,6 +634,7 @@ export class FilesystemService {
     return concat(renameObservable, this.sync(false));
   }
 
+  // replace all occurences of oldPath by newPath in every set
   private adjustPathsBeforeRenaming(oldPath: string, newPath: string): void {
     const sets = [
       this.EXP_HIDDEN_PATHS,
@@ -644,6 +663,10 @@ export class FilesystemService {
 
   // ---- Helper methods
 
+  // checks whether a given path exists and corresponds to an object we can access/manipulate. if yes, the given function is called with the object as a parameter 
+  // and its result passed to subscriber.next()
+  // since many functions (isEmpty, isFile, isDirectory, getNodeByPath etc.) would need to perform these checks beforehand anyways it seemed
+  // like a good idea to do it this way 
   // T = return type of the observable
   private basicFactory<T>(path: string, errorMsg: string, fn: (node: FSNode) => any, never: boolean = false, needsToExist: boolean = true): Observable<T> {
     return new Observable<T>(subscriber => {

@@ -42,6 +42,7 @@ export class ZipService {
   }
 
   // if "external" is ever implemented we would need to add those files to the zip before exporting
+  // user may either export the experience which is currently mounted or a different one
   export(exp: Experience): Observable<JSZip> {
     return this.store.selectOnce<ExperienceStateModel>(ExperienceState).pipe(
       switchMap(state => {
@@ -54,6 +55,7 @@ export class ZipService {
     )
   }
 
+  // update config with current values, then create zip
   private exportCurrent(exp: Experience): Observable<JSZip> {
     const zip = new JSZip();
 
@@ -64,6 +66,7 @@ export class ZipService {
     ) 
   }
 
+  // mount the experience which should be exported, create zip, unmount
   private exportOther(exp: Experience): Observable<JSZip> {
     const zip = new JSZip();
 
@@ -80,6 +83,8 @@ export class ZipService {
     return this.addLayerToZip(path, 0, zip, uuid);
   }
 
+  // recursively build zip by starting at the root
+  // scan each layer, add each folder/file to zip and move one layer deeper
   private addLayerToZip(path: string, depth: number, zip: JSZip, uuid: string): Observable<any> {
     return this.fsService.scanAll(path, depth, true).pipe(
       switchMap(([folders, files]) => {

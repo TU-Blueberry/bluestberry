@@ -48,6 +48,7 @@ export class FileTabDirective implements OnInit {
         this.propertyChanges.next({ title: this._tab!.title, path: this._tab!.path, type: this._tab!.type });
       })
 
+    // update tab content
     this.filesystemEventService.onWriteToFile
       .pipe(
         filter((event) => this.tab?.path === event.path),

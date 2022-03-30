@@ -23,6 +23,7 @@ export class FilesystemEventService {
   onFailedCreationFromUi: EventEmitter<{path: string, isFile: boolean}> = new EventEmitter();
 
   constructor(private fsService: FilesystemService, private py: PyodideService) {
+    // hook into emscripten filesystem callbacks where possible
     fsService.getFS().subscribe(fs => {
       fs.trackingDelegate['willMovePath'] = (_oldPath: string, _newPath: string) => this.willMovePath.emit({oldPath: _oldPath, newPath: _newPath});
       fs.trackingDelegate['willDeletePath'] = (_path: string) => this.willDeletePath.emit(_path);
@@ -41,6 +42,7 @@ export class FilesystemEventService {
     });
   }
 
+  // --- methods to emit events after user interactions 
   onPathMoved(oldPath: string, newPath: string): void {
     this.onMovePath.emit({oldPath: oldPath, newPath: newPath, extension: this.fsService.getExtension(newPath)});
   }

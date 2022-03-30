@@ -21,6 +21,7 @@ export interface Icons {
 }
 
 export class FileTypes {
+    // for "about" tab
     static icons: Icons = {
         'dictionary': { path: 'assets/icons/dictionary.png', href: 'https://www.flaticon.com/free-icons/dictionary', title: 'dictionary icons', text: 'Dictionary icons created by Freepik - Flaticon' },
         'experiment': { path: 'assets/icons/experiment.png', href: 'https://www.flaticon.com/free-icons/lab', title: 'lab icons', text: 'Lab icons created by Prosymbols - Flaticon' },

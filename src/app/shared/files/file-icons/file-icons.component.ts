@@ -8,6 +8,10 @@ import { FileType, FileTypes } from '../filetypes.enum';
   templateUrl: './file-icons.component.html',
   styleUrls: ['./file-icons.component.scss']
 })
+
+// displays icons for tabs and in files/folders component
+// folders and special tabs like hints, unity and plotly have seperate icons
+// files (both in file explorer and tab) use either a predefined icon or the file extension is written as text (eg "PY" for .py files)
 export class FileIconsComponent {
   private _fileType?: FileType;
   private _isActive = false;

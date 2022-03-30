@@ -7,6 +7,10 @@ import { filter, map, tap } from 'rxjs/operators';
   templateUrl: './common-actions.component.html',
   styleUrls: ['./common-actions.component.scss']
 })
+
+// dual purpose: 
+// Context-menu for right clicks on files/folders
+// if current experience contains no user-visible files (e.g. after creating a new sandbox), some options like create new file etc. are display using this component
 export class CommonActionsComponent implements OnInit {
   DELETE_MSG: string = '';
   RENAME_MSG: string = '';

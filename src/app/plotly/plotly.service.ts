@@ -9,6 +9,7 @@ export class PlotlyService {
 
   constructor(private tabManagementService: TabManagementService) { }
 
+  // called from python context with the generated iframe, which is then passed on to create a new tab
   @PythonCallable
   public sendPlotlyHtml(htmlString: string) {
     const encodedHtmlString = new TextEncoder().encode(htmlString)

@@ -48,8 +48,10 @@ export class ImportExportService {
         const exp: Experience = { name: conf.name, uuid: conf.uuid, type: conf.type, availableOffline: true, preloadedPythonLibs: conf.preloadPythonLibs };
         let importObsv: Observable<never>;
 
+        // user chose to overwrite experience
         if (overwrite) {
           if (isCurrent) {
+            // experience user wants to import and overwrite is the one which is currently open --> no need to mount, just delete and store everything from zip
             importObsv = concat(
               this.fs.deleteFolder(`/${conf.uuid}`, false, false,[`/${conf.uuid}/config.json`]),
               this.fs.storeExperience(zipFile, conf.uuid, true),
@@ -61,6 +63,7 @@ export class ImportExportService {
                 new AppAction.Change("READY")
               ])))
           } else {
+            // experience user wants to import and overwrite isn't mounted currently --> mount it temporarily, replace everything, unmount
             importObsv = concat(
               this.fs.mount(conf.uuid),
               expAvailbleOffline ? this.fs.sync(true) : EMPTY,
@@ -72,7 +75,7 @@ export class ImportExportService {
   
           }
         } else {
-          // regular import + import of lesson which wasn't yet downloaded
+          // regular import or import of lesson which wasn't yet downloaded
           importObsv = concat(
             this.fs.mount(conf.uuid),
             this.fs.storeExperience(zipFile, conf.uuid),

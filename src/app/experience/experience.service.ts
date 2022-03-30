@@ -28,9 +28,10 @@ export class ExperienceService {
   }
 
   /**
-   * Configs liegen regulär im Verzeichnis der Experience
-   * Im LocalStorage werden lediglich uuid, name und type abgespeichert
-   * Beim Start der Anwendung wird Inhalt von localStorage mit indexedb.databases() verglichen
+   * configs are stored in the root of the experience 
+   * localstorage only stores uuid, name and type
+   * at application startup, content of localstorage is compared to indexedb.databases() to make sure
+   * every localstorage entry corresponds to an idb-database and vice versa
    */
   public checkAllExperiences(): Observable<never> {
     return zip(
@@ -61,6 +62,7 @@ export class ExperienceService {
     )
   }
 
+  // checks whether exp with given uuid already exists
   public available(uuid: string): Observable<boolean> { 
     return this.store.select<ExperienceStateModel>(ExperienceState).pipe(
       switchMap(state => {
@@ -77,12 +79,11 @@ export class ExperienceService {
     )
   }
    
-  // Mögliche Erweiterung in Zukunft: Fälle abfangen, in denen zu einer Experience keine config.json existiert
-  // Sollte eigentlich nicht vorkommen, aber man weiß ja nie...
-  // Falls config.json also fehlt könnte man z.B. gucken, ob es glossary ordner gibt (Indiz für Lesson)
-  // Ansonsten könnte man
-  //    ... entweder neue config (sandbox-style) generieren (name dann identisch zu uuid oder ebenfalls zufällig generiert)
-  //    ... oder in der UI separat anzeigen (z.B. "Experiences mit Problem")
+  // possible improvement: catch cases where expierence has no config (shouldn't happen but you never know)
+  // if no config.json exists, one could check whether some sort of glossary folder exists (would indicate that it is a lesson)
+  // otherwise, one could
+  //    ... create a new "best-effort" config for the experience in question with the available information
+  //    ... or display experiences without a config seperately in the UI
   private fixMissingExperiences(exps: Experience[]): Observable<Experience[]> {
     const _exps = [...exps];
     const paths = exps.map(exp => `/${exp.uuid}`)

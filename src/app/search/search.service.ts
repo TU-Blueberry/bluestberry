@@ -34,6 +34,7 @@ export class SearchService {
       ofActionSuccessful(ExperienceAction.Close)
     ).subscribe(() => this.reset())
 
+    // --- listen to fs events to update search index accordingly
     this.ev.onDeletePath.pipe(
       filter(() => this.isLoaded)
     ).subscribe(path => this.onDeletePath(path));
@@ -47,6 +48,7 @@ export class SearchService {
     ).subscribe(params => this.onWriteToFile(params));
   }
 
+  // recursively scan starting at path, add everything to search index
   private scan(path: string, depth: number): Observable<any> {
     return this.fsService.scanForSearch(path, depth, true).pipe(
       switchMap(([folders, files]) => {

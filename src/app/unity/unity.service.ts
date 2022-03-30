@@ -36,6 +36,7 @@ export class UnityService {
               .pipe(
                 take(1),
                 switchMap((file) => {
+                  // file at unityEntryPoint is the Unity JSON file with information about all the necessary files to start Unity
                   const unityJson = JSON.parse(new TextDecoder().decode(file))
                   const blob = new Blob([file.buffer])
                   const uri = URL.createObjectURL(blob)
@@ -49,7 +50,8 @@ export class UnityService {
                     ),
                   }
 
-                  // convert all other necessary files to object uris
+                  // load necessary files from filesystem and convert them to object uris (essentially creating a fake download link which
+                  // our custom unity loader can use)
                   return this.getUnityFilesAsObjectUris(unityInfo).pipe(
                     switchMap((uris) => {
                       const uriMap = {
@@ -58,6 +60,9 @@ export class UnityService {
                         [unityJson.wasmFrameworkUrl]: uris[2],
                       }
 
+                      // the exported unity build files contain their own loader, but our custom loader is added to the window scope at
+                      // application startup (see angular.json and https://angular.io/guide/workspace-config#styles-and-scripts-configuration) 
+                      // unity is smart enough to realize that a loader already exists and uses our custom one
                       const loader = (window as any).UnityLoader
                       this.gameInstance = loader.instantiate(
                         'gameContainer',

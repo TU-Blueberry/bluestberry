@@ -20,6 +20,8 @@ import { ImportAction } from 'src/app/actionbar/actions/import.action';
   styleUrls: ['./filetree.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+
+// top level component for a filetree (file explorer has one top-level filetree element, same for glossary)
 export class FiletreeComponent implements OnDestroy{
   SELECTED_LESSON?: Experience;
   _isGlossary = false;
@@ -55,6 +57,7 @@ export class FiletreeComponent implements OnDestroy{
       .subscribe(() =>  this.ref.clear());
   }
 
+  // recreate tree if experience ws opened or changed
   onOpenOrUpdate(action: ExperienceAction.Open | ImportAction.OverwriteCurrent) {
     if (this._isGlossary === false) {
       this.SELECTED_LESSON = action.exp;
@@ -66,6 +69,8 @@ export class FiletreeComponent implements OnDestroy{
   private kickstartTreeGeneration(additionalGlossaryEntries?: { path: string; node: FSNode; }[]) {  
     this.ref.clear();
 
+    // create treenode for top level folder (in case of glossary this is /glossary, in case of an experience it is /<uuid>)
+    // remaining filetree is generated automatically by the folder component
     const path = this._isGlossary ? '/glossary' : `/${this.SELECTED_LESSON?.uuid}`;
     const name = this._isGlossary ? 'Glossar' : this.SELECTED_LESSON?.name;
     const folderFactory = this.componentFactoryResolver.resolveComponentFactory(FolderComponent);
@@ -87,6 +92,8 @@ export class FiletreeComponent implements OnDestroy{
       folderComp.node.path = path;
       this.toggleSubscription = folderComp.onExpandToggle.subscribe(next => this.expandChange.emit(next));
 
+      // if this is component is used to display the glossary entries, we currently only display the global ones (from /glossary)
+      // now we add all the glossary entries from the selected experience manually
       additionalGlossaryEntries?.forEach(entry => 
         folderComp.createSubcomponent(true, entry.path, entry.node)
       )

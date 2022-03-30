@@ -38,6 +38,7 @@ export class GlossaryService {
         })
     )
 
+    // check which glossary entries exist in the global scope (/glossary) as well as in the experience scope (/<uuid>/<glossaryEntryPoint>)
     forkJoin([
       this.fs.scanAll('/glossary', 0, true),
       expGlossary
@@ -47,6 +48,8 @@ export class GlossaryService {
           let expFiles: { glossaryEntryPoint: string, nodes: FSNode[][]};
           [globalFiles, expFiles] = res;
 
+          // find all glossary entries in the local scope which (at least according to their file name) are not contained in global scope
+          // emit those so filetree can display them alongside the global entries
           const globalEntries = globalFiles[1].map(file => ({ path: `/glossary/${file.name}`, node: file }));
           const newEntries = expFiles.nodes[1].map(file => ({ path: `/${exp.uuid}/${expFiles.glossaryEntryPoint}/${file.name}`, node: file}))
                                      .filter(file => globalEntries.findIndex(e => e.node.name === file.node.name) === -1);
@@ -60,6 +63,8 @@ export class GlossaryService {
   public loadGlobalGlossaryEntries() {
     const url = this.location.prepareExternalUrl('/assets/glossary.json');
     
+    // load glossary.json list from server + check which ones are currently stored in /glossary
+    // delete everything not found in the list from the server, fetch new entries
     return zip(
       this.http.get<string[]>(url),
       this.fs.scanAll('/glossary', 0, true)
@@ -91,7 +96,7 @@ export class GlossaryService {
     return forkJoin(toDelete.map(entry => this.fs.deleteFile(`/glossary/${entry.name}`, false)));
   }
 
-  // Check all remaining entries for updates and update local file if necessary
+  // Check all remaining global glossary entries for updates and update local file if necessary
   private checkRemaining(remaining: FSNode[]) {
     return forkJoin(
       remaining.map(

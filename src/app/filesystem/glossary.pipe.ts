@@ -4,6 +4,7 @@ import { Pipe, PipeTransform } from '@angular/core';
     name: 'toGlossaryName'
 })
 
+// remove .md ending from glossary files, transform first letter of name to uppercase
 export class GlossaryPipe implements PipeTransform {
     transform(name: string): string {
         const str = name.split(".md");

@@ -41,6 +41,8 @@ export class MarkdownViewerComponent implements OnInit {
       if (href.startsWith('http')) {
         out = '<img src="' + href + '" alt="Hier sollte eigentlich ein Bild sein!"';
       } else {
+        // glossary entries support images from the local file system!
+        // image path needs to be absolute
         try {
           const file = this.fs.getFileAsBinarySync(href);
           const extension = href.split('.').pop() || 'png';

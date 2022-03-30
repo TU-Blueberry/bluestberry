@@ -14,12 +14,19 @@ import { TreeNode } from '../model/tree-node';
   styleUrls: ['./folder.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
+
+// renders information about a single folder in the filetree
+// we are given a TreeNode object which is 
+// a) either connected to a single node in filesystem (folders only in this case) OR
+// b)just a placeholder with no corresponding filesystem entry (in case user is creating a new folder via the UI)
+// in any case, every instance of FolderComponent is responsible solely for its TreeNode
 export class FolderComponent implements OnInit, OnDestroy {
+  // store reference to the components responsible for every folder/file contained in this folder
   files: Map<string, ComponentRef<FileComponent>> = new Map(); 
   folders: Map<string, ComponentRef<FolderComponent>> = new Map();
   folderFactory: ComponentFactory<FolderComponent>;
   fileFactory: ComponentFactory<FileComponent>;
-  tentativeNode?: ComponentRef<FolderComponent> | ComponentRef<FileComponent>;
+  tentativeNode?: ComponentRef<FolderComponent> | ComponentRef<FileComponent>; // user may create a file or folder from the UI
   tentativeNodeSubscription?: Subscription;
   tentativeNodeIsFile?: boolean;
   subscriptions: Subscription[] = [];
@@ -81,6 +88,8 @@ export class FolderComponent implements OnInit, OnDestroy {
     }); 
   }
 
+  // TreeNode handles all the nasty stuff for us, like filtering out which events are relevant for us
+  // we only subscribe to its listeners and update the UI accordingly
   private addListeners(): void {
     const deleteSubscription = this._node.onDelete().subscribe(path => this.deleteSubcomponent(path));
     const newFileSubscription = this._node.addNewFilesListener(this.files).subscribe(params => (this.createSubcomponent(true, params.path, params.node), this.cd.detectChanges()));
@@ -134,6 +143,7 @@ export class FolderComponent implements OnInit, OnDestroy {
   }
 
   // called once new node from user is synced to fs
+  // corresponding TreeNode is given the actual path and will proceed to fetch the reference from the filesystem
   private triggerUpdate(path: string, isFile: boolean) {
     const element = isFile ? this.files.get(this.getName(path)) : this.folders.get(this.getName(path));
 
@@ -142,6 +152,7 @@ export class FolderComponent implements OnInit, OnDestroy {
       instance.node.path = path;
       this._node.updateEmptyStatus();
 
+      // set to active if a new folders was created
       if (!isFile) {
         (instance as FolderComponent).init();
         (instance as FolderComponent).setActive();
@@ -202,6 +213,9 @@ export class FolderComponent implements OnInit, OnDestroy {
     return path.split('/').pop() || path;
   }
 
+  // create new TreeNode
+  // no path = user is in the process of creating a file/folder in the UI, thus making this a tentative node
+  // path = node exists in the file system, proceed to create a folder/file component for it
   createSubcomponent(isFile: boolean, path?: string, node?: FSNode): void {   
     const ref = isFile ? this.filesRef : this.foldersRef;
     const insertIndex = path !== undefined ? this.findNewPosition(path, isFile, ref) : 0;
@@ -233,6 +247,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     }
   }
 
+  // tentative node, i.e. (file or folder) 
   tentativeNodeDismissal(isFile: boolean): void {
    if (this.tentativeNode && this.filesRef && this.foldersRef) {
       const ref = isFile ? this.filesRef : this.foldersRef;
@@ -314,9 +329,11 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.subscriptions.forEach(subscription => subscription.unsubscribe());
   }
 
+  // user pressed enter after entering a new name in the input field
   changeName(params: {newName: string, isFile: boolean}): void {
     this.isRenaming = false;
 
+    // check whether it's just renaming of an existing node or creation of a new node
     if (!this._node.isTentativeNode) {
       this.fsService.rename(`${this._node.parentPath}/${this._node.name}`, `${this._node.parentPath}/${params.newName}`).subscribe();
     } else {
@@ -342,6 +359,7 @@ export class FolderComponent implements OnInit, OnDestroy {
     this.onDeleteRequested.emit(false);
   }
 
+  // user uploaded a new file using the context menu
   onNewFile(files: { name: string, convertedFile: Uint8Array }[]) {
     forkJoin(files.map(file => this.fsService.createFile(`${this._node.path}/${file.name}`, file.convertedFile, false)))
     .pipe(switchMap(res => this.fsService.sync(false)))

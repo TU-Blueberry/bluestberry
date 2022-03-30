@@ -29,6 +29,7 @@ export class SandboxCreationComponent {
     }
   }
 
+  // make sure name for new sandbox is valid 
   private validateInput(control: AbstractControl): ValidationErrors | null {
     const value: string = control.value;
 

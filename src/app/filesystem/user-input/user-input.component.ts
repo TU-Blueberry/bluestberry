@@ -7,6 +7,8 @@ import { AbstractControl, FormControl, FormGroup, ValidationErrors } from '@angu
   templateUrl: './user-input.component.html',
   styleUrls: ['./user-input.component.scss']
 })
+
+// used during renaming or creating of files/folders
 export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
   folderContent: FSNode[] = [];
   fileRegex = new RegExp(/[a-zA-Z\d-_]+\.[a-zA-Z\d]{2,5}$/, "i");
@@ -34,6 +36,8 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
     });
    }
 
+  // we know which folder we are located in
+  // scan to find all nodes in this folder so we can check for uniqueness later on
   ngOnInit(): void {
     if (this.parentPath && this.depth && this.parentPath !== '' && this.depth >= 0) {
       this.fsService.scanAll(this.parentPath, this.depth, this.isFile).subscribe(([folders, files]) => {
@@ -82,6 +86,7 @@ export class UserInputComponent implements OnInit, OnChanges, AfterViewInit {
     }
   }
 
+  // make sure file name/folder name doesn't exist yet
   validateInput(control: AbstractControl): ValidationErrors | null {
     const regex = this.isFile ? this.fileRegex : this.folderRegex;
     const value: string = control.value;

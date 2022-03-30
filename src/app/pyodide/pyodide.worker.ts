@@ -128,6 +128,7 @@ function deleteFolder(py: Pyodide, path: string, isRoot: boolean) {
   }
 }
 
+// init pyodide in worker scope (need to load full pyodide again --> running once in main thread, once in worker thread)
 function initPyodide(pyodideLocation: string): Observable<Pyodide> {
   return from(loadPyodide({
       indexURL: pyodideLocation,
@@ -148,6 +149,7 @@ function initPyodide(pyodideLocation: string): Observable<Pyodide> {
 
 const pyodideSyncFs = (pyodide: Pyodide) => bindCallback((populate: boolean, callback: (msg: string) => void) => pyodide.FS.syncfs(populate, callback));
 
+// sync fs with idb, run code, sync fs to idb, post message
 function runCode(code: string): Observable<any> {
   return pyodide.pipe(switchMap(pyodide => pyodideSyncFs(pyodide)(true).pipe(map(_ => pyodide))),
     switchMap(pyodide => {
@@ -189,7 +191,7 @@ function notifyLoadedPackage(lib: string) {
   loadedLib$.next(lib);
 }
 
-// os.chdir("${mountPoint}")
+// add paths to sys.path, allowing custom python modules to be referenced during python runtime
 function addToSysPath(): string {
   let glueCode = '';
   glueCode += `

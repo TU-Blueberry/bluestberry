@@ -7,7 +7,13 @@ import { FilesystemEventService } from "../events/filesystem-event.service";
 import { FileComponent } from "../file/file.component";
 import { FilesystemService } from "../filesystem.service";
 
+// abstraction layer between the ui and the filesystem to provide easy methods for common stuff like isEmpty, hasChildren etc.
+// also hooks into fs events and only passes on those events which are relevant for the corresponding folder/file component
+
+// each folder/file component is responsible for exactly one folder/file and has one corresponding TreeNode
 export class TreeNode {
+    // if user is in the process of creating a new folder/file via the UI there is no filesystem reference until
+    // he presses "enter" and a new node in the filesystem is created 
     private _ref?: FSNode;
 
     private _isEmptyNode = false;
@@ -89,6 +95,7 @@ export class TreeNode {
         return this.ev.onDeletePath.pipe(filter(path => this.isDirectChild(path)), tap(() => this.updateEmptyStatus()));
     }
 
+    // events for newly created files which are direct children 
     public addNewFilesListener(fileMap: Map<string, ComponentRef<FileComponent>>) {
        return this.ev.onWriteToFile.pipe(
            filter(params => this.isDirectChild(params.path) && !fileMap.has((params.path.split('/').pop() || params.path))), 
@@ -117,6 +124,7 @@ export class TreeNode {
         return this.fs.afterExecutionAndSync$;
     }
 
+    // direct child was deleted/renamed
     public pathMoveOldPath() {
         return this.ev.onMovePath.pipe(
             filter(params => this.isDirectChild(params.oldPath), 
@@ -124,6 +132,7 @@ export class TreeNode {
         );
     }
 
+    // direct child was renamed
     public pathMoveNewPath() {
         return this.ev.onMovePath.pipe(
             filter(params => this.isDirectChild(params.newPath)),
