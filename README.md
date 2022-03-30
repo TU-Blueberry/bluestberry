@@ -1,3 +1,5 @@
+![Screenshot der Plattform](platform.png)
+
 # Projekt Blueberry
 
 Entwickelt im Rahmen der Projektgruppe 643: 
@@ -150,7 +152,7 @@ Im Laufe der Projektgruppe haben sich einige Tipps und Praktiken herauskristalli
 
 
 # Aufbau einer Konfigurationsdatei
-Jede Experience (Lesson oder Sandbox) besitzt auf oberster Ebene eine Konfigurationsdatei `config.json`. Diese wird beim Bauen des Projekts zum Schutz vor Manipulationen verschlüsselt (nähere Informationen siehe README im Ordner `src/crypt`) und zusammen mit den anderen Dateien in ein ZIP-Archiv überführt.
+Jede Experience (Lesson oder Sandbox) besitzt auf oberster Ebene eine Konfigurationsdatei `config.json`. Diese wird beim Bauen des Projekts zum Schutz vor Manipulationen verschlüsselt (nähere Informationen siehe [README von Cryptoberry](crypt/README.md)) und zusammen mit den anderen Dateien in ein ZIP-Archiv überführt.
 Beim Aufruf der Plattform wird die Datei im Dateiexplorer verborgen und die Schreibberechtigung entfernt.
 
 #### Hinweis: Sämtliche Pfade innerhalb der Konfigurationsdatei sind relativ und beziehen sich auf den Speicherort der Konfigurationsdatei!
@@ -161,7 +163,7 @@ Beim Aufruf der Plattform wird die Datei im Dateiexplorer verborgen und die Schr
 - `open: { path: string, on: string, active: boolean }[]` Für jeden offenen Tab wird der relativer Pfad, die zugehörige Tab-Gruppe (links/rechts) und eine Info, ob der Tab aktiv ist oder nicht gespeichert. Über dieses Feld kann gesteuert werden, welche Tabs beim ersten Aufruf der Plattform geöffnet sind.
 	- Änderungen durch den Nutzer führen zu einer Anpassung dieses Feldes
 	- Für Unity und das Hinweissystem existieren spezielle Pfade (`unity` und  `hint`). Ein Beispiel findet sich in der Konfigurationsdatei der Sortierroboter-Lerneinheit.
-	- Offene Plotly Tabs werden separat gespeichert (siehe `__tabinfo`)
+	- Offene Plotly Tabs werden separat gespeichert (siehe `tabinfo`)
 - `unityEntryPoint?: string` Relativer Pfad zur JSON-Datei des Unity-Projekts
 - `splitSettings: ViewSettings` Objekt, welches Informationen über den aktuellen Aufbau der UI festhält. Für jede Split-Area (Dateibaum, linke Tab-Gruppe und rechte Tab-Gruppe, Terminal, Code-Editor und Empty-Message) werden Infos über Sichtbarkeit, aktuelle, minimale und maximale Größe sowie Reihenfolge der Anordnung gespeichert. Da die linke Tab-Gruppe noch horizontal in Code-Editor und Terminal geteilt werden kann sind beide Elemente einer eigenen `group` zugewiesen.
 -   `hidden: string[]`  Relative Pfade von Dateien oder Ordnern, die im Dateiexplorer und in der Suche nicht angezeigt werden sollen. Arbeitet rekursiv, d.h. für jeden Pfad sind alle Sub-Pfade ebenfalls versteckt.
